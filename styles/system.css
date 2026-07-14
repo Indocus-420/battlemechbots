@@ -1,0 +1,39 @@
+.bmfs { min-width: 480px; }
+.bmfs .window-content { overflow-y: auto; }
+.bmfs.bmfs-sheet-form { padding: 8px; }
+.bmfs .sheet-header { display: flex; gap: 12px; align-items: flex-start; }
+.bmfs .profile-img { width: 96px; height: 96px; object-fit: cover; border: 1px solid #777; }
+.bmfs .header-fields { flex: 1; }
+.bmfs .grid { display: grid; gap: 8px; }
+.bmfs .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bmfs .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bmfs label { display: flex; flex-direction: column; gap: 3px; font-weight: 600; }
+.bmfs input, .bmfs select, .bmfs textarea { width: 100%; }
+.bmfs textarea { min-height: 90px; }
+.bmfs .panel { border: 1px solid #777; border-radius: 6px; padding: 10px; margin: 8px 0; background: rgb(0 0 0 / 4%); }
+.bmfs table { width: 100%; border-collapse: collapse; }
+.bmfs th, .bmfs td { border-bottom: 1px solid #999; padding: 4px; text-align: left; }
+.bmfs td input { min-width: 60px; }
+.bmfs .hint { opacity: 0.8; font-style: italic; }
+.bmfs .button-row { display: flex; gap: 8px; margin-top: 10px; }
+.bmfs .bmfs-status-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
+.bmfs .bmfs-checkbox { flex-direction: row; align-items: center; }
+.bmfs .bmfs-checkbox input { width: auto; }
+.bmfs .bmfs-terrain-planner { margin-top: 12px; padding-top: 10px; border-top: 1px solid #999; }
+.bmfs .bmfs-terrain-planner h3 { margin: 0 0 4px; }
+.bmfs .bmfs-version { margin-top: 8px; text-align: right; opacity: 0.65; font-size: 0.8em; }
+
+.bmfs .item-actions {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.bmfs .item-actions button {
+  width: 2rem;
+  min-width: 2rem;
+  padding: 0.25rem;
+  margin: 0 0.1rem;
+}
+
+.bmfs-chat-card h3 { margin: 0 0 0.35rem; }
+.bmfs-chat-card p { margin: 0.2rem 0; }

@@ -1,0 +1,59 @@
+<div class="bmfs-item-content">
+<header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" alt="{{item.name}}">
+    <div class="header-fields">
+      <h1><input name="name" type="text" value="{{item.name}}" placeholder="Item Name"></h1>
+      <p>Type: {{item.type}}</p>
+    </div>
+  </header>
+
+  {{#if isWeapon}}
+  <section class="panel">
+    <h2>Weapon</h2>
+    <label>Weapon Type
+      <select name="system.weaponType">
+        <option value="laser" {{#if (eq system.weaponType "laser")}}selected{{/if}}>Laser</option>
+        <option value="missile" {{#if (eq system.weaponType "missile")}}selected{{/if}}>Missile</option>
+        <option value="autocannon" {{#if (eq system.weaponType "autocannon")}}selected{{/if}}>Autocannon</option>
+        <option value="ppc" {{#if (eq system.weaponType "ppc")}}selected{{/if}}>PPC</option>
+      </select>
+    </label>
+    <div class="grid grid-2">
+      <label>Location <input name="system.location" type="text" value="{{system.location}}"></label>
+      <label>Damage <input name="system.damage" type="number" value="{{system.damage}}"></label>
+      <label>Heat <input name="system.heat" type="number" value="{{system.heat}}"></label>
+      <label>Ammo / Shot <input name="system.ammoPerShot" type="number" value="{{system.ammoPerShot}}"></label>
+      <label>Short <input name="system.range.short" type="number" min="0" value="{{system.range.short}}"></label>
+      <label>Medium <input name="system.range.medium" type="number" min="0" value="{{system.range.medium}}"></label>
+      <label>Long <input name="system.range.long" type="number" min="0" value="{{system.range.long}}"></label>
+    </div>
+    <label>Notes <textarea name="system.notes">{{system.notes}}</textarea></label>
+  </section>
+  {{/if}}
+
+  {{#if isEquipment}}
+  <section class="panel">
+    <h2>Equipment</h2>
+    <label>Location <input name="system.location" type="text" value="{{system.location}}"></label>
+    <label>Slots <input name="system.slots" type="number" value="{{system.slots}}"></label>
+    <label>Notes <textarea name="system.notes">{{system.notes}}</textarea></label>
+  </section>
+  {{/if}}
+
+  {{#if isAmmo}}
+  <section class="panel">
+    <h2>Ammunition</h2>
+    <label>Ammo Type <input name="system.ammoType" type="text" value="{{system.ammoType}}"></label>
+    <label>Location <input name="system.location" type="text" value="{{system.location}}"></label>
+    <label>Shots <input name="system.shots" type="number" min="0" max="{{system.maxShots}}" value="{{system.shots}}"></label>
+    <label>Maximum Shots <input name="system.maxShots" type="number" min="0" value="{{system.maxShots}}"></label>
+    <label>Notes <textarea name="system.notes">{{system.notes}}</textarea></label>
+  </section>
+  {{/if}}
+
+  <div class="button-row bmfs-save-row">
+    <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+  </div>
+
+  <footer class="bmfs-version">Alpha {{bmfsVersion}} • Foundry VTT 14.364</footer>
+</div>
