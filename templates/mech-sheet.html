@@ -1,0 +1,176 @@
+<div class="bmfs-mech-content">
+<header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}">
+    <div class="header-fields">
+      <h1><input name="name" type="text" value="{{actor.name}}" placeholder="BattleMech Name"></h1>
+      <div class="grid grid-4">
+        <label>Chassis <input name="system.mech.chassis" type="text" value="{{system.mech.chassis}}"></label>
+        <label>Variant <input name="system.mech.variant" type="text" value="{{system.mech.variant}}"></label>
+        <label>Tons <input name="system.mech.tonnage" type="number" value="{{system.mech.tonnage}}"></label>
+        <label>Role <input name="system.mech.role" type="text" value="{{system.mech.role}}"></label>
+      </div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Pilot</h2>
+    <div class="grid grid-4">
+      <label>Name <input name="system.pilot.name" type="text" value="{{system.pilot.name}}"></label>
+      <label>Gunnery <input name="system.pilot.gunnery" type="number" value="{{system.pilot.gunnery}}"></label>
+      <label>Piloting <input name="system.pilot.piloting" type="number" value="{{system.pilot.piloting}}"></label>
+      <label>Hits <input name="system.pilot.hits" type="number" value="{{system.pilot.hits}}"></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Movement and Heat</h2>
+    <div class="grid grid-4">
+      <label>Walk <input name="system.movement.walk" type="number" value="{{system.movement.walk}}"></label>
+      <label>Run <input name="system.movement.run" type="number" value="{{system.movement.run}}"></label>
+      <label>Jump <input name="system.movement.jump" type="number" value="{{system.movement.jump}}"></label>
+      <label>Movement Mode
+        <select name="system.movement.mode">
+          <option value="stand" {{#if (eq system.movement.mode "stand")}}selected{{/if}}>Standing Still</option>
+          <option value="walk" {{#if (eq system.movement.mode "walk")}}selected{{/if}}>Walking</option>
+          <option value="run" {{#if (eq system.movement.mode "run")}}selected{{/if}}>Running</option>
+          <option value="jump" {{#if (eq system.movement.mode "jump")}}selected{{/if}}>Jumping</option>
+        </select>
+      </label>
+      <label>Hexes Moved <input name="system.movement.hexesMoved" type="number" min="0" value="{{system.movement.hexesMoved}}"></label>
+      <label>MP Spent <input name="system.movement.mpSpent" type="number" min="0" value="{{system.movement.mpSpent}}"></label>
+      <label>Available MP <input type="number" value="{{availableMovement}}" readonly></label>
+      <label>Attacker Modifier <input name="system.movement.attackerModifier" type="number" value="{{system.movement.attackerModifier}}" readonly></label>
+      <label>Target Modifier <input name="system.movement.targetModifier" type="number" value="{{system.movement.targetModifier}}" readonly></label>
+      <label>Movement Heat <input name="system.movement.heatGenerated" type="number" value="{{system.movement.heatGenerated}}" readonly></label>
+      <label>Heat <input name="system.heat.current" type="number" value="{{system.heat.current}}"></label>
+      <label>Heat Sinks <input name="system.heat.sinks" type="number" value="{{system.heat.sinks}}"></label>
+      <label>Overflow <input name="system.heat.overflow" type="number" value="{{system.heat.overflow}}"></label>
+    </div>
+    <div class="bmfs-terrain-planner">
+      <h3>Terrain Path</h3>
+      <p class="hint">Choose Walking, Running, or Jumping on this sheet before moving the token. Moving through tagged Regions records terrain and elevation automatically. These fields remain available for corrections and manual facing costs. Clear, paved, and road hexes add no terrain cost. Jumping ignores terrain, level, and facing costs.</p>
+      <div class="grid grid-4">
+        <label>Rough Hexes <input name="system.movement.terrain.roughHexes" type="number" min="0" value="{{system.movement.terrain.roughHexes}}"></label>
+        <label>Light Woods Hexes <input name="system.movement.terrain.lightWoodsHexes" type="number" min="0" value="{{system.movement.terrain.lightWoodsHexes}}"></label>
+        <label>Heavy Woods Hexes <input name="system.movement.terrain.heavyWoodsHexes" type="number" min="0" value="{{system.movement.terrain.heavyWoodsHexes}}"></label>
+        <label>Rubble Hexes <input name="system.movement.terrain.rubbleHexes" type="number" min="0" value="{{system.movement.terrain.rubbleHexes}}"></label>
+        <label>Depth 1 Water Hexes <input name="system.movement.terrain.waterDepth1Hexes" type="number" min="0" value="{{system.movement.terrain.waterDepth1Hexes}}"></label>
+        <label>Depth 2 Water Hexes <input name="system.movement.terrain.waterDepth2Hexes" type="number" min="0" value="{{system.movement.terrain.waterDepth2Hexes}}"></label>
+        <label>Depth 3+ Water Hexes <input name="system.movement.terrain.waterDepth3PlusHexes" type="number" min="0" value="{{system.movement.terrain.waterDepth3PlusHexes}}"></label>
+        <label>Levels Changed <input name="system.movement.terrain.levelChanges" type="number" min="0" value="{{system.movement.terrain.levelChanges}}"></label>
+        <label>Facing Changes <input name="system.movement.terrain.facingChanges" type="number" min="0" value="{{system.movement.terrain.facingChanges}}"></label>
+        <label>Added Terrain/Facing MP <input name="system.movement.terrain.terrainCost" type="number" value="{{system.movement.terrain.terrainCost}}" readonly></label>
+        <label>Required Movement MP <input name="system.movement.terrain.requiredMp" type="number" value="{{system.movement.terrain.requiredMp}}" readonly></label>
+        <label>Piloting Checks <input name="system.movement.terrain.pilotingChecks" type="number" value="{{system.movement.terrain.pilotingChecks}}" readonly></label>
+      </div>
+    </div>
+    <div class="bmfs-status-row">
+      <label class="bmfs-checkbox"><input name="system.status.prone" type="checkbox" {{#if system.status.prone}}checked{{/if}}> Prone</label>
+      <label class="bmfs-checkbox"><input name="system.heat.shutdown" type="checkbox" {{#if system.heat.shutdown}}checked{{/if}}> Shut Down</label>
+      <label class="bmfs-checkbox"><input name="system.status.destroyed" type="checkbox" {{#if system.status.destroyed}}checked{{/if}}> Destroyed</label>
+    </div>
+    <div class="button-row">
+      <button type="button" data-action="applyMovement"><i class="fa-solid fa-person-walking"></i> Apply Movement</button>
+      <button type="button" data-action="resetMovement"><i class="fa-solid fa-rotate-left"></i> Reset Movement</button>
+      <button type="button" data-action="testRoll"><i class="fa-solid fa-dice"></i> Test 2D6 Roll</button>
+      <button type="button" data-action="resetHeat"><i class="fa-solid fa-temperature-arrow-down"></i> Reset Heat</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Armor and Internal Structure</h2>
+    <table>
+      <thead><tr><th>Location</th><th>Front</th><th>Rear</th><th>Internal</th></tr></thead>
+      <tbody>
+        {{#each system.armor as |loc key|}}
+        <tr>
+          <td>{{key}}</td>
+          <td><input name="system.armor.{{key}}.front" type="number" min="0" max="{{loc.maxFront}}" value="{{loc.front}}"> / {{loc.maxFront}}</td>
+          <td>{{#if loc.maxRear}}<input name="system.armor.{{key}}.rear" type="number" min="0" max="{{loc.maxRear}}" value="{{loc.rear}}"> / {{loc.maxRear}}{{else}}—{{/if}}</td>
+          <td><input name="system.structure.{{key}}.value" type="number" min="0" max="{{lookup (lookup ../system.structure key) 'max'}}" value="{{lookup (lookup ../system.structure key) 'value'}}"> / {{lookup (lookup ../system.structure key) 'max'}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Weapons</h2>
+    <p class="hint">Drag weapon Items onto this actor. Each drop creates a separate embedded Item.</p>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Location</th><th>Damage</th><th>Heat</th><th>Range</th><th>Actions</th></tr></thead>
+      <tbody>
+        {{#each weapons as |item|}}
+        <tr data-item-id="{{item.id}}">
+          <td>{{item.name}}</td>
+          <td>{{item.system.weaponType}}</td>
+          <td>{{item.system.location}}</td>
+          <td>{{item.system.damage}}</td>
+          <td>{{item.system.heat}}</td>
+          <td>{{item.system.range.short}} / {{item.system.range.medium}} / {{item.system.range.long}}</td>
+          <td class="item-actions">
+            <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+        {{else}}
+        <tr><td colspan="7">No weapons installed.</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Equipment</h2>
+    <p class="hint">Jump jets and other equipment appear here after being dropped onto the BattleMech.</p>
+    <table>
+      <thead><tr><th>Name</th><th>Location</th><th>Slots</th><th>Notes</th><th>Actions</th></tr></thead>
+      <tbody>
+        {{#each equipment as |item|}}
+        <tr data-item-id="{{item.id}}">
+          <td>{{item.name}}</td>
+          <td>{{item.system.location}}</td>
+          <td>{{item.system.slots}}</td>
+          <td>{{item.system.notes}}</td>
+          <td class="item-actions">
+            <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+        {{else}}
+        <tr><td colspan="5">No equipment installed.</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Ammunition</h2>
+    <p class="hint">Ammunition bins are embedded Items and are tracked separately from weapons.</p>
+    <table>
+      <thead><tr><th>Name</th><th>Ammo Type</th><th>Location</th><th>Shots</th><th>Actions</th></tr></thead>
+      <tbody>
+        {{#each ammo as |item|}}
+        <tr data-item-id="{{item.id}}">
+          <td>{{item.name}}</td>
+          <td>{{item.system.ammoType}}</td>
+          <td>{{item.system.location}}</td>
+          <td>{{item.system.shots}} / {{item.system.maxShots}}</td>
+          <td class="item-actions">
+            <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+        {{else}}
+        <tr><td colspan="5">No ammunition installed.</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+
+  <div class="button-row bmfs-save-row">
+    <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+  </div>
+
+  <footer class="bmfs-version">Alpha {{bmfsVersion}} • Foundry VTT 14.364</footer>
+</div>
