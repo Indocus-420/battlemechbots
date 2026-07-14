@@ -224,6 +224,7 @@ export class WeaponDataModel extends foundry.abstract.TypeDataModel {
       ammoPerShot: integer(0, { min: 0 }),
       shots: integer(0, { min: 0 }),
       range: new SchemaField({
+        minimum: integer(0, { min: 0 }),
         short: integer(3, { min: 0 }),
         medium: integer(6, { min: 0 }),
         long: integer(9, { min: 0 })
@@ -235,9 +236,12 @@ export class WeaponDataModel extends foundry.abstract.TypeDataModel {
   static validateJoint(data) {
     super.validateJoint(data);
 
-    const { short, medium, long } = data.range;
+    const { minimum, short, medium, long } = data.range;
     if (short > medium || medium > long) {
       throw new Error("Weapon ranges must be ordered from short to medium to long.");
+    }
+    if (minimum > long) {
+      throw new Error("Minimum range cannot exceed long range.");
     }
   }
 }

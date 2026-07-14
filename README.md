@@ -122,3 +122,21 @@ Fixed embedded Item Edit and Remove actions by resolving `data-item-id` directly
 - Prevents zero-space token adjustments from generating movement heat or chat records.
 - Uses the Walking, Running, or Jumping mode selected on the BattleMech sheet for direct token movement.
 - Leaves Foundry's native token movement-action registry completely unchanged.
+
+## Phase 3 - 0.4.0-alpha.0
+
+- Adds a tested GATOR weapon-attack calculator using Gunnery, attacker movement, target movement, heat, terrain, and range.
+- Adds Minimum, Short, Medium, and Long range support to weapon Items.
+- Adds an Attack action to every installed weapon; target exactly one BattleMech token and click the crosshairs button to roll.
+- Measures range in hexes with Foundry VTT 14's direct grid path.
+- Reads intervening and target woods from the same Region terrain tags used by movement.
+- Applies +1 per intervening Light Woods hex, +2 per intervening Heavy Woods hex, and the target hex's woods modifier.
+- Blocks line of sight when intervening woods exceed +2.
+- Applies automatic partial cover for a standing target in Depth 1 water and enforces submerged-versus-surface targeting restrictions.
+- Applies prone and shut-down target modifiers from the Attack Modifiers Table.
+- Posts the 2D6 result, Target Number, GATOR breakdown, range bracket, and terrain summary to chat.
+- Level-1 hill/building partial cover and LOS lines that fall exactly between two hex paths remain manual adjudications in this first combat increment.
+
+### 0.4.1-alpha.0 live-test correction
+
+- Resolves weapon attacks from both linked and Foundry's default unlinked BattleMech tokens.

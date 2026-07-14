@@ -15,9 +15,13 @@ import {
   summarizeRegionTerrainPath,
   targetMovementModifier
 } from "../module/movement.js";
+import {
+  calculateAttackTargetNumber,
+  summarizeCombatTerrainPath
+} from "../module/combat.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.3.3-alpha.0";
+const SYSTEM_VERSION = "0.4.1-alpha.0";
 const TARGET_FOUNDRY = "14.364";
 const pendingTokenMovementPlans = new Map();
 const terrainInputFields = [
@@ -52,6 +56,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       resetMovement: BMFSMechSheet.onResetMovement,
       testRoll: BMFSMechSheet.onTestRoll,
       resetHeat: BMFSMechSheet.onResetHeat,
+      rollWeaponAttack: BMFSMechSheet.onRollWeaponAttack,
       editItem: BMFSMechSheet.onEditItem,
       deleteItem: BMFSMechSheet.onDeleteItem
     }
@@ -100,6 +105,69 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       "system.heat.current": 0,
       "system.heat.overflow": 0,
       "system.heat.shutdown": false
+    });
+  }
+
+  static async onRollWeaponAttack(event, target) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const row = target?.closest?.("[data-item-id]");
+    const weapon = row?.dataset?.itemId ? this.actor.items.get(row.dataset.itemId) : null;
+    if (!weapon || weapon.type !== "weapon") {
+      ui.notifications.warn("The selected weapon could not be found.");
+      return;
+    }
+
+    const targets = [...game.user.targets].filter(token => token.actor?.type === "mech");
+    if (targets.length !== 1) {
+      ui.notifications.warn("Target exactly one BattleMech token before making a weapon attack.");
+      return;
+    }
+
+    let attack;
+    try {
+      attack = calculateTokenWeaponAttack(this.actor, weapon, targets[0]);
+    } catch (error) {
+      ui.notifications.error(error.message);
+      return;
+    }
+
+    const escape = foundry.utils.escapeHTML;
+    const targetActor = targets[0].actor;
+    const breakdown = attack.components;
+    const terrain = attack.terrain;
+    const terrainSummary = [
+      terrain.interveningLightWoods ? `${terrain.interveningLightWoods} light woods` : null,
+      terrain.interveningHeavyWoods ? `${terrain.interveningHeavyWoods} heavy woods` : null,
+      terrain.targetWoods ? `target woods +${terrain.targetWoods}` : null,
+      terrain.partialCover ? "partial cover +1" : null
+    ].filter(Boolean).join(", ") || "clear";
+
+    if (!attack.canAttack) {
+      await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        content: `<section class="bmfs-chat-card">
+          <h3>${escape(this.actor.name)} cannot attack ${escape(targetActor.name)}</h3>
+          <p>${escape(attack.reason)}</p>
+          <p>Range ${attack.distance} hexes; terrain: ${escape(terrainSummary)}.</p>
+        </section>`
+      });
+      ui.notifications.warn(attack.reason);
+      return;
+    }
+
+    const roll = await new Roll("2d6").evaluate();
+    const hit = roll.total >= attack.targetNumber;
+    const signed = value => value >= 0 ? `+${value}` : String(value);
+    await roll.toMessage({
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      flavor: `<section class="bmfs-chat-card">
+        <h3>${escape(weapon.name)} vs. ${escape(targetActor.name)}: ${hit ? "HIT" : "MISS"}</h3>
+        <p>Target Number ${attack.targetNumber}; range ${attack.distance} (${escape(attack.range.bracket)}).</p>
+        <p>GATOR: ${breakdown.gunnery} Gunnery, ${signed(breakdown.attackerMovement + breakdown.attackerStatus)} attacker, ${signed(breakdown.targetMovement + breakdown.targetStatus)} target, ${signed(breakdown.terrain)} terrain, ${signed(breakdown.heat)} heat, ${signed(breakdown.range)} range.</p>
+        <p>Terrain: ${escape(terrainSummary)}.</p>
+      </section>`
     });
   }
 
@@ -273,6 +341,76 @@ function terrainKeysForWaypoint(token, waypoint) {
     .filter(region => region.testPoint(elevatedPoint))
     .map(region => region.getFlag(SYSTEM_ID, "terrain"))
     .filter(Boolean);
+}
+
+function terrainKeysAtPoint(token, point) {
+  const document = token.document ?? token;
+  const elevatedPoint = {
+    ...point,
+    elevation: point.elevation ?? document.elevation ?? 0
+  };
+  return [...(document.parent?.regions ?? [])]
+    .filter(region => region.testPoint(elevatedPoint))
+    .map(region => region.getFlag(SYSTEM_ID, "terrain"))
+    .filter(Boolean);
+}
+
+function activeSceneToken(actor) {
+  // Do not request only actor-linked tokens here. Foundry's default synthetic
+  // tokens are unlinked, but they are still valid attackers on the active scene.
+  const tokens = actor.getActiveTokens();
+  return tokens.find(token => token.controlled)
+    ?? tokens.find(token => (token.document ?? token).parent?.id === canvas.scene?.id)
+    ?? null;
+}
+
+function tokenCenter(token) {
+  const center = token.center ?? token.getCenterPoint?.();
+  if (!center) throw new RangeError("Token center could not be measured.");
+  const document = token.document ?? token;
+  return { ...center, elevation: document.elevation ?? 0 };
+}
+
+function calculateTokenWeaponAttack(actor, weapon, target) {
+  const source = activeSceneToken(actor);
+  if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
+  if (target.actor?.id === actor.id) throw new RangeError("A BattleMech cannot target itself.");
+  if (target.actor?.system.status.destroyed) throw new RangeError(`${target.actor.name} is already destroyed.`);
+
+  const grid = canvas.grid;
+  const sourcePoint = tokenCenter(source);
+  const targetPoint = tokenCenter(target);
+  const measurement = grid.measurePath([sourcePoint, targetPoint]);
+  const distance = Number(measurement.spaces) || 0;
+  if (distance < 1) throw new RangeError("Attacker and target must occupy different hexes.");
+
+  const directPath = grid.getDirectPath([sourcePoint, targetPoint]);
+  const pathCenters = directPath.map(offset => ({
+    ...grid.getCenterPoint(offset),
+    elevation: targetPoint.elevation
+  }));
+  const terrain = summarizeCombatTerrainPath({
+    interveningRegionKeys: pathCenters.slice(1, -1).map(point => terrainKeysAtPoint(source, point)),
+    targetRegionKeys: terrainKeysAtPoint(target, targetPoint),
+    attackerRegionKeys: terrainKeysAtPoint(source, sourcePoint)
+  });
+
+  if (terrain.attackerWaterDepth === 1 && /leg/i.test(weapon.system.location)) {
+    throw new RangeError("Leg-mounted weapons cannot fire while the attacker stands in Depth 1 water.");
+  }
+
+  return calculateAttackTargetNumber({
+    gunnery: actor.system.pilot.gunnery,
+    attackerMovement: actor.system.movement.attackerModifier,
+    targetMovement: target.actor.system.movement.targetModifier,
+    heat: actor.system.heat.current,
+    distance,
+    weaponRange: weapon.system.range,
+    terrain,
+    attackerProne: actor.system.status.prone,
+    targetProne: target.actor.system.status.prone,
+    targetImmobile: target.actor.system.heat.shutdown
+  });
 }
 
 function tokenMovementMode(actor) {
@@ -501,8 +639,11 @@ Hooks.once("ready", () => {
     movementModes: MOVEMENT_MODES,
     regionTerrains: REGION_TERRAINS,
     calculateMovementPlan,
+    calculateAttackTargetNumber,
     calculateTerrainProfile,
+    calculateTokenWeaponAttack,
     summarizeRegionTerrainPath,
+    summarizeCombatTerrainPath,
     applyRegionTerrainPreset,
     movementAllowance,
     targetMovementModifier,
