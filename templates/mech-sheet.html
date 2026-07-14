@@ -98,7 +98,7 @@
     <h2>Weapons</h2>
     <p class="hint">Drag weapon Items onto this actor. Each drop creates a separate embedded Item.</p>
     <table>
-      <thead><tr><th>Name</th><th>Type</th><th>Location</th><th>Damage</th><th>Heat</th><th>Range</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Type</th><th>Location</th><th>Damage</th><th>Heat</th><th>Range (Min/S/M/L)</th><th>Actions</th></tr></thead>
       <tbody>
         {{#each weapons as |item|}}
         <tr data-item-id="{{item.id}}">
@@ -107,8 +107,9 @@
           <td>{{item.system.location}}</td>
           <td>{{item.system.damage}}</td>
           <td>{{item.system.heat}}</td>
-          <td>{{item.system.range.short}} / {{item.system.range.medium}} / {{item.system.range.long}}</td>
+          <td>{{item.system.range.minimum}} / {{item.system.range.short}} / {{item.system.range.medium}} / {{item.system.range.long}}</td>
           <td class="item-actions">
+            <button type="button" data-action="rollWeaponAttack" title="Attack with {{item.name}}"><i class="fa-solid fa-crosshairs"></i></button>
             <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
             <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
           </td>

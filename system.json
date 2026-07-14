@@ -1,8 +1,8 @@
 {
   "id": "battletech-foundry-system",
   "title": "BattleMech Foundry System",
-  "description": "BattleMech terrain-movement alpha for Foundry VTT 14.364 with Region-tagged terrain, automatic token-path validation, elevation, water, modifiers, MP validation, and movement heat.",
-  "version": "0.3.3-alpha.0",
+  "description": "BattleMech movement and GATOR combat alpha for Foundry VTT 14.364 with Region-tagged terrain, token-path validation, woods LOS, water cover, range, heat, and movement modifiers.",
+  "version": "0.4.1-alpha.0",
   "compatibility": {
     "minimum": "14.364",
     "verified": "14.364"
