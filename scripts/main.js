@@ -11,8 +11,10 @@ import {
   d6CheckOutcome,
   d6Formula,
   editActorTokenImage,
+  FIRE_GROUPS,
   tokenActionHudModel,
-  tokenizerIntegrationState
+  tokenizerIntegrationState,
+  weaponFireGroup
 } from "../module/integrations.js";
 import { mergeItemSystemSource } from "../module/document-updates.js";
 import {
@@ -389,6 +391,25 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         ${criticalSummaries.length ? `<p>${escape(criticalSummaries.join("; "))}</p>` : ""}
       </section>`
     }, `${weapon.name} Attack`);
+    return {
+      weaponId: weapon.id,
+      weaponName: weapon.name,
+      hit,
+      collateral: Boolean(collateralTarget),
+      collateralTarget: collateralTarget?.actor?.name ?? null,
+      outcome: outcomeLabel,
+      roll: roll.total,
+      targetNumber: attack.targetNumber,
+      distance: attack.distance,
+      rangeBracket: attack.range.bracket,
+      heat: weaponHeat,
+      ammunitionType: ammunitionTypeForWeapon(weapon.name),
+      ammunitionSpent: ammunitionBefore === null ? 0 : ammunitionBefore - ammunitionRemaining,
+      ammunitionRemaining,
+      damage: totalDamage,
+      armorDamage: totalArmorDamage,
+      structureDamage: totalStructureDamage
+    };
   }
 
   static async onRollPhysicalAttack(event, target) {
@@ -2003,6 +2024,60 @@ function removeTokenActionHud() {
   globalThis.document?.getElementById("bmfs-token-action-hud")?.remove();
 }
 
+async function setWeaponFireGroup(actor, itemId, group) {
+  const normalized = String(group).toLowerCase();
+  if (!FIRE_GROUPS.includes(normalized)) throw new RangeError(`Unknown weapon group: ${group}.`);
+  const weapon = actor?.items?.get?.(itemId);
+  if (!weapon || weapon.type !== "weapon") throw new RangeError("The selected weapon could not be assigned.");
+  await weapon.setFlag(SYSTEM_ID, "fireGroup", normalized);
+  ui.notifications.info(`${weapon.name} assigned to ${normalized === "alpha" ? "Alpha" : `Group ${normalized}`}.`);
+  refreshTokenActionHud();
+  return normalized;
+}
+
+async function fireWeaponGroup(actor, group) {
+  const normalized = String(group).toLowerCase();
+  if (!FIRE_GROUPS.includes(normalized)) throw new RangeError(`Unknown weapon group: ${group}.`);
+  const weapons = [...actor.items].filter(item => item.type === "weapon" && !item.system.destroyed && weaponFireGroup(item) === normalized);
+  if (!weapons.length) throw new RangeError(`${normalized === "alpha" ? "Alpha" : `Weapon Group ${normalized}`} has no operational weapons.`);
+  if ([...game.user.targets].filter(token => token.actor?.type === "mech").length !== 1) {
+    throw new RangeError("Target exactly one BattleMech token before firing a weapon group.");
+  }
+
+  const event = { preventDefault() {}, stopPropagation() {} };
+  const results = [];
+  for (const weapon of weapons) {
+    try {
+      const report = await BMFSMechSheet.onRollWeaponAttack.call({ actor }, event, {
+        closest: () => ({ dataset: { itemId: weapon.id } })
+      });
+      results.push(report ?? { weaponName: weapon.name, outcome: "NOT FIRED", heat: 0, ammunitionSpent: 0, damage: 0 });
+    } catch (error) {
+      results.push({ weaponName: weapon.name, outcome: `ERROR: ${error.message}`, heat: 0, ammunitionSpent: 0, damage: 0 });
+    }
+  }
+
+  const escape = foundry.utils.escapeHTML;
+  const label = normalized === "alpha" ? "Alpha" : normalized;
+  const pilot = actor.system?.pilot?.name || actor.name;
+  const totalHeat = results.reduce((sum, result) => sum + Number(result.heat || 0), 0);
+  const totalAmmo = results.reduce((sum, result) => sum + Number(result.ammunitionSpent || 0), 0);
+  const totalDamage = results.reduce((sum, result) => sum + Number(result.damage || 0), 0);
+  const baseDamage = weapons.reduce((sum, weapon) => sum + Number(weapon.system.damage || 0), 0);
+  const ranges = weapons.map(weapon => `${weapon.name} ${Number(weapon.system.range?.short) || 0}/${Number(weapon.system.range?.medium) || 0}/${Number(weapon.system.range?.long) || 0}`).join("; ");
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<section class="bmfs-chat-card bmfs-fire-group-card">
+      <h3>${escape(pilot)} fired Weapon Group ${escape(label)}</h3>
+      <p>${weapons.length} weapon(s); combined base damage ${baseDamage}; generated heat ${totalHeat}; ammunition spent ${totalAmmo}.</p>
+      <p>Weapon ranges (short/medium/long): ${escape(ranges)}.</p>
+      <ul>${results.map(result => `<li><strong>${escape(result.weaponName)}</strong>: ${escape(result.outcome)}${result.roll === undefined ? "" : ` — roll ${result.roll} vs. ${result.targetNumber}, ${result.distance} hexes (${escape(result.rangeBracket)}), ${result.damage} damage, +${result.heat} heat${result.ammunitionRemaining === null ? "" : `, ${result.ammunitionRemaining} ammo remaining`}`}</li>`).join("")}</ul>
+      <p>Group result: ${results.filter(result => result.hit).length} primary hit(s), ${results.filter(result => !result.hit && result.collateral).length} collateral hit(s), ${results.filter(result => result.outcome === "MISS").length} clean miss(es), ${totalDamage} applied damage.</p>
+    </section>`
+  });
+  return { group: normalized, weapons: weapons.length, results, totalHeat, totalAmmo, totalDamage };
+}
+
 function refreshTokenActionHud(preferredToken = null) {
   removeTokenActionHud();
   if (!game.settings.get(SYSTEM_ID, "tokenActionHud")) return;
@@ -2019,7 +2094,8 @@ function refreshTokenActionHud(preferredToken = null) {
     <div class="bmfs-hud-status"><span>${escape(model.movement)}</span>${model.heat === null ? "" : `<span>Heat ${model.heat}</span>`}</div>
     <div class="bmfs-hud-group"><strong>Dice</strong><button type="button" data-action="roll1d6">1D6</button><button type="button" data-action="roll2d6">2D6</button><button type="button" data-action="gunnery">Gunnery ${model.gunnery}+</button><button type="button" data-action="piloting">Piloting ${model.piloting}+</button></div>
     <div class="bmfs-hud-group"><strong>Unit</strong><button type="button" data-action="sheet">Record Sheet</button><button type="button" data-action="token">Edit Token</button>${model.actorType === "mech" ? `<button type="button" data-action="punch">Punch</button><button type="button" data-action="kick-left">Kick L</button><button type="button" data-action="kick-right">Kick R</button>` : ""}</div>
-    ${model.weapons.length ? `<div class="bmfs-hud-group bmfs-hud-weapons"><strong>Weapons</strong>${model.weapons.map(weapon => `<button type="button" data-action="weapon" data-item-id="${escape(weapon.id)}">${escape(weapon.name)}</button>`).join("")}</div>` : ""}`;
+    ${model.weapons.length ? `<div class="bmfs-hud-group bmfs-hud-fire-groups"><strong>Fire Groups</strong>${FIRE_GROUPS.map(group => `<button type="button" data-action="fire-group" data-fire-group="${group}">${group === "alpha" ? "Alpha" : `Group ${group}`} (${model.fireGroups[group].length})</button>`).join("")}</div>` : ""}
+    ${model.weapons.length ? `<div class="bmfs-hud-group bmfs-hud-weapons"><strong>Weapons</strong>${model.weapons.map(weapon => `<div class="bmfs-hud-weapon-row"><button type="button" data-action="weapon" data-item-id="${escape(weapon.id)}" title="Damage ${weapon.damage}; heat ${weapon.heat}; range ${Number(weapon.range.short) || 0}/${Number(weapon.range.medium) || 0}/${Number(weapon.range.long) || 0}">${escape(weapon.name)}</button><select data-action="assign-fire-group" data-item-id="${escape(weapon.id)}" aria-label="${escape(weapon.name)} fire group">${FIRE_GROUPS.map(group => `<option value="${group}"${weapon.group === group ? " selected" : ""}>${group === "alpha" ? "Alpha" : `Group ${group}`}</option>`).join("")}</select></div>`).join("")}</div>` : ""}`;
   element.addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
@@ -2035,11 +2111,17 @@ function refreshTokenActionHud(preferredToken = null) {
       if (action === "sheet") return actor.sheet?.render({ force: true });
       if (action === "token") return editActorTokenImage(actor);
       if (action === "weapon") return BMFSMechSheet.onRollWeaponAttack.call({ actor }, event, { closest: () => ({ dataset: { itemId: button.dataset.itemId } }) });
+      if (action === "fire-group") return fireWeaponGroup(actor, button.dataset.fireGroup);
       if (action === "punch") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "punch", physicalLimb: "" } });
       if (action === "kick-left") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "kick", physicalLimb: "leftLeg" } });
       if (action === "kick-right") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "kick", physicalLimb: "rightLeg" } });
     };
     void run().catch(error => ui.notifications.warn(error.message));
+  });
+  element.addEventListener("change", event => {
+    const select = event.target.closest('select[data-action="assign-fire-group"]');
+    if (!select) return;
+    void setWeaponFireGroup(token.actor, select.dataset.itemId, select.value).catch(error => ui.notifications.warn(error.message));
   });
   document.body.append(element);
   makeTokenActionHudDraggable(element);
@@ -2347,8 +2429,12 @@ Hooks.once("ready", () => {
     showBattleTechDiceRoll,
     configureBattleTechDice,
     makeTokenActionHudDraggable,
+    setWeaponFireGroup,
+    fireWeaponGroup,
     editActorTokenImage,
     tokenActionHudModel,
+    weaponFireGroup,
+    fireGroups: FIRE_GROUPS,
     movementAllowance,
     targetMovementModifier,
     turnPhases: TURN_PHASES,

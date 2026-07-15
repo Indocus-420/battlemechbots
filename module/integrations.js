@@ -1,5 +1,11 @@
 const SYSTEM_ID = "battletech-foundry-system";
 const TOKENIZER_ID = "vtta-tokenizer";
+export const FIRE_GROUPS = Object.freeze(["1", "2", "3", "alpha"]);
+
+export function weaponFireGroup(item) {
+  const stored = item?.getFlag?.(SYSTEM_ID, "fireGroup") ?? item?.flags?.[SYSTEM_ID]?.fireGroup;
+  return FIRE_GROUPS.includes(String(stored)) ? String(stored) : "alpha";
+}
 
 function integer(value, label) {
   const number = Number(value);
@@ -51,7 +57,17 @@ export function tokenActionHudModel(actor) {
   const mech = actor.type === "mech";
   const weapons = (mech ? [...(actor.items ?? [])] : [])
     .filter(item => item.type === "weapon" && !item.system?.destroyed)
-    .map(item => ({ id: item.id, name: item.name, img: item.img }));
+    .map(item => ({
+      id: item.id,
+      name: item.name,
+      img: item.img,
+      group: weaponFireGroup(item),
+      damage: Number(item.system?.damage ?? 0),
+      heat: Number(item.system?.heat ?? 0),
+      ammoPerShot: Number(item.system?.ammoPerShot ?? 0),
+      range: { ...(item.system?.range ?? {}) }
+    }));
+  const fireGroups = Object.fromEntries(FIRE_GROUPS.map(group => [group, weapons.filter(weapon => weapon.group === group)]));
   return {
     actorId: actor.id,
     actorName: actor.name,
@@ -64,6 +80,7 @@ export function tokenActionHudModel(actor) {
       ? `${actor.system?.movement?.mode ?? "stand"}: ${Number(actor.system?.movement?.mpSpent ?? 0)} MP`
       : `cruise ${Number(actor.system?.movement?.cruise ?? 0)} / flank ${Number(actor.system?.movement?.flank ?? 0)}`,
     weapons,
+    fireGroups,
     systemId: SYSTEM_ID
   };
 }

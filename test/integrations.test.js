@@ -5,8 +5,10 @@ import {
   d6CheckOutcome,
   d6Formula,
   editActorTokenImage,
+  FIRE_GROUPS,
   tokenActionHudModel,
-  tokenizerIntegrationState
+  tokenizerIntegrationState,
+  weaponFireGroup
 } from "../module/integrations.js";
 
 test("the dice roller accepts only bounded pools of six-sided dice", () => {
@@ -38,7 +40,7 @@ test("BattleTech token HUD model exposes D6 skills and operational weapons", () 
     id: "m1", name: "Test Mech", img: "mech.svg", type: "mech",
     system: { pilot: { gunnery: 3, piloting: 4 }, heat: { current: 7 }, movement: { mode: "walk", mpSpent: 4 } },
     items: [
-      { id: "w1", name: "Laser", img: "laser.svg", type: "weapon", system: { destroyed: false } },
+      { id: "w1", name: "Laser", img: "laser.svg", type: "weapon", flags: { "battletech-foundry-system": { fireGroup: "2" } }, system: { destroyed: false, damage: 5, heat: 3, ammoPerShot: 0, range: { short: 3, medium: 6, long: 9 } } },
       { id: "w2", name: "Broken Laser", type: "weapon", system: { destroyed: true } }
     ]
   });
@@ -47,4 +49,8 @@ test("BattleTech token HUD model exposes D6 skills and operational weapons", () 
   assert.equal(model.heat, 7);
   assert.equal(model.movement, "walk: 4 MP");
   assert.deepEqual(model.weapons.map(weapon => weapon.name), ["Laser"]);
+  assert.equal(model.weapons[0].group, "2");
+  assert.deepEqual(model.fireGroups["2"].map(weapon => weapon.name), ["Laser"]);
+  assert.deepEqual(FIRE_GROUPS, ["1", "2", "3", "alpha"]);
+  assert.equal(weaponFireGroup({ flags: {} }), "alpha");
 });

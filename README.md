@@ -4,6 +4,9 @@ Target: Foundry Virtual Tabletop 14.364.
 
 ## 0.10.6-alpha.0 synchronized combat presentation and collateral damage
 
+- Adds four configurable action-hub firing groups: Group 1, Group 2, Group 3, and Alpha. Every weapon can be assigned from its action-hub row, with unassigned and existing weapons defaulting to Alpha.
+- Fires every operational weapon in a selected group through the normal attack engine, preserving individual attack rolls, ranges, heat, ammunition use, hit/miss resolution, scatter, collateral damage, effects, and sound.
+- Posts a group summary naming the pilot and firing group, then reports each weapon's roll, target number, range bracket, damage, heat, ammunition remaining, plus combined hits, misses, collateral hits, heat, ammunition spent, and applied damage.
 - Sends built-in weapon and melee hit/miss visuals to every connected client and broadcasts packaged combat audio through Foundry's socket-aware audio helper.
 - Adds distinct synthesized sounds for small, medium, and large lasers, PPCs, missiles, ballistic weapons, melee hits, and melee misses.
 - Gives punch and kick attacks visible hit and miss effects.

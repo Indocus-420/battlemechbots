@@ -110,6 +110,10 @@ test("ready exposes diagnostics and the public BMFS API without installing conte
   assert.equal(typeof game.bmfs.scatterAdjacentHex, "function");
   assert.equal(typeof game.bmfs.collateralTokenAtOffset, "function");
   assert.equal(typeof game.bmfs.broadcastCombatEffect, "function");
+  assert.equal(typeof game.bmfs.setWeaponFireGroup, "function");
+  assert.equal(typeof game.bmfs.fireWeaponGroup, "function");
+  assert.equal(typeof game.bmfs.weaponFireGroup, "function");
+  assert.deepEqual(game.bmfs.fireGroups, ["1", "2", "3", "alpha"]);
   assert.equal(typeof game.bmfs.startBattleTechTurn, "function");
   assert.equal(typeof game.bmfs.recordControlledBattleTechSelections, "function");
   assert.equal(typeof game.bmfs.advanceBattleTechPhase, "function");

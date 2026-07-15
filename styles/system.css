@@ -75,6 +75,10 @@
 #bmfs-token-action-hud .bmfs-hud-group strong { min-width: 58px; color: #f2c14e; }
 #bmfs-token-action-hud button { min-height: 28px; padding: 2px 8px; }
 #bmfs-token-action-hud .bmfs-hud-weapons { max-height: 128px; overflow-y: auto; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row { display: grid; grid-template-columns: minmax(120px, 1fr) 88px; gap: 4px; width: 100%; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row button { overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row select { min-height: 28px; padding: 2px 4px; color: #e8f1f7; background: #17242d; border: 1px solid rgb(255 255 255 / 24%); border-radius: 4px; }
+#bmfs-token-action-hud .bmfs-hud-fire-groups button { flex: 1 1 86px; }
 
 .bmfs-dice-overlay {
   --bmfs-die-body: #1c6dd0;
