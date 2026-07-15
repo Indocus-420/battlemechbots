@@ -2,6 +2,10 @@
 
 Target: Foundry Virtual Tabletop 14.364.
 
+## 0.10.2-alpha.0 dice customization persistence fix
+
+- Reads Foundry VTT 14 `DialogV2.input` results through its `FormDataExtended.get` interface so visual-dice visibility, colors, and size save correctly and the preview is displayed.
+
 ## 0.10.1-alpha.0 movable action hub and visual dice
 
 - Drag the action hub by its header; its position is retained in that browser.
