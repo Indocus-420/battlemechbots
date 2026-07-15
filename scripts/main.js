@@ -86,7 +86,7 @@ import {
 } from "../module/criticals.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.10.1-alpha.0";
+const SYSTEM_VERSION = "0.10.2-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const DICE_GLYPHS = ["âš€", "âš", "âš‚", "âšƒ", "âš„", "âš…"];
 const TARGET_FOUNDRY = "14.364";
@@ -473,7 +473,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       return;
     }
 
-    const …13452 tokens truncated…tils.escapeHTML(label)}</div><div class="bmfs-dice-row">${results.map((result, index) => `<div class="bmfs-visual-die" style="--bmfs-die-index:${index}" data-result="${result}"><span>${DICE_GLYPHS[result - 1]}</span></div>`).join("")}</div><div class="bmfs-dice-total">Total ${Number(roll.total)}</div>`;
+    const …13501 tokens truncated…esult - 1]}</span></div>`).join("")}</div><div class="bmfs-dice-total">Total ${Number(roll.total)}</div>`;
   document.body.append(overlay);
   globalThis.setTimeout?.(() => overlay.classList.add("bmfs-dice-finished"), 1050);
   globalThis.setTimeout?.(() => overlay.remove(), 2800);
@@ -490,11 +490,16 @@ async function configureBattleTechDice() {
     modal: true
   });
   if (!result) return;
-  const values = result.object ?? Object.fromEntries(result.entries?.() ?? []);
-  await game.settings.set(SYSTEM_ID, "visualDice", values.enabled === true || values.enabled === "on");
-  await game.settings.set(SYSTEM_ID, "diceBodyColor", validDiceColor(values.body, appearance.body));
-  await game.settings.set(SYSTEM_ID, "dicePipColor", validDiceColor(values.pips, appearance.pips));
-  await game.settings.set(SYSTEM_ID, "diceSize", Math.min(110, Math.max(48, Number(values.size) || appearance.size)));
+  const value = key => {
+    if (typeof result.get === "function") return result.get(key);
+    if (result.object && Object.hasOwn(result.object, key)) return result.object[key];
+    return result[key];
+  };
+  const enabled = value("enabled");
+  await game.settings.set(SYSTEM_ID, "visualDice", enabled === true || ["on", "true", "1"].includes(String(enabled).toLowerCase()));
+  await game.settings.set(SYSTEM_ID, "diceBodyColor", validDiceColor(value("body"), appearance.body));
+  await game.settings.set(SYSTEM_ID, "dicePipColor", validDiceColor(value("pips"), appearance.pips));
+  await game.settings.set(SYSTEM_ID, "diceSize", Math.min(110, Math.max(48, Number(value("size")) || appearance.size)));
   if (game.settings.get(SYSTEM_ID, "visualDice")) {
     showBattleTechDiceRoll({ dice: [{ faces: 6, results: [{ result: 2 }, { result: 5 }] }], total: 7 }, "Dice Preview");
   }
