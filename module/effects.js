@@ -1,16 +1,26 @@
 const SYSTEM_PATH = "systems/battletech-foundry-system/assets/vfx";
+const SYSTEM_AUDIO = "systems/battletech-foundry-system/assets/audio/combat";
 const SYSTEM_ID = "battletech-foundry-system";
 
 export function weaponEffectProfile(weapon = {}) {
   const name = String(weapon.name ?? "").toLowerCase();
   const type = weapon.system?.weaponType ?? "laser";
-  if (name.includes("small laser")) return { key: "smallLaser", texture: `${SYSTEM_PATH}/beam-red.svg`, impact: `${SYSTEM_PATH}/impact-red.svg`, pathType: "linear", frequency: 680, duration: 120 };
-  if (name.includes("medium laser")) return { key: "mediumLaser", texture: `${SYSTEM_PATH}/beam-green.svg`, impact: `${SYSTEM_PATH}/impact-green.svg`, pathType: "linear", frequency: 520, duration: 160 };
-  if (name.includes("large laser")) return { key: "largeLaser", texture: `${SYSTEM_PATH}/beam-blue.svg`, impact: `${SYSTEM_PATH}/impact-blue.svg`, pathType: "linear", frequency: 360, duration: 220 };
-  if (type === "ppc" || name.includes("particle projection")) return { key: "ppc", texture: `${SYSTEM_PATH}/ppc.svg`, impact: `${SYSTEM_PATH}/impact-blue.svg`, pathType: "weave", frequency: 240, duration: 320 };
-  if (type === "missile") return { key: "missile", texture: `${SYSTEM_PATH}/missile.svg`, impact: `${SYSTEM_PATH}/impact-orange.svg`, pathType: "arc", frequency: 150, duration: 360 };
-  if (type === "autocannon") return { key: "autocannon", texture: `${SYSTEM_PATH}/tracer.svg`, impact: `${SYSTEM_PATH}/impact-orange.svg`, pathType: "linear", frequency: 110, duration: 180 };
-  return { key: "laser", texture: `${SYSTEM_PATH}/beam-red.svg`, impact: `${SYSTEM_PATH}/impact-red.svg`, pathType: "linear", frequency: 440, duration: 160 };
+  if (name.includes("small laser")) return { key: "smallLaser", texture: `${SYSTEM_PATH}/beam-red.svg`, impact: `${SYSTEM_PATH}/impact-red.svg`, sound: `${SYSTEM_AUDIO}/laser-small.wav`, pathType: "linear", frequency: 680, duration: 120 };
+  if (name.includes("medium laser")) return { key: "mediumLaser", texture: `${SYSTEM_PATH}/beam-green.svg`, impact: `${SYSTEM_PATH}/impact-green.svg`, sound: `${SYSTEM_AUDIO}/laser-medium.wav`, pathType: "linear", frequency: 520, duration: 160 };
+  if (name.includes("large laser")) return { key: "largeLaser", texture: `${SYSTEM_PATH}/beam-blue.svg`, impact: `${SYSTEM_PATH}/impact-blue.svg`, sound: `${SYSTEM_AUDIO}/laser-large.wav`, pathType: "linear", frequency: 360, duration: 220 };
+  if (type === "ppc" || name.includes("particle projection")) return { key: "ppc", texture: `${SYSTEM_PATH}/ppc.svg`, impact: `${SYSTEM_PATH}/impact-blue.svg`, sound: `${SYSTEM_AUDIO}/ppc.wav`, pathType: "weave", frequency: 240, duration: 320 };
+  if (type === "missile") return { key: "missile", texture: `${SYSTEM_PATH}/missile.svg`, impact: `${SYSTEM_PATH}/impact-orange.svg`, sound: `${SYSTEM_AUDIO}/missile.wav`, pathType: "arc", frequency: 150, duration: 360 };
+  if (type === "autocannon" || type === "ballistic") return { key: "autocannon", texture: `${SYSTEM_PATH}/tracer.svg`, impact: `${SYSTEM_PATH}/impact-orange.svg`, sound: `${SYSTEM_AUDIO}/ballistic.wav`, pathType: "linear", frequency: 110, duration: 180 };
+  return { key: "laser", texture: `${SYSTEM_PATH}/beam-red.svg`, impact: `${SYSTEM_PATH}/impact-red.svg`, sound: `${SYSTEM_AUDIO}/laser-medium.wav`, pathType: "linear", frequency: 440, duration: 160 };
+}
+
+export function meleeEffectProfile(type = "punch", hit = true) {
+  return {
+    key: `${type}-${hit ? "hit" : "miss"}`,
+    texture: `${SYSTEM_PATH}/melee-${hit ? "hit" : "miss"}.svg`,
+    sound: `${SYSTEM_AUDIO}/melee-${hit ? "hit" : "miss"}.wav`,
+    duration: hit ? 360 : 260
+  };
 }
 
 export function jb2aWeaponEffectProfile(weapon = {}) {
@@ -62,6 +72,14 @@ function playProceduralAudio(profile, hit) {
   oscillator.addEventListener("ended", () => void context.close());
 }
 
+function playCombatAudio(profile, hit, broadcast) {
+  const helper = globalThis.AudioHelper ?? globalThis.foundry?.audio?.AudioHelper;
+  if (profile.sound && typeof helper?.play === "function") {
+    return helper.play({ src: profile.sound, volume: 0.48, autoplay: true, loop: false }, broadcast);
+  }
+  playProceduralAudio(profile, hit);
+}
+
 export function mechPresentationProfile(actor = {}) {
   const stored = actor.flags?.[SYSTEM_ID]?.presentation ?? {};
   const tonnage = Number(actor.system?.mech?.tonnage ?? 50);
@@ -104,10 +122,10 @@ export async function playMechActivationEffect(token, actor, { visual = true, au
   return true;
 }
 
-export async function playWeaponEffect(origin, target, weapon, { hit = true, audio = true, jb2a = true } = {}) {
+export async function playWeaponEffect(origin, target, weapon, { hit = true, impact = hit, audio = true, audioBroadcast = false, jb2a = true } = {}) {
   if (!globalThis.canvas?.ready || !origin || !target) return false;
   const profile = weaponEffectProfile(weapon);
-  if (audio) playProceduralAudio(profile, hit);
+  if (audio) await playCombatAudio(profile, hit, audioBroadcast);
   if (jb2a && await playJB2AWeaponEffect(origin, target, weapon, { hit })) return true;
   if (!globalThis.CONFIG?.Canvas?.vfx?.enabled) return false;
   const effect = new foundry.canvas.vfx.VFXEffect({
@@ -126,7 +144,7 @@ export async function playWeaponEffect(origin, target, weapon, { hit = true, aud
           size: profile.key === "ppc" ? { w: 64, h: 22 } : { w: 46, h: 12 },
           animations: [{ function: "followPath", params: {} }]
         },
-        ...(hit ? { impact: {
+        ...(impact ? { impact: {
           texture: profile.impact,
           duration: 260,
           size: { w: 58, h: 58 }
@@ -134,6 +152,28 @@ export async function playWeaponEffect(origin, target, weapon, { hit = true, aud
       }
     },
     timeline: [{ component: "flight", position: 0 }]
+  });
+  await effect.play({ origin: origin.document ?? origin, target: target.document ?? target });
+  return true;
+}
+
+export async function playMeleeEffect(origin, target, { type = "punch", hit = true, audio = true, audioBroadcast = false } = {}) {
+  if (!globalThis.canvas?.ready || !origin || !target) return false;
+  const profile = meleeEffectProfile(type, hit);
+  if (audio) await playCombatAudio(profile, hit, audioBroadcast);
+  if (!globalThis.CONFIG?.Canvas?.vfx?.enabled) return false;
+  const effect = new foundry.canvas.vfx.VFXEffect({
+    name: `BMFS ${profile.key}`,
+    components: {
+      strike: {
+        type: "singleImpact",
+        position: { reference: "target", property: "center" },
+        texture: profile.texture,
+        duration: profile.duration,
+        size: { w: 82, h: 82 }
+      }
+    },
+    timeline: [{ component: "strike", position: 0 }]
   });
   await effect.play({ origin: origin.document ?? origin, target: target.document ?? target });
   return true;

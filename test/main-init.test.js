@@ -69,14 +69,14 @@ globalThis.game = {
   release: { version: "14.364", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.10.5-alpha.0",
+    version: "0.10.6-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { isGM: false },
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.10.5-alpha.0"
+    get: () => "0.10.6-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -102,10 +102,14 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.10.5-alpha.0");
+  assert.equal(game.bmfs.version, "0.10.6-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
+  assert.equal(typeof game.bmfs.playMeleeEffect, "function");
+  assert.equal(typeof game.bmfs.scatterAdjacentHex, "function");
+  assert.equal(typeof game.bmfs.collateralTokenAtOffset, "function");
+  assert.equal(typeof game.bmfs.broadcastCombatEffect, "function");
   assert.equal(typeof game.bmfs.startBattleTechTurn, "function");
   assert.equal(typeof game.bmfs.recordControlledBattleTechSelections, "function");
   assert.equal(typeof game.bmfs.advanceBattleTechPhase, "function");
@@ -197,6 +201,31 @@ test("weapon dice appearance is attached to the Roll without replacing unrelated
     outline: "#052e16",
     edge: "#4ade80"
   });
+});
+
+test("missed attacks scatter by D6 direction and identify an adjacent collateral BattleMech", () => {
+  const adjacent = [
+    { i: 9, j: 10 }, { i: 10, j: 11 }, { i: 11, j: 10 },
+    { i: 11, j: 9 }, { i: 10, j: 9 }, { i: 9, j: 9 }
+  ];
+  const grid = {
+    getOffset: point => point.offset ?? { i: point.x, j: point.y },
+    getAdjacentOffsets: () => adjacent,
+    getCenterPoint: offset => ({ x: offset.i * 100, y: offset.j * 100 })
+  };
+  const scatter = game.bmfs.scatterAdjacentHex({ x: 10, y: 10, elevation: 2 }, 3, grid);
+  assert.deepEqual(scatter.offset, { i: 11, j: 10 });
+  assert.deepEqual(scatter.point, { x: 1100, y: 1000, elevation: 2 });
+
+  const collateral = game.bmfs.collateralTokenAtOffset(scatter.offset, {
+    grid,
+    exclude: ["primary"],
+    tokens: [
+      { id: "primary", center: { offset: scatter.offset }, actor: { type: "mech", system: { status: { destroyed: false } } } },
+      { id: "collateral", center: { offset: scatter.offset }, actor: { type: "mech", system: { status: { destroyed: false } } } }
+    ]
+  });
+  assert.equal(collateral.id, "collateral");
 });
 
 test("inactive Dice So Nice uses the built-in renderer without adding a skip flag", async () => {

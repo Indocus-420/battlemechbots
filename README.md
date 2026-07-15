@@ -2,6 +2,15 @@
 
 Target: Foundry Virtual Tabletop 14.364.
 
+## 0.10.6-alpha.0 synchronized combat presentation and collateral damage
+
+- Sends built-in weapon and melee hit/miss visuals to every connected client and broadcasts packaged combat audio through Foundry's socket-aware audio helper.
+- Adds distinct synthesized sounds for small, medium, and large lasers, PPCs, missiles, ballistic weapons, melee hits, and melee misses.
+- Gives punch and kick attacks visible hit and miss effects.
+- Scatters every missed weapon attack into a random adjacent hex using 1D6. An operational BattleMech in that hex receives normal weapon damage; missiles also resolve their cluster roll and damage groups. Empty impact hexes receive the effect without damage.
+- Expands weapon chat cards with attack roll, target number, complete weapon statistics, GATOR breakdown, heat, ammunition before/after, scatter result, cluster grouping, damage output, receiving unit, armor/internal damage, destruction, and critical results.
+- Verifies every operational sheet weapon appears in the action hub and adds catalog-wide tests for media, ammunition matching/stock, and damage output.
+
 ## 0.10.5-alpha.0 weapon dice themes
 
 - Gives Dice So Nice attack rolls weapon-specific custom colors: Small/Medium/Large Lasers use red/green/blue; SRM/MRM/LRM launchers use yellow/orange/brown; PPCs use blue-white; and ballistic weapons use white.

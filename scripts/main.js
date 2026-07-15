@@ -26,7 +26,7 @@ import {
   requiredSelectionCount,
   TURN_PHASES
 } from "../module/turn-sequence.js";
-import { mechPresentationProfile, playMechActivationEffect, playWeaponEffect, weaponEffectProfile } from "../module/effects.js";
+import { meleeEffectProfile, mechPresentationProfile, playMechActivationEffect, playMeleeEffect, playWeaponEffect, weaponEffectProfile } from "../module/effects.js";
 import {
   addTerrainProfiles,
   calculateTerrainProfile,
@@ -86,8 +86,9 @@ import {
 } from "../module/criticals.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.10.5-alpha.0";
+const SYSTEM_VERSION = "0.10.6-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
+const COMBAT_EFFECT_SOCKET = `system.${SYSTEM_ID}`;
 const DICE_GLYPHS = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 const TARGET_FOUNDRY = "14.364";
 const WEAPON_DICE_THEMES = Object.freeze({
@@ -297,6 +298,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     let ammunitionBin = null;
+    let ammunitionBefore = null;
     let ammunitionRemaining = null;
     if (Number(weapon.system.ammoPerShot) > 0) {
       ammunitionBin = selectAmmunitionBin(this.actor.items, weapon.name);
@@ -305,56 +307,83 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         ui.notifications.warn(`${weapon.name} cannot fire: no loaded ${ammunitionType} ammunition bin is available.`);
         return;
       }
-      ammunitionRemaining = Number(ammunitionBin.system.shots) - 1;
+      ammunitionBefore = Number(ammunitionBin.system.shots);
+      ammunitionRemaining = ammunitionBefore - 1;
       await updateEmbeddedItemSystem(ammunitionBin, { shots: ammunitionRemaining });
     }
 
     const roll = await new Roll("2d6").evaluate();
     const diceTheme = applyWeaponDiceAppearance(roll, weapon, attack.range.bracket);
     const hit = roll.total >= attack.targetNumber;
-    if (game.settings.get(SYSTEM_ID, "weaponEffects")) {
-      void playWeaponEffect(activeSceneToken(this.actor), targets[0], weapon, {
-        hit,
-        audio: game.settings.get(SYSTEM_ID, "weaponAudio"),
-        jb2a: game.settings.get(SYSTEM_ID, "jb2aEffects")
-      }).catch(error => console.warn("BMFS | Weapon effect failed", error));
-    }
     const weaponHeat = Number(weapon.system.heat) || 0;
     await this.actor.update({
       "system.heat.current": (Number(this.actor.system.heat.current) || 0) + weaponHeat
     });
     await recordFiredWeaponLocation(this.actor, weapon.system.location);
     let cluster = null;
+    let scatter = null;
+    let collateralTarget = null;
     let damageResults = [];
-    if (hit) {
+    let damageTarget = hit ? targets[0] : null;
+    if (!hit) {
+      const scatterRoll = await new Roll("1d6").evaluate();
+      scatter = scatterAdjacentHex(tokenCenter(targets[0]), scatterRoll.total);
+      collateralTarget = collateralTokenAtOffset(scatter.offset, {
+        exclude: [targets[0].id ?? targets[0].document?.id, activeSceneToken(this.actor)?.id]
+      });
+      damageTarget = collateralTarget;
+    }
+    if (damageTarget) {
       const launcher = missileLauncherProfile(weapon.name);
       if (launcher) {
         const clusterRoll = await new Roll("2d6").evaluate();
         cluster = resolveMissileCluster(weapon.name, clusterRoll.total);
         for (const group of cluster.damageGroups) {
-          damageResults.push(await resolveWeaponHit(this.actor, weapon, targets[0], group));
+          damageResults.push(await resolveWeaponHit(this.actor, weapon, damageTarget, group));
         }
       } else {
-        damageResults = [await resolveWeaponHit(this.actor, weapon, targets[0])];
+        damageResults = [await resolveWeaponHit(this.actor, weapon, damageTarget)];
       }
+    }
+    const sourceToken = activeSceneToken(this.actor);
+    const effectToken = hit ? targets[0] : collateralTarget;
+    if (game.settings.get(SYSTEM_ID, "weaponEffects")) {
+      void broadcastCombatEffect({
+        kind: "weapon",
+        originTokenId: sourceToken?.id ?? sourceToken?.document?.id,
+        targetTokenId: effectToken?.id ?? effectToken?.document?.id ?? null,
+        targetPoint: scatter?.point ?? null,
+        weapon: { name: weapon.name, system: { weaponType: weapon.system.weaponType } },
+        hit: hit || Boolean(collateralTarget),
+        impact: true,
+        audio: game.settings.get(SYSTEM_ID, "weaponAudio")
+      }).catch(error => console.warn("BMFS | Weapon effect failed", error));
     }
     const destroyedLocations = [...new Set(damageResults.flatMap(result => result.destroyedLocations))];
     const criticalSummaries = damageResults.map(result => result.criticalSummary).filter(Boolean);
     const damageSummary = damageResults.map((result, index) =>
       `Hit ${index + 1}: ${result.locationLabel} (${result.direction}, roll ${result.locationRoll}); ${result.damage} damage: ${result.armorDamage} armor, ${result.structureDamage} internal.`
     ).join("<br>");
+    const totalDamage = damageResults.reduce((sum, result) => sum + result.armorDamage + result.structureDamage, 0);
+    const totalArmorDamage = damageResults.reduce((sum, result) => sum + result.armorDamage, 0);
+    const totalStructureDamage = damageResults.reduce((sum, result) => sum + result.structureDamage, 0);
     const signed = value => value >= 0 ? `+${value}` : String(value);
+    const outcomeLabel = hit ? "HIT" : collateralTarget ? `MISS → COLLATERAL HIT: ${collateralTarget.actor.name}` : "MISS";
+    const ranges = weapon.system.range ?? {};
     await postBattleTechRoll(roll, {
       speaker: ChatMessage.getSpeaker({ actor: this.actor }),
       flavor: `<section class="bmfs-chat-card">
-        <h3>${escape(weapon.name)} vs. ${escape(targetActor.name)}: ${hit ? "HIT" : "MISS"}</h3>
-        <p>Target Number ${attack.targetNumber}; range ${attack.distance} (${escape(attack.range.bracket)}).</p>
+        <h3>${escape(weapon.name)} vs. ${escape(targetActor.name)}: ${escape(outcomeLabel)}</h3>
+        <p><strong>Attack roll ${roll.total}</strong> vs. Target Number ${attack.targetNumber}; range ${attack.distance} (${escape(attack.range.bracket)}).</p>
+        <p>Weapon: ${escape(weapon.system.weaponType)}; base damage ${Number(weapon.system.damage) || 0}; heat ${weaponHeat}; location ${escape(locationLabel(weapon.system.location))}; ranges ${Number(ranges.minimum) || 0}/${Number(ranges.short) || 0}/${Number(ranges.medium) || 0}/${Number(ranges.long) || 0} (minimum/short/medium/long).</p>
         <p>GATOR: ${breakdown.gunnery} Gunnery, ${signed(breakdown.attackerMovement + breakdown.attackerStatus)} attacker, ${signed(breakdown.targetMovement + breakdown.targetStatus)} target, ${signed(breakdown.terrain)} terrain, ${signed(breakdown.heat)} heat, ${signed(breakdown.range)} range, ${signed(breakdown.sensors + breakdown.weaponDamage)} critical damage.</p>
         <p>Terrain: ${escape(terrainSummary)}.</p>
         <p>Weapon heat: +${weaponHeat}.</p>
         ${diceTheme ? `<p>Dice theme: ${escape(diceTheme.label)}.</p>` : ""}
-        ${ammunitionBin ? `<p>Ammunition: 1 shot from ${escape(ammunitionBin.name)}; ${ammunitionRemaining} remaining.</p>` : ""}
-        ${cluster ? `<p>Cluster roll ${cluster.roll}: ${cluster.missilesHit} of ${cluster.size} ${cluster.family} missiles hit in ${cluster.damageGroups.length} damage group(s).</p>` : ""}
+        ${ammunitionBin ? `<p>Ammunition: ${escape(ammunitionTypeForWeapon(weapon.name) ?? weapon.name)}; ${ammunitionBefore} → ${ammunitionRemaining} shots in ${escape(ammunitionBin.name)}.</p>` : `<p>Ammunition: not required.</p>`}
+        ${scatter ? `<p>Miss scatter: direction ${scatter.roll} into adjacent hex [${scatter.offset.i}, ${scatter.offset.j}]; ${collateralTarget ? `${escape(collateralTarget.actor.name)} occupies the impact hex and receives damage` : "impact hex empty; no collateral damage applied"}.</p>` : ""}
+        ${cluster ? `<p>Cluster roll ${cluster.roll}: ${cluster.missilesHit} of ${cluster.size} ${cluster.family} missiles hit in ${cluster.damageGroups.length} damage group(s) (${cluster.damageGroups.join(" + ")} damage).</p>` : ""}
+        <p>Damage output: ${totalDamage} total; ${totalArmorDamage} armor and ${totalStructureDamage} internal. ${damageTarget ? `${escape(damageTarget.actor.name)} received this damage.` : "No unit received damage."}</p>
         ${damageSummary ? `<p>${damageSummary}</p>` : ""}
         ${destroyedLocations.length ? `<p>Destroyed: ${escape(destroyedLocations.join(", "))}.</p>` : ""}
         ${criticalSummaries.length ? `<p>${escape(criticalSummaries.join("; "))}</p>` : ""}
@@ -405,6 +434,17 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const roll = await new Roll("2d6").evaluate();
         const hit = attack.automaticHit || (!attack.automaticFailure && roll.total >= attack.targetNumber);
         const damage = hit ? await resolvePhysicalHit(this.actor, targets[0], attack) : null;
+        if (game.settings.get(SYSTEM_ID, "weaponEffects")) {
+          const sourceToken = activeSceneToken(this.actor);
+          void broadcastCombatEffect({
+            kind: "melee",
+            originTokenId: sourceToken?.id ?? sourceToken?.document?.id,
+            targetTokenId: targets[0].id ?? targets[0].document?.id,
+            attackType: attack.type,
+            hit,
+            audio: game.settings.get(SYSTEM_ID, "weaponAudio")
+          }).catch(error => console.warn("BMFS | Melee effect failed", error));
+        }
         const pilotingCheck = attack.type === "kick"
           ? hit
             ? `${targets[0].actor.name} makes an automatic Piloting Skill Roll after this kick.`
@@ -1284,6 +1324,71 @@ function tokenCenter(token) {
   if (!center) throw new RangeError("Token center could not be measured.");
   const document = token.document ?? token;
   return { ...center, elevation: document.elevation ?? 0 };
+}
+
+function scatterAdjacentHex(targetPoint, roll, grid = globalThis.canvas?.grid) {
+  const direction = Number(roll);
+  if (!Number.isInteger(direction) || direction < 1 || direction > 6) throw new RangeError("Scatter direction must be a D6 result from 1 to 6.");
+  if (!grid?.getOffset || !grid?.getAdjacentOffsets || !grid?.getCenterPoint) throw new RangeError("Miss scatter requires an active gridded scene.");
+  const originOffset = grid.getOffset(targetPoint);
+  const adjacent = grid.getAdjacentOffsets(originOffset);
+  if (!adjacent.length) throw new RangeError("No adjacent hex is available for miss scatter.");
+  const offset = adjacent[(direction - 1) % adjacent.length];
+  const center = grid.getCenterPoint(offset);
+  return {
+    roll: direction,
+    direction,
+    offset,
+    point: { ...center, elevation: targetPoint.elevation ?? 0 }
+  };
+}
+
+function collateralTokenAtOffset(offset, { exclude = [], tokens = globalThis.canvas?.tokens?.placeables ?? [], grid = globalThis.canvas?.grid } = {}) {
+  const excluded = new Set(exclude.filter(Boolean));
+  return [...tokens]
+    .filter(token => token.actor?.type === "mech" && !token.actor.system?.status?.destroyed && !excluded.has(token.id ?? token.document?.id))
+    .sort((left, right) => String(left.id ?? left.document?.id).localeCompare(String(right.id ?? right.document?.id)))
+    .find(token => {
+      const candidate = grid.getOffset(tokenCenter(token));
+      return Number(candidate.i) === Number(offset.i) && Number(candidate.j) === Number(offset.j);
+    }) ?? null;
+}
+
+async function playCombatEffectPayload(payload, { remote = false } = {}) {
+  if (!globalThis.canvas?.ready || payload?.sceneId !== canvas.scene?.id) return false;
+  const origin = canvas.tokens?.get?.(payload.originTokenId);
+  const tokenTarget = payload.targetTokenId ? canvas.tokens?.get?.(payload.targetTokenId) : null;
+  const target = tokenTarget ?? (payload.targetPoint ? { center: payload.targetPoint } : null);
+  if (!origin || !target) return false;
+  if (payload.kind === "melee") {
+    return playMeleeEffect(origin, target, {
+      type: payload.attackType,
+      hit: payload.hit,
+      audio: !remote && payload.audio !== false,
+      audioBroadcast: !remote
+    });
+  }
+  return playWeaponEffect(origin, target, payload.weapon, {
+    hit: payload.hit,
+    impact: payload.impact,
+    audio: !remote && payload.audio !== false,
+    audioBroadcast: !remote,
+    jb2a: false
+  });
+}
+
+async function broadcastCombatEffect(payload) {
+  const message = { ...payload, sceneId: canvas.scene?.id, sourceUserId: game.user?.id };
+  const played = await playCombatEffectPayload(message);
+  game.socket?.emit?.(COMBAT_EFFECT_SOCKET, message);
+  return played;
+}
+
+function configureCombatEffectSocket() {
+  game.socket?.on?.(COMBAT_EFFECT_SOCKET, payload => {
+    if (!payload || payload.sourceUserId === game.user?.id) return;
+    void playCombatEffectPayload(payload, { remote: true }).catch(error => console.warn("BMFS | Remote combat effect failed", error));
+  });
 }
 
 function nativeWallBlocksSight(source, origin, destination) {
@@ -2226,6 +2331,11 @@ Hooks.once("ready", () => {
     installCoreCompendiums,
     playWeaponEffect,
     weaponEffectProfile,
+    playMeleeEffect,
+    meleeEffectProfile,
+    scatterAdjacentHex,
+    collateralTokenAtOffset,
+    broadcastCombatEffect,
     playMechActivationEffect,
     mechPresentationProfile,
     rollBattleTechD6,
@@ -2263,6 +2373,8 @@ Hooks.once("ready", () => {
       };
     }
   };
+
+  configureCombatEffectSocket();
 
   console.log("BMFS | Ready", game.bmfs.runDiagnostics());
   ui.notifications.info(`BattleMech Foundry System ${SYSTEM_VERSION} loaded.`);
