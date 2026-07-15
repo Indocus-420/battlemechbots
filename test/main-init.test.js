@@ -69,14 +69,14 @@ globalThis.game = {
   release: { version: "14.364", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.10.2-alpha.0",
+    version: "0.10.3-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { isGM: false },
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.10.2-alpha.0"
+    get: () => "0.10.3-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -102,7 +102,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.10.2-alpha.0");
+  assert.equal(game.bmfs.version, "0.10.3-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
@@ -117,11 +117,124 @@ test("ready exposes diagnostics and the public BMFS API without installing conte
   assert.equal(typeof game.bmfs.pilotingCheckProfile, "function");
   assert.equal(typeof game.bmfs.fallDamage, "function");
   assert.equal(typeof game.bmfs.rollBattleTechD6, "function");
+  assert.equal(typeof game.bmfs.diceSoNiceAvailable, "function");
+  assert.equal(typeof game.bmfs.animateBattleTechRoll, "function");
+  assert.equal(typeof game.bmfs.postBattleTechRoll, "function");
   assert.equal(typeof game.bmfs.showBattleTechDiceRoll, "function");
   assert.equal(typeof game.bmfs.configureBattleTechDice, "function");
   assert.equal(typeof game.bmfs.makeTokenActionHudDraggable, "function");
   assert.equal(typeof game.bmfs.editActorTokenImage, "function");
   assert.equal(typeof game.bmfs.tokenActionHudModel, "function");
+});
+
+test("active Dice So Nice receives each roll directly and the chat message suppresses its automatic duplicate", async () => {
+  const originalModules = game.modules;
+  const originalDice3d = game.dice3d;
+  const calls = [];
+  let messageData;
+  const roll = {
+    toMessage: async data => {
+      messageData = data;
+      return { id: "message-1" };
+    }
+  };
+  game.modules = new Map([["dice-so-nice", { active: true }]]);
+  game.dice3d = {
+    showForRoll: async (...args) => calls.push(args)
+  };
+  try {
+    const result = await game.bmfs.postBattleTechRoll(roll, {
+      flavor: "Gunnery Check",
+      flags: { "battletech-foundry-system": { test: true } }
+    }, "Gunnery Check");
+    assert.equal(result.provider, "dice-so-nice");
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0][0], roll);
+    assert.equal(calls[0][1], game.user);
+    assert.equal(calls[0][2], true);
+    assert.deepEqual(messageData.flags, {
+      "battletech-foundry-system": { test: true },
+      "dice-so-nice": { skip: true }
+    });
+  } finally {
+    game.modules = originalModules;
+    game.dice3d = originalDice3d;
+  }
+});
+
+test("inactive Dice So Nice uses the built-in renderer without adding a skip flag", async () => {
+  const originalModules = game.modules;
+  const originalDice3d = game.dice3d;
+  const originalGet = game.settings.get;
+  const originalDocument = globalThis.document;
+  const originalSetTimeout = globalThis.setTimeout;
+  let messageData;
+  const overlay = {
+    className: "",
+    innerHTML: "",
+    style: { setProperty: () => {} },
+    setAttribute: () => {},
+    classList: { add: () => {} },
+    remove: () => {}
+  };
+  game.modules = new Map([["dice-so-nice", { active: false }]]);
+  game.dice3d = { showForRoll: async () => assert.fail("inactive Dice So Nice must not receive the roll") };
+  game.settings.get = (_namespace, key) => ({
+    visualDice: true,
+    diceBodyColor: "#1c6dd0",
+    dicePipColor: "#ffffff",
+    diceSize: 72
+  })[key];
+  globalThis.document = {
+    body: { append: value => assert.equal(value, overlay) },
+    querySelectorAll: () => [],
+    createElement: () => overlay
+  };
+  globalThis.setTimeout = () => 0;
+  try {
+    const result = await game.bmfs.postBattleTechRoll({
+      dice: [{ faces: 6, results: [{ result: 4 }] }],
+      total: 4,
+      toMessage: async data => {
+        messageData = data;
+        return { id: "message-2" };
+      }
+    }, { flavor: "Fallback" }, "Fallback");
+    assert.equal(result.provider, "built-in");
+    assert.equal(messageData.flags, undefined);
+    assert.match(overlay.innerHTML, /Total 4/);
+  } finally {
+    game.modules = originalModules;
+    game.dice3d = originalDice3d;
+    game.settings.get = originalGet;
+    globalThis.document = originalDocument;
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
+
+test("Dice So Nice remains the appearance controller when active", async () => {
+  const originalModules = game.modules;
+  const originalDice3d = game.dice3d;
+  const originalDocument = globalThis.document;
+  let clicked = 0;
+  game.modules = new Map([["dice-so-nice", { active: true }]]);
+  game.dice3d = { showForRoll: async () => {} };
+  globalThis.document = {
+    querySelectorAll: () => [{
+      getAttribute: key => key === "aria-label" ? "Open 3D Dice Config" : null,
+      textContent: "",
+      click: () => clicked++
+    }]
+  };
+  try {
+    const controller = await game.bmfs.configureBattleTechDice();
+    assert.equal(controller, "dice-so-nice");
+    assert.equal(clicked, 1);
+  } finally {
+    game.modules = originalModules;
+    game.dice3d = originalDice3d;
+    globalThis.document = originalDocument;
+  }
 });
 
 test("built-in visual dice render D6 results using client appearance settings", () => {
@@ -259,4 +372,3 @@ test("core compendium installer separates five mechs into each weight-class pack
   assert.equal(game.packs.get("world.bmfs-core-mechs").metadata.label, "BMFS Light BattleMechs");
   assert.equal(game.packs.get("world.bmfs-core-items").metadata.label, "BMFS Energy Weapons");
 });
-
