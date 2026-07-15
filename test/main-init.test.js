@@ -69,14 +69,14 @@ globalThis.game = {
   release: { version: "14.364", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.10.0-alpha.0",
+    version: "0.10.1-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { isGM: false },
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.10.0-alpha.0"
+    get: () => "0.10.1-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -95,14 +95,14 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
   assert.deepEqual(Object.keys(CONFIG.Item.dataModels).sort(), ["ammo", "equipment", "weapon"]);
   assert.equal(registrations.length, 3);
   assert.equal(CONFIG.Canvas.vfx.enabled, true);
-  for (const key of ["coreContentVersion", "weaponEffects", "weaponAudio", "mechActivationEffects", "mechActivationAudio", "jb2aEffects", "tokenActionHud"]) {
+  for (const key of ["coreContentVersion", "weaponEffects", "weaponAudio", "mechActivationEffects", "mechActivationAudio", "jb2aEffects", "tokenActionHud", "visualDice", "diceBodyColor", "dicePipColor", "diceSize"]) {
     assert.ok(settings.has(`battletech-foundry-system.${key}`));
   }
 });
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.10.0-alpha.0");
+  assert.equal(game.bmfs.version, "0.10.1-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
@@ -117,8 +117,55 @@ test("ready exposes diagnostics and the public BMFS API without installing conte
   assert.equal(typeof game.bmfs.pilotingCheckProfile, "function");
   assert.equal(typeof game.bmfs.fallDamage, "function");
   assert.equal(typeof game.bmfs.rollBattleTechD6, "function");
+  assert.equal(typeof game.bmfs.showBattleTechDiceRoll, "function");
+  assert.equal(typeof game.bmfs.configureBattleTechDice, "function");
+  assert.equal(typeof game.bmfs.makeTokenActionHudDraggable, "function");
   assert.equal(typeof game.bmfs.editActorTokenImage, "function");
   assert.equal(typeof game.bmfs.tokenActionHudModel, "function");
+});
+
+test("built-in visual dice render D6 results using client appearance settings", () => {
+  const originalGet = game.settings.get;
+  const originalDocument = globalThis.document;
+  const originalSetTimeout = globalThis.setTimeout;
+  const style = new Map();
+  const attributes = new Map();
+  const overlay = {
+    className: "",
+    innerHTML: "",
+    style: { setProperty: (key, value) => style.set(key, value) },
+    setAttribute: (key, value) => attributes.set(key, value),
+    classList: { add: () => {} },
+    remove: () => {}
+  };
+  game.settings.get = (_namespace, key) => ({
+    visualDice: true,
+    diceBodyColor: "#123456",
+    dicePipColor: "#fedcba",
+    diceSize: 84
+  })[key];
+  globalThis.document = {
+    body: { append: value => assert.equal(value, overlay) },
+    querySelectorAll: () => [],
+    createElement: () => overlay
+  };
+  globalThis.setTimeout = () => 0;
+  try {
+    const rendered = game.bmfs.showBattleTechDiceRoll({
+      dice: [{ faces: 6, results: [{ result: 2 }, { result: 5 }] }],
+      total: 7
+    }, "Piloting Check");
+    assert.equal(rendered, overlay);
+    assert.equal(style.get("--bmfs-die-body"), "#123456");
+    assert.equal(style.get("--bmfs-die-pips"), "#fedcba");
+    assert.equal(style.get("--bmfs-die-size"), "84px");
+    assert.equal(attributes.get("aria-label"), "Piloting Check: 2, 5");
+    assert.match(overlay.innerHTML, /Total 7/);
+  } finally {
+    game.settings.get = originalGet;
+    globalThis.document = originalDocument;
+    globalThis.setTimeout = originalSetTimeout;
+  }
 });
 
 test("D6 scene controls remain available to non-GM players", () => {
@@ -163,3 +210,4 @@ test("core compendium installer separates five mechs into each weight-class pack
   assert.equal(game.packs.get("world.bmfs-core-mechs").metadata.label, "BMFS Light BattleMechs");
   assert.equal(game.packs.get("world.bmfs-core-items").metadata.label, "BMFS Energy Weapons");
 });
+
