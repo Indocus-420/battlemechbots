@@ -1,6 +1,13 @@
-# BattleMech Foundry System — Phase 0
+# BattleMech Foundry System â€” Phase 0
 
 Target: Foundry Virtual Tabletop 14.364.
+
+## 0.10.1-alpha.0 movable action hub and visual dice
+
+- Drag the action hub by its header; its position is retained in that browser.
+- Every system D6 control now produces a built-in on-screen tumble animation as well as the standard Foundry chat roll.
+- Use the palette button in the action hub to enable or disable visual dice and customize their body color, pip color, and size.
+- Dice So Nice remains an optional enhancement and continues to receive standard Foundry roll messages when installed.
 
 ## 0.10.0-alpha.0 D6, HUD, integrations, and catalog media
 
@@ -258,3 +265,4 @@ The major project phases are now Bootstrap, Record Sheets, Combat, Visuals, Mech
 - Applies gyro, destroyed-leg, shutdown, hip, and leg/foot actuator modifiers, including automatic falls.
 - Resolves facing after a fall, token rotation, tonnage-and-level falling damage in five-point groups, prone status, and the pilot injury check.
 - When several matching ammunition bins are loaded, the smallest nonempty bin is consumed first; an explicit player bin-selection dialog remains a later interface refinement.
+
