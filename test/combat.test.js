@@ -83,12 +83,33 @@ test("GATOR example combines movement, terrain, partial cover, and range", () =>
     gunnery: 4,
     attackerMovement: 2,
     attackerStatus: 0,
+    sensors: 0,
+    weaponDamage: 0,
     targetMovement: 1,
     targetStatus: 0,
     heat: 0,
     terrain: 2,
     range: 2
   });
+});
+
+test("sensor and arm critical damage modifiers apply to weapon attacks", () => {
+  const attack = calculateAttackTargetNumber({
+    gunnery: 4,
+    sensorHits: 1,
+    weaponDamageModifier: 1,
+    distance: 2,
+    weaponRange: { short: 3, medium: 6, long: 9 }
+  });
+  assert.equal(attack.targetNumber, 7);
+  assert.equal(attack.components.sensors, 2);
+  assert.equal(attack.components.weaponDamage, 1);
+  assert.equal(calculateAttackTargetNumber({
+    gunnery: 4,
+    sensorHits: 2,
+    distance: 2,
+    weaponRange: { short: 3, medium: 6, long: 9 }
+  }).canAttack, false);
 });
 
 test("movement and heat modifiers remain cumulative", () => {
@@ -124,3 +145,13 @@ test("prone target modifiers depend on adjacency", () => {
   assert.equal(calculateAttackTargetNumber({ ...base, distance: 2 }).components.targetStatus, 1);
 });
 
+test("a native sight-blocking wall prevents an attack", () => {
+  const attack = calculateAttackTargetNumber({
+    gunnery: 4,
+    distance: 2,
+    weaponRange: { short: 3, medium: 6, long: 9 },
+    lineOfSightBlocked: true
+  });
+  assert.equal(attack.canAttack, false);
+  assert.match(attack.reason, /wall blocks line of sight/);
+});

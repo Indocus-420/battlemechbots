@@ -23,11 +23,16 @@
       <label>Damage <input name="system.damage" type="number" value="{{system.damage}}"></label>
       <label>Heat <input name="system.heat" type="number" value="{{system.heat}}"></label>
       <label>Ammo / Shot <input name="system.ammoPerShot" type="number" value="{{system.ammoPerShot}}"></label>
+      <label>Critical Slot Start <input name="system.slotStart" type="number" min="1" max="12" value="{{system.slotStart}}"></label>
+      <label>Critical Slots <input name="system.slots" type="number" min="1" max="12" value="{{system.slots}}"></label>
+      <label>Critical Hits <input name="system.criticalHits" type="number" min="0" value="{{system.criticalHits}}"></label>
+      <label class="bmfs-checkbox"><input name="system.destroyed" type="checkbox" {{#if system.destroyed}}checked{{/if}}> Destroyed</label>
       <label>Minimum <input name="system.range.minimum" type="number" min="0" value="{{system.range.minimum}}"></label>
       <label>Short <input name="system.range.short" type="number" min="0" value="{{system.range.short}}"></label>
       <label>Medium <input name="system.range.medium" type="number" min="0" value="{{system.range.medium}}"></label>
       <label>Long <input name="system.range.long" type="number" min="0" value="{{system.range.long}}"></label>
     </div>
+    <p class="hint">Hit slots: {{system.damagedSlots}}</p>
     <label>Notes <textarea name="system.notes">{{system.notes}}</textarea></label>
   </section>
   {{/if}}
@@ -36,8 +41,32 @@
   <section class="panel">
     <h2>Equipment</h2>
     <label>Location <input name="system.location" type="text" value="{{system.location}}"></label>
-    <label>Slots <input name="system.slots" type="number" value="{{system.slots}}"></label>
+    <label>Slots <input name="system.slots" type="number" min="1" max="12" value="{{system.slots}}"></label>
+    <label>Critical Slot Start <input name="system.slotStart" type="number" min="1" max="12" value="{{system.slotStart}}"></label>
+    <label>Critical Effect
+      <select name="system.criticalEffect">
+        <option value="general" {{#if (eq system.criticalEffect "general")}}selected{{/if}}>Weapon / Equipment</option>
+        <option value="engine" {{#if (eq system.criticalEffect "engine")}}selected{{/if}}>Fusion Engine</option>
+        <option value="gyro" {{#if (eq system.criticalEffect "gyro")}}selected{{/if}}>Gyro</option>
+        <option value="sensors" {{#if (eq system.criticalEffect "sensors")}}selected{{/if}}>Sensors</option>
+        <option value="lifeSupport" {{#if (eq system.criticalEffect "lifeSupport")}}selected{{/if}}>Life Support</option>
+        <option value="cockpit" {{#if (eq system.criticalEffect "cockpit")}}selected{{/if}}>Cockpit</option>
+        <option value="heatSink" {{#if (eq system.criticalEffect "heatSink")}}selected{{/if}}>Heat Sink</option>
+        <option value="jumpJet" {{#if (eq system.criticalEffect "jumpJet")}}selected{{/if}}>Jump Jet</option>
+        <option value="hip" {{#if (eq system.criticalEffect "hip")}}selected{{/if}}>Hip Actuator</option>
+        <option value="upperLeg" {{#if (eq system.criticalEffect "upperLeg")}}selected{{/if}}>Upper Leg Actuator</option>
+        <option value="lowerLeg" {{#if (eq system.criticalEffect "lowerLeg")}}selected{{/if}}>Lower Leg Actuator</option>
+        <option value="foot" {{#if (eq system.criticalEffect "foot")}}selected{{/if}}>Foot Actuator</option>
+        <option value="shoulder" {{#if (eq system.criticalEffect "shoulder")}}selected{{/if}}>Shoulder Actuator</option>
+        <option value="upperArm" {{#if (eq system.criticalEffect "upperArm")}}selected{{/if}}>Upper Arm Actuator</option>
+        <option value="lowerArm" {{#if (eq system.criticalEffect "lowerArm")}}selected{{/if}}>Lower Arm Actuator</option>
+        <option value="hand" {{#if (eq system.criticalEffect "hand")}}selected{{/if}}>Hand Actuator</option>
+      </select>
+    </label>
+    <label>Critical Hits <input name="system.criticalHits" type="number" min="0" value="{{system.criticalHits}}"></label>
+    <label class="bmfs-checkbox"><input name="system.destroyed" type="checkbox" {{#if system.destroyed}}checked{{/if}}> Destroyed</label>
     <label>Notes <textarea name="system.notes">{{system.notes}}</textarea></label>
+    <p class="hint">Hit slots: {{system.damagedSlots}}</p>
   </section>
   {{/if}}
 
@@ -48,7 +77,13 @@
     <label>Location <input name="system.location" type="text" value="{{system.location}}"></label>
     <label>Shots <input name="system.shots" type="number" min="0" max="{{system.maxShots}}" value="{{system.shots}}"></label>
     <label>Maximum Shots <input name="system.maxShots" type="number" min="0" value="{{system.maxShots}}"></label>
+    <label>Damage Per Shot <input name="system.damagePerShot" type="number" min="0" value="{{system.damagePerShot}}"></label>
+    <label>Critical Slot Start <input name="system.slotStart" type="number" min="1" max="12" value="{{system.slotStart}}"></label>
+    <label>Critical Slots <input name="system.slots" type="number" min="1" max="12" value="{{system.slots}}"></label>
+    <label>Critical Hits <input name="system.criticalHits" type="number" min="0" value="{{system.criticalHits}}"></label>
+    <label class="bmfs-checkbox"><input name="system.destroyed" type="checkbox" {{#if system.destroyed}}checked{{/if}}> Destroyed</label>
     <label>Notes <textarea name="system.notes">{{system.notes}}</textarea></label>
+    <p class="hint">Hit slots: {{system.damagedSlots}}</p>
   </section>
   {{/if}}
 

@@ -1,9 +1,16 @@
 const {
+  ArrayField,
   BooleanField,
   NumberField,
   SchemaField,
   StringField
 } = foundry.data.fields;
+
+const criticalEffectChoices = [
+  "general", "engine", "gyro", "sensors", "lifeSupport", "cockpit",
+  "heatSink", "jumpJet", "hip", "upperLeg", "lowerLeg", "foot",
+  "shoulder", "upperArm", "lowerArm", "hand"
+];
 
 function integer(initial = 0, options = {}) {
   return new NumberField({
@@ -31,6 +38,28 @@ function flag(initial = false) {
     nullable: false,
     initial
   });
+}
+
+function damagedSlots() {
+  return new ArrayField(integer(1, { min: 1, max: 12 }), {
+    required: true,
+    nullable: false,
+    initial: []
+  });
+}
+
+function criticalAssignment(defaultSlots = 1) {
+  return {
+    slotStart: integer(1, { min: 1, max: 12 }),
+    slots: integer(defaultSlots, { min: 1, max: 12 }),
+    damagedSlots: damagedSlots()
+  };
+}
+
+function migrateCriticalAssignment(source) {
+  source.slotStart ??= 1;
+  source.slots = Math.max(1, Number(source.slots) || 1);
+  source.damagedSlots ??= [];
 }
 
 function armorLocation(front, rear = null) {
@@ -78,7 +107,7 @@ function clampLegacyCurrentValues(source) {
 export class MechDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      schemaVersion: integer(3, { min: 1 }),
+      schemaVersion: integer(4, { min: 1 }),
       pilot: new SchemaField({
         name: text(),
         gunnery: integer(4, { min: 0 }),
@@ -128,6 +157,23 @@ export class MechDataModel extends foundry.abstract.TypeDataModel {
         sinks: integer(10, { min: 0 }),
         overflow: integer(0, { min: 0 }),
         shutdown: flag(false)
+      }),
+      criticals: new SchemaField({
+        engineHits: integer(0, { min: 0, max: 3 }),
+        gyroHits: integer(0, { min: 0, max: 2 }),
+        sensorHits: integer(0, { min: 0, max: 2 }),
+        lifeSupportHits: integer(0, { min: 0, max: 2 }),
+        cockpitDestroyed: flag(false),
+        pending: new SchemaField({
+          head: integer(0, { min: 0 }),
+          centerTorso: integer(0, { min: 0 }),
+          leftTorso: integer(0, { min: 0 }),
+          rightTorso: integer(0, { min: 0 }),
+          leftArm: integer(0, { min: 0 }),
+          rightArm: integer(0, { min: 0 }),
+          leftLeg: integer(0, { min: 0 }),
+          rightLeg: integer(0, { min: 0 })
+        })
       }),
       armor: new SchemaField({
         head: armorLocation(9),
@@ -189,6 +235,21 @@ export class MechDataModel extends foundry.abstract.TypeDataModel {
       source.schemaVersion = 3;
     }
 
+    if ((source.schemaVersion ?? 0) < 4) {
+      source.criticals ??= {};
+      source.criticals.engineHits ??= 0;
+      source.criticals.gyroHits ??= 0;
+      source.criticals.sensorHits ??= 0;
+      source.criticals.lifeSupportHits ??= 0;
+      source.criticals.cockpitDestroyed ??= false;
+      source.criticals.pending ??= {};
+      for (const location of [
+        "head", "centerTorso", "leftTorso", "rightTorso",
+        "leftArm", "rightArm", "leftLeg", "rightLeg"
+      ]) source.criticals.pending[location] ??= 0;
+      source.schemaVersion = 4;
+    }
+
     return super.migrateData(source);
   }
 
@@ -223,6 +284,9 @@ export class WeaponDataModel extends foundry.abstract.TypeDataModel {
       heat: integer(3, { min: 0 }),
       ammoPerShot: integer(0, { min: 0 }),
       shots: integer(0, { min: 0 }),
+      ...criticalAssignment(1),
+      criticalHits: integer(0, { min: 0 }),
+      destroyed: flag(false),
       range: new SchemaField({
         minimum: integer(0, { min: 0 }),
         short: integer(3, { min: 0 }),
@@ -231,6 +295,11 @@ export class WeaponDataModel extends foundry.abstract.TypeDataModel {
       }),
       notes: text()
     };
+  }
+
+  static migrateData(source) {
+    migrateCriticalAssignment(source);
+    return super.migrateData(source);
   }
 
   static validateJoint(data) {
@@ -250,7 +319,67 @@ export class EquipmentDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       location: text("centerTorso"),
-      slots: integer(1, { min: 0 }),
+      ...criticalAssignment(1),
+      criticalEffect: new StringField({
+        required: true,
+        nullable: false,
+        blank: false,
+        initial: "general",
+        choices: criticalEffectChoices
+      }),
+      criticalHits: integer(0, { min: 0 }),
+      destroyed: flag(false),
+      notes: text()
+    };
+  }
+
+
+  static migrateData(source) {
+    migrateCriticalAssignment(source);
+    source.criticalEffect ??= "general";
+    return super.migrateData(source);
+  }
+}
+
+export class VehicleDataModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      schemaVersion: integer(1, { min: 1 }),
+      vehicle: new SchemaField({
+        chassis: text("Generic Combat Vehicle"),
+        variant: text("Standard"),
+        tonnage: integer(40, { min: 1, max: 200 }),
+        motiveType: new StringField({
+          required: true,
+          nullable: false,
+          blank: false,
+          initial: "tracked",
+          choices: ["tracked", "wheeled", "hover", "vtol"]
+        }),
+        role: text("Combat Vehicle")
+      }),
+      crew: new SchemaField({
+        name: text(),
+        gunnery: integer(4, { min: 0 }),
+        driving: integer(5, { min: 0 }),
+        hits: integer(0, { min: 0, max: 6 })
+      }),
+      movement: new SchemaField({
+        cruise: integer(4, { min: 0 }),
+        flank: integer(6, { min: 0 })
+      }),
+      armor: new SchemaField({
+        front: integer(20, { min: 0 }),
+        left: integer(15, { min: 0 }),
+        right: integer(15, { min: 0 }),
+        rear: integer(10, { min: 0 }),
+        turret: integer(15, { min: 0 })
+      }),
+      structure: integer(20, { min: 0 }),
+      status: new SchemaField({
+        immobilized: flag(false),
+        destroyed: flag(false)
+      }),
       notes: text()
     };
   }
@@ -263,8 +392,18 @@ export class AmmoDataModel extends foundry.abstract.TypeDataModel {
       location: text("leftTorso"),
       shots: integer(20, { min: 0 }),
       maxShots: integer(20, { min: 0 }),
+      damagePerShot: integer(5, { min: 0 }),
+      ...criticalAssignment(1),
+      criticalHits: integer(0, { min: 0 }),
+      destroyed: flag(false),
       notes: text()
     };
+  }
+
+
+  static migrateData(source) {
+    migrateCriticalAssignment(source);
+    return super.migrateData(source);
   }
 
   static validateJoint(data) {

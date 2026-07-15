@@ -22,12 +22,7 @@ function waterDepth(keys = []) {
 }
 
 export function heatModifier(heat) {
-  const value = integer(heat, "Heat");
-  if (value >= 24) return 4;
-  if (value >= 17) return 3;
-  if (value >= 13) return 2;
-  if (value >= 8) return 1;
-  return 0;
+  return heatWeaponModifier(heat);
 }
 
 export function rangeModifier(distance, range = {}) {
@@ -117,7 +112,10 @@ export function calculateAttackTargetNumber({
   terrain = {},
   attackerProne = false,
   targetProne = false,
-  targetImmobile = false
+  targetImmobile = false,
+  sensorHits = 0,
+  weaponDamageModifier = 0,
+  lineOfSightBlocked = false
 }) {
   const base = integer(gunnery, "Gunnery skill");
   const attackerMove = integer(attackerMovement, "Attacker movement modifier");
@@ -127,10 +125,15 @@ export function calculateAttackTargetNumber({
   const range = rangeModifier(hexes, weaponRange);
   const terrainResult = terrainAttackModifiers(terrain);
   const attackerStatus = attackerProne ? 2 : 0;
+  const sensors = integer(sensorHits, "Sensor hits");
+  const criticalDamage = integer(weaponDamageModifier, "Weapon critical modifier");
+  const sensorModifier = sensors >= 1 ? 2 : 0;
   const targetStatus = targetImmobile ? -4 : (targetProne ? (hexes === 1 ? -2 : 1) : 0);
   const targetNumber = base
     + attackerMove
     + attackerStatus
+    + sensorModifier
+    + criticalDamage
     + targetMove
     + targetStatus
     + heatMod
@@ -138,7 +141,9 @@ export function calculateAttackTargetNumber({
     + range.modifier;
 
   let reason = null;
-  if (terrainResult.losBlocked) reason = "Intervening woods block line of sight.";
+  if (lineOfSightBlocked) reason = "A wall blocks line of sight.";
+  else if (sensors >= 2) reason = "Two sensor critical hits prevent weapon attacks.";
+  else if (terrainResult.losBlocked) reason = "Intervening woods block line of sight.";
   else if (terrainResult.underwaterMismatch) {
     reason = "A submerged unit cannot target a unit that is not submerged.";
   }
@@ -153,6 +158,8 @@ export function calculateAttackTargetNumber({
       gunnery: base,
       attackerMovement: attackerMove,
       attackerStatus,
+      sensors: sensorModifier,
+      weaponDamage: criticalDamage,
       targetMovement: targetMove,
       targetStatus,
       heat: heatMod,
@@ -163,4 +170,4 @@ export function calculateAttackTargetNumber({
     terrain: terrainResult
   };
 }
-
+import { heatWeaponModifier } from "./heat.js";
