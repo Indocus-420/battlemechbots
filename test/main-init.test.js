@@ -69,14 +69,14 @@ globalThis.game = {
   release: { version: "14.364", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.10.4-alpha.0",
+    version: "0.10.5-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { isGM: false },
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.10.4-alpha.0"
+    get: () => "0.10.5-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -102,7 +102,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.10.4-alpha.0");
+  assert.equal(game.bmfs.version, "0.10.5-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
@@ -117,6 +117,8 @@ test("ready exposes diagnostics and the public BMFS API without installing conte
   assert.equal(typeof game.bmfs.pilotingCheckProfile, "function");
   assert.equal(typeof game.bmfs.fallDamage, "function");
   assert.equal(typeof game.bmfs.rollBattleTechD6, "function");
+  assert.equal(typeof game.bmfs.weaponDiceTheme, "function");
+  assert.equal(typeof game.bmfs.applyWeaponDiceAppearance, "function");
   assert.equal(typeof game.bmfs.diceSoNiceAvailable, "function");
   assert.equal(typeof game.bmfs.animateBattleTechRoll, "function");
   assert.equal(typeof game.bmfs.postBattleTechRoll, "function");
@@ -160,6 +162,41 @@ test("active Dice So Nice receives each roll directly and the chat message suppr
     game.modules = originalModules;
     game.dice3d = originalDice3d;
   }
+});
+
+test("weapon attack dice use the requested Dice So Nice color scheme", () => {
+  const theme = (name, weaponType, bracket = "short") => game.bmfs.weaponDiceTheme({
+    name,
+    system: { weaponType }
+  }, bracket);
+
+  assert.equal(theme("Small Laser", "laser").background, "#c62828");
+  assert.equal(theme("Medium Laser", "laser").background, "#15803d");
+  assert.equal(theme("Large Laser", "laser").background, "#1d4ed8");
+  assert.equal(theme("SRM 6", "missile").background, "#facc15");
+  assert.equal(theme("MRM 20", "missile").background, "#ea580c");
+  assert.equal(theme("LRM 15", "missile").background, "#7c4a21");
+  assert.equal(theme("Particle Projection Cannon", "ppc").background, "#2563eb");
+  assert.equal(theme("Autocannon/20", "autocannon").background, "#f8fafc");
+  assert.equal(theme("Future Laser", "laser", "long").background, "#1d4ed8");
+  assert.equal(theme("Future Missile Rack", "missile", "medium").background, "#ea580c");
+});
+
+test("weapon dice appearance is attached to the Roll without replacing unrelated Roll options", () => {
+  const roll = { options: { critical: true } };
+  const selected = game.bmfs.applyWeaponDiceAppearance(roll, {
+    name: "Medium Laser",
+    system: { weaponType: "laser" }
+  }, "short");
+  assert.equal(selected.id, "laser-medium");
+  assert.equal(roll.options.critical, true);
+  assert.deepEqual(roll.options.appearance, {
+    colorset: "custom",
+    foreground: "#ffffff",
+    background: "#15803d",
+    outline: "#052e16",
+    edge: "#4ade80"
+  });
 });
 
 test("inactive Dice So Nice uses the built-in renderer without adding a skip flag", async () => {

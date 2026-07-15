@@ -86,10 +86,20 @@ import {
 } from "../module/criticals.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.10.4-alpha.0";
+const SYSTEM_VERSION = "0.10.5-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const DICE_GLYPHS = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 const TARGET_FOUNDRY = "14.364";
+const WEAPON_DICE_THEMES = Object.freeze({
+  laserShort: { id: "laser-short", label: "Short Laser (Red)", foreground: "#ffffff", background: "#c62828", outline: "#4a0909", edge: "#ef5350" },
+  laserMedium: { id: "laser-medium", label: "Medium Laser (Green)", foreground: "#ffffff", background: "#15803d", outline: "#052e16", edge: "#4ade80" },
+  laserLong: { id: "laser-long", label: "Long Laser (Blue)", foreground: "#ffffff", background: "#1d4ed8", outline: "#0f172a", edge: "#60a5fa" },
+  missileShort: { id: "missile-short", label: "Short-Range Missile (Yellow)", foreground: "#241a00", background: "#facc15", outline: "#713f12", edge: "#fde68a" },
+  missileMedium: { id: "missile-medium", label: "Medium-Range Missile (Orange)", foreground: "#ffffff", background: "#ea580c", outline: "#431407", edge: "#fdba74" },
+  missileLong: { id: "missile-long", label: "Long-Range Missile (Brown)", foreground: "#fff7d6", background: "#7c4a21", outline: "#291507", edge: "#c08457" },
+  ppc: { id: "ppc", label: "PPC (Blue-White)", foreground: "#ffffff", background: "#2563eb", outline: "#dbeafe", edge: "#93c5fd" },
+  ballistic: { id: "ballistic", label: "Ballistic (White)", foreground: "#111827", background: "#f8fafc", outline: "#64748b", edge: "#d1d5db" }
+});
 const TURN_SEQUENCE_FLAG = "turnSequence";
 const pendingTokenMovementPlans = new Map();
 const terrainInputFields = [
@@ -300,6 +310,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     const roll = await new Roll("2d6").evaluate();
+    const diceTheme = applyWeaponDiceAppearance(roll, weapon, attack.range.bracket);
     const hit = roll.total >= attack.targetNumber;
     if (game.settings.get(SYSTEM_ID, "weaponEffects")) {
       void playWeaponEffect(activeSceneToken(this.actor), targets[0], weapon, {
@@ -341,6 +352,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         <p>GATOR: ${breakdown.gunnery} Gunnery, ${signed(breakdown.attackerMovement + breakdown.attackerStatus)} attacker, ${signed(breakdown.targetMovement + breakdown.targetStatus)} target, ${signed(breakdown.terrain)} terrain, ${signed(breakdown.heat)} heat, ${signed(breakdown.range)} range, ${signed(breakdown.sensors + breakdown.weaponDamage)} critical damage.</p>
         <p>Terrain: ${escape(terrainSummary)}.</p>
         <p>Weapon heat: +${weaponHeat}.</p>
+        ${diceTheme ? `<p>Dice theme: ${escape(diceTheme.label)}.</p>` : ""}
         ${ammunitionBin ? `<p>Ammunition: 1 shot from ${escape(ammunitionBin.name)}; ${ammunitionRemaining} remaining.</p>` : ""}
         ${cluster ? `<p>Cluster roll ${cluster.roll}: ${cluster.missilesHit} of ${cluster.size} ${cluster.family} missiles hit in ${cluster.damageGroups.length} damage group(s).</p>` : ""}
         ${damageSummary ? `<p>${damageSummary}</p>` : ""}
@@ -1682,6 +1694,49 @@ function diceSoNiceAvailable() {
     && typeof game.dice3d?.showForRoll === "function";
 }
 
+function weaponDiceTheme(weapon, rangeBracket = null) {
+  const name = String(weapon?.name ?? "").toLowerCase();
+  const type = String(weapon?.system?.weaponType ?? "").toLowerCase();
+  const bracket = String(rangeBracket ?? "").toLowerCase();
+  const byRange = (shortTheme, mediumTheme, longTheme) => {
+    if (bracket.startsWith("long")) return longTheme;
+    if (bracket.startsWith("medium")) return mediumTheme;
+    return shortTheme;
+  };
+
+  if (type === "ppc" || /\bppc\b|particle projection cannon/.test(name)) return WEAPON_DICE_THEMES.ppc;
+  if (type === "autocannon" || type === "ballistic" || /autocannon|machine gun|gauss|rifle/.test(name)) {
+    return WEAPON_DICE_THEMES.ballistic;
+  }
+  if (type === "missile" || /\b[slm]rm\b|missile/.test(name)) {
+    if (/\bsrm\b|short[ -]?range/.test(name)) return WEAPON_DICE_THEMES.missileShort;
+    if (/\bmrm\b|medium[ -]?range/.test(name)) return WEAPON_DICE_THEMES.missileMedium;
+    if (/\blrm\b|long[ -]?range/.test(name)) return WEAPON_DICE_THEMES.missileLong;
+    return byRange(WEAPON_DICE_THEMES.missileShort, WEAPON_DICE_THEMES.missileMedium, WEAPON_DICE_THEMES.missileLong);
+  }
+  if (type === "laser" || /laser/.test(name)) {
+    if (/\bsmall\b|\bshort\b/.test(name)) return WEAPON_DICE_THEMES.laserShort;
+    if (/\bmedium\b/.test(name)) return WEAPON_DICE_THEMES.laserMedium;
+    if (/\blarge\b|\blong\b/.test(name)) return WEAPON_DICE_THEMES.laserLong;
+    return byRange(WEAPON_DICE_THEMES.laserShort, WEAPON_DICE_THEMES.laserMedium, WEAPON_DICE_THEMES.laserLong);
+  }
+  return null;
+}
+
+function applyWeaponDiceAppearance(roll, weapon, rangeBracket = null) {
+  const theme = weaponDiceTheme(weapon, rangeBracket);
+  if (!roll || !theme) return theme;
+  roll.options ??= {};
+  roll.options.appearance = {
+    colorset: "custom",
+    foreground: theme.foreground,
+    background: theme.background,
+    outline: theme.outline,
+    edge: theme.edge
+  };
+  return theme;
+}
+
 async function animateBattleTechRoll(roll, label = "BattleTech D6 Roll") {
   if (diceSoNiceAvailable()) {
     try {
@@ -2174,6 +2229,8 @@ Hooks.once("ready", () => {
     playMechActivationEffect,
     mechPresentationProfile,
     rollBattleTechD6,
+    weaponDiceTheme,
+    applyWeaponDiceAppearance,
     diceSoNiceAvailable,
     animateBattleTechRoll,
     postBattleTechRoll,

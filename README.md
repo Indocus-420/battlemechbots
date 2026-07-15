@@ -2,6 +2,12 @@
 
 Target: Foundry Virtual Tabletop 14.364.
 
+## 0.10.5-alpha.0 weapon dice themes
+
+- Gives Dice So Nice attack rolls weapon-specific custom colors: Small/Medium/Large Lasers use red/green/blue; SRM/MRM/LRM launchers use yellow/orange/brown; PPCs use blue-white; and ballistic weapons use white.
+- Classifies known weapons by weapon family and name, with the current range bracket as a fallback for future generic laser or missile items.
+- Leaves ordinary skill, initiative, piloting, and other BattleTech rolls under each player's normal Dice So Nice appearance.
+
 ## 0.10.4-alpha.0 Dice So Nice palette routing hotfix
 
 - Activates the Dice So Nice sidebar panel when necessary before opening its 3D Dice Settings dialog, so the action-hub palette works even when that sidebar panel has not previously been rendered.

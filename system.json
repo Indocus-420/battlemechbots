@@ -2,7 +2,7 @@
   "id": "battletech-foundry-system",
   "title": "BattleMech Foundry System",
   "description": "BattleMech combat alpha for Foundry VTT 14.364 with Dice So Nice integration and built-in animated D6 fallback, a movable token action hub, GATOR combat, Heat and End Phase automation, class-separated mechs and items, vehicle media, token editing, and optional JB2A effects.",
-  "version": "0.10.4-alpha.0",
+  "version": "0.10.5-alpha.0",
   "compatibility": {
     "minimum": "14.364",
     "verified": "14.364"
