@@ -1,8 +1,8 @@
 {
   "id": "battletech-foundry-system",
   "title": "BattleMech Foundry System",
-  "description": "BattleMech combat alpha for Foundry VTT 14.364 with D6 tools, token action HUD, GATOR combat, Heat and End Phase automation, class-separated mechs and items, vehicle media, token editing, and optional JB2A effects.",
-  "version": "0.10.0-alpha.0",
+  "description": "BattleMech combat alpha for Foundry VTT 14.364 with customizable animated D6 rolls, a movable token action hub, GATOR combat, Heat and End Phase automation, class-separated mechs and items, vehicle media, token editing, and optional JB2A effects.",
+  "version": "0.10.1-alpha.0",
   "compatibility": {
     "minimum": "14.364",
     "verified": "14.364"
@@ -51,3 +51,4 @@
   },
   "packs": []
 }
+
