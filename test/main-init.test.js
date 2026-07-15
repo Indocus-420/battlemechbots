@@ -69,14 +69,14 @@ globalThis.game = {
   release: { version: "14.364", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.10.1-alpha.0",
+    version: "0.10.2-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { isGM: false },
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.10.1-alpha.0"
+    get: () => "0.10.2-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -102,7 +102,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.10.1-alpha.0");
+  assert.equal(game.bmfs.version, "0.10.2-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
@@ -163,6 +163,55 @@ test("built-in visual dice render D6 results using client appearance settings", 
     assert.match(overlay.innerHTML, /Total 7/);
   } finally {
     game.settings.get = originalGet;
+    globalThis.document = originalDocument;
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
+
+test("dice customization persists Foundry FormDataExtended values and displays a preview", async () => {
+  const originalGet = game.settings.get;
+  const originalSet = game.settings.set;
+  const originalDialogV2 = foundry.applications.api.DialogV2;
+  const originalDocument = globalThis.document;
+  const originalSetTimeout = globalThis.setTimeout;
+  const values = new Map([
+    ["visualDice", true],
+    ["diceBodyColor", "#1c6dd0"],
+    ["dicePipColor", "#ffffff"],
+    ["diceSize", 72]
+  ]);
+  const overlay = {
+    className: "",
+    innerHTML: "",
+    style: { setProperty: () => {} },
+    setAttribute: () => {},
+    classList: { add: () => {} },
+    remove: () => {}
+  };
+  game.settings.get = (_namespace, key) => values.get(key);
+  game.settings.set = async (_namespace, key, value) => values.set(key, value);
+  foundry.applications.api.DialogV2 = {
+    input: async () => ({
+      get: key => ({ enabled: "on", body: "#9b1c31", pips: "#f5d76e", size: "90" })[key]
+    })
+  };
+  globalThis.document = {
+    body: { append: value => assert.equal(value, overlay) },
+    querySelectorAll: () => [],
+    createElement: () => overlay
+  };
+  globalThis.setTimeout = () => 0;
+  try {
+    await game.bmfs.configureBattleTechDice();
+    assert.equal(values.get("visualDice"), true);
+    assert.equal(values.get("diceBodyColor"), "#9b1c31");
+    assert.equal(values.get("dicePipColor"), "#f5d76e");
+    assert.equal(values.get("diceSize"), 90);
+    assert.match(overlay.innerHTML, /Dice Preview/);
+  } finally {
+    game.settings.get = originalGet;
+    game.settings.set = originalSet;
+    foundry.applications.api.DialogV2 = originalDialogV2;
     globalThis.document = originalDocument;
     globalThis.setTimeout = originalSetTimeout;
   }
