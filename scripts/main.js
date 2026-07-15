@@ -86,7 +86,7 @@ import {
 } from "../module/criticals.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.10.3-alpha.0";
+const SYSTEM_VERSION = "0.10.4-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const DICE_GLYPHS = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 const TARGET_FOUNDRY = "14.364";
@@ -1751,9 +1751,20 @@ function showBattleTechDiceRoll(roll, label = "BattleTech D6 Roll") {
 
 async function configureBattleTechDice() {
   if (diceSoNiceAvailable()) {
-    const configButton = [...(globalThis.document?.querySelectorAll?.("button") ?? [])]
-      .find(button => [button.getAttribute?.("aria-label"), button.getAttribute?.("title"), button.textContent?.trim()]
-        .includes("Open 3D Dice Config"));
+    const findConfigButton = () => globalThis.document?.querySelector?.('button[data-action="openConfig"]')
+      ?? [...(globalThis.document?.querySelectorAll?.("button") ?? [])]
+        .find(button => [button.getAttribute?.("aria-label"), button.getAttribute?.("title"), button.textContent?.trim()]
+          .includes("Open 3D Dice Config"));
+    let configButton = findConfigButton();
+    if (!configButton) {
+      const sidebarTab = globalThis.document?.querySelector?.('button[data-action="tab"][data-tab="dice-so-nice"]');
+      sidebarTab?.click();
+      if (sidebarTab) await new Promise(resolve => {
+        if (typeof globalThis.setTimeout === "function") globalThis.setTimeout(resolve, 100);
+        else resolve();
+      });
+      configButton = findConfigButton();
+    }
     if (configButton) configButton.click();
     else ui.notifications.info("Dice So Nice controls dice appearance. Open its sidebar tab or Module Settings to customize your dice.");
     return "dice-so-nice";

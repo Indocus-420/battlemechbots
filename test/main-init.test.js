@@ -69,14 +69,14 @@ globalThis.game = {
   release: { version: "14.364", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.10.3-alpha.0",
+    version: "0.10.4-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { isGM: false },
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.10.3-alpha.0"
+    get: () => "0.10.4-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -102,7 +102,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.10.3-alpha.0");
+  assert.equal(game.bmfs.version, "0.10.4-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
@@ -234,6 +234,39 @@ test("Dice So Nice remains the appearance controller when active", async () => {
     game.modules = originalModules;
     game.dice3d = originalDice3d;
     globalThis.document = originalDocument;
+  }
+});
+
+test("dice palette activates an unrendered Dice So Nice sidebar before opening its configuration", async () => {
+  const originalModules = game.modules;
+  const originalDice3d = game.dice3d;
+  const originalDocument = globalThis.document;
+  const originalSetTimeout = globalThis.setTimeout;
+  let sidebarActivated = false;
+  let configOpened = 0;
+  const sidebarTab = { click: () => { sidebarActivated = true; } };
+  const configButton = { click: () => configOpened++ };
+  game.modules = new Map([["dice-so-nice", { active: true }]]);
+  game.dice3d = { showForRoll: async () => {} };
+  globalThis.setTimeout = callback => { callback(); return 0; };
+  globalThis.document = {
+    querySelector: selector => {
+      if (selector === 'button[data-action="tab"][data-tab="dice-so-nice"]') return sidebarTab;
+      if (selector === 'button[data-action="openConfig"]') return sidebarActivated ? configButton : null;
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+  try {
+    const controller = await game.bmfs.configureBattleTechDice();
+    assert.equal(controller, "dice-so-nice");
+    assert.equal(sidebarActivated, true);
+    assert.equal(configOpened, 1);
+  } finally {
+    game.modules = originalModules;
+    game.dice3d = originalDice3d;
+    globalThis.document = originalDocument;
+    globalThis.setTimeout = originalSetTimeout;
   }
 });
 

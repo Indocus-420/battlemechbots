@@ -2,6 +2,10 @@
 
 Target: Foundry Virtual Tabletop 14.364.
 
+## 0.10.4-alpha.0 Dice So Nice palette routing hotfix
+
+- Activates the Dice So Nice sidebar panel when necessary before opening its 3D Dice Settings dialog, so the action-hub palette works even when that sidebar panel has not previously been rendered.
+
 ## 0.10.3-alpha.0 Dice So Nice integration
 
 - Detects the active Dice So Nice module and sends system roll objects directly to `game.dice3d.showForRoll`.
