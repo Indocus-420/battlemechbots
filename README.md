@@ -265,16 +265,14 @@ The major project phases are now Bootstrap, Record Sheets, Combat, Visuals, Mech
 - Medium: Emberguard, Borderer, Rampart, Horizon, and Vanguard.
 - Heavy: Stormwarden, Hammerfall, Watchtower, Dreadrunner, and Bastion.
 - Assault: Citadel, Monolith, Siegebreaker, Colossus, and Fortress.
-- The designs are original…27743 tokens truncated…translate(-50%, -50%) scale(1); }
-}
-@keyframes bmfs-d6-tumble {
-  0% { opacity: 0; transform: translate3d(-80px, -130px, 80px) rotateX(20deg) rotateY(40deg) rotateZ(-18deg) scale(.55); }
-  28% { opacity: 1; transform: translate3d(22px, 15px, 35px) rotateX(245deg) rotateY(190deg) rotateZ(110deg) scale(1.08); }
-  58% { transform: translate3d(-12px, -20px, 18px) rotateX(510deg) rotateY(410deg) rotateZ(250deg) scale(.92); }
-  82% { transform: translate3d(4px, 5px, 6px) rotateX(690deg) rotateY(580deg) rotateZ(350deg) scale(1.03); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(720deg) rotateY(720deg) rotateZ(360deg) scale(1); }
-}
+- The designs are original system test/gameplay units rather than reproductions of published BattleTech record sheets.
 
-@media (prefers-reduced-motion: reduce) {
-  .bmfs-dice-overlay, .bmfs-visual-die { animation-duration: 1ms; animation-delay: 0ms; }
-}
+### 0.8.0-alpha.0 missile, ammunition, and falling resolution
+
+- Expends one shot from an exact matching ammunition bin when a ballistic or missile attack is declared, before the attack roll; an unloaded weapon cannot fire.
+- Uses the complete 2D6 Cluster Hits Table for SRM and LRM launchers.
+- Resolves each successful SRM as a separate 2-point hit and groups LRM damage into five-point groups plus any remainder, with an independent hit location and critical processing for every group.
+- Automatically resolves the kicked target's Piloting Skill Roll after a successful kick and the attacker's roll after a missed kick.
+- Applies gyro, destroyed-leg, shutdown, hip, and leg/foot actuator modifiers, including automatic falls.
+- Resolves facing after a fall, token rotation, tonnage-and-level falling damage in five-point groups, prone status, and the pilot injury check.
+- When several matching ammunition bins are loaded, the smallest nonempty bin is consumed first; an explicit player bin-selection dialog remains a later interface refinement.

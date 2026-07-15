@@ -135,4 +135,3 @@
 @media (prefers-reduced-motion: reduce) {
   .bmfs-dice-overlay, .bmfs-visual-die { animation-duration: 1ms; animation-delay: 0ms; }
 }
-
