@@ -1,8 +1,11 @@
 {
   "id": "battletech-foundry-system",
   "title": "BattleMech Foundry System",
-  "description": "BattleMech terrain-movement alpha for Foundry VTT 14.364 with Region-tagged terrain, automatic token-path validation, elevation, water, modifiers, MP validation, and movement heat.",
-  "version": "0.3.3-alpha.0",
+  "description": "BattleMech combat alpha for Foundry VTT 14.364 with a Pilot and Lance command window, compact nested action HUD, Tokenizer firing-arc frames, seeded random hex maps, synchronized weapon and movement effects, GATOR combat, Heat and End Phase automation, and class-separated content.",
+  "version": "0.11.1-alpha.0",
+  "url": "https://github.com/Indocus-420/battlemechbots",
+  "manifest": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.11.1-alpha.0/system.json",
+  "download": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.11.1-alpha.0/battletech-foundry-system-0.11.1-alpha.0.zip",
   "compatibility": {
     "minimum": "14.364",
     "verified": "14.364"
@@ -15,6 +18,7 @@
   "esmodules": [
     "scripts/main.js"
   ],
+  "socket": true,
   "styles": [
     "styles/system.css"
   ],
@@ -27,7 +31,8 @@
   ],
   "documentTypes": {
     "Actor": {
-      "mech": {}
+      "mech": {},
+      "vehicle": {}
     },
     "Item": {
       "weapon": {},
@@ -39,6 +44,14 @@
     "type": 1,
     "distance": 1,
     "units": "hex"
+  },
+  "relationships": {
+    "recommends": [
+      { "id": "dice-so-nice", "type": "module", "reason": "Optional 3D animation for the system's D6 rolls." },
+      { "id": "vtta-tokenizer", "type": "module", "reason": "Optional player-facing token image editor." },
+      { "id": "JB2A_DnD5e", "type": "module", "reason": "Optional animated weapon-effect library." },
+      { "id": "sequencer", "type": "module", "reason": "Required by the optional JB2A weapon-effect integration." }
+    ]
   },
   "packs": []
 }

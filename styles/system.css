@@ -3,6 +3,9 @@
 .bmfs.bmfs-sheet-form { padding: 8px; }
 .bmfs .sheet-header { display: flex; gap: 12px; align-items: flex-start; }
 .bmfs .profile-img { width: 96px; height: 96px; object-fit: cover; border: 1px solid #777; }
+.bmfs .bmfs-profile-tools { width: 110px; display: grid; gap: 4px; }
+.bmfs .bmfs-profile-tools .profile-img { width: 110px; height: 110px; }
+.bmfs .bmfs-profile-tools button { font-size: 0.8rem; }
 .bmfs .header-fields { flex: 1; }
 .bmfs .grid { display: grid; gap: 8px; }
 .bmfs .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -16,11 +19,19 @@
 .bmfs td input { min-width: 60px; }
 .bmfs .hint { opacity: 0.8; font-style: italic; }
 .bmfs .button-row { display: flex; gap: 8px; margin-top: 10px; }
+.bmfs .bmfs-physical-actions { flex-wrap: wrap; }
+.bmfs .bmfs-physical-actions button { flex: 1 1 220px; }
 .bmfs .bmfs-status-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
 .bmfs .bmfs-checkbox { flex-direction: row; align-items: center; }
 .bmfs .bmfs-checkbox input { width: auto; }
 .bmfs .bmfs-terrain-planner { margin-top: 12px; padding-top: 10px; border-top: 1px solid #999; }
 .bmfs .bmfs-terrain-planner h3 { margin: 0 0 4px; }
+.bmfs .bmfs-heat-effects { padding: 0.45rem 0.6rem; border-left: 4px solid #d26a22; background: rgb(210 106 34 / 12%); }
+.bmfs .bmfs-critical-tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.bmfs .bmfs-critical-location h3 { margin: 0 0 4px; }
+.bmfs .bmfs-critical-hit { background: rgb(180 35 35 / 18%); text-decoration: line-through; }
+.bmfs .bmfs-critical-conflict { background: rgb(230 150 20 / 24%); }
+.bmfs .bmfs-critical-warning { color: #9d260d; font-weight: 700; }
 .bmfs .bmfs-version { margin-top: 8px; text-align: right; opacity: 0.65; font-size: 0.8em; }
 
 .bmfs .item-actions {
@@ -37,3 +48,322 @@
 
 .bmfs-chat-card h3 { margin: 0 0 0.35rem; }
 .bmfs-chat-card p { margin: 0.2rem 0; }
+
+#bmfs-token-action-hud {
+  --bmfs-hud-accent: #53b9df;
+  --bmfs-hud-accent-soft: rgb(83 185 223 / 18%);
+  --bmfs-hud-bg-start: rgb(18 35 47 / 98%);
+  --bmfs-hud-bg-end: rgb(9 18 27 / 97%);
+  position: fixed;
+  left: 88px;
+  bottom: 18px;
+  z-index: 70;
+  width: min(720px, calc(100vw - 132px));
+  min-width: 420px;
+  max-width: calc(100vw - 24px);
+  min-height: 166px;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  resize: both;
+  padding: 0 0 0 126px;
+  box-sizing: border-box;
+  container: bmfs-hud / inline-size;
+  border: 1px solid rgb(123 171 194 / 70%);
+  border-radius: 13px 6px 6px 13px;
+  background:
+    linear-gradient(110deg, var(--bmfs-hud-bg-start), var(--bmfs-hud-bg-end) 62%),
+    repeating-linear-gradient(135deg, transparent 0 8px, rgb(255 255 255 / 2%) 8px 9px);
+  color: #eef5fa;
+  box-shadow: 0 10px 32px rgb(0 0 0 / 62%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+}
+#bmfs-token-action-hud.bmfs-theme-davion { --bmfs-hud-accent: #e34b4b; --bmfs-hud-accent-soft: rgb(227 75 75 / 22%); }
+#bmfs-token-action-hud.bmfs-theme-kurita { --bmfs-hud-accent: #ed3131; --bmfs-hud-accent-soft: rgb(237 49 49 / 22%); }
+#bmfs-token-action-hud.bmfs-theme-liao { --bmfs-hud-accent: #d7bd48; --bmfs-hud-accent-soft: rgb(215 189 72 / 22%); }
+#bmfs-token-action-hud.bmfs-theme-marik { --bmfs-hud-accent: #c48cff; --bmfs-hud-accent-soft: rgb(196 140 255 / 22%); }
+#bmfs-token-action-hud.bmfs-theme-steiner { --bmfs-hud-accent: #8ec8ff; --bmfs-hud-accent-soft: rgb(142 200 255 / 22%); }
+#bmfs-token-action-hud .bmfs-hud-portrait {
+  position: absolute;
+  left: 5px;
+  top: 9px;
+  z-index: 2;
+  width: 136px;
+  height: 136px;
+  min-height: 136px;
+  padding: 5px;
+  border: 2px solid var(--bmfs-hud-accent);
+  border-radius: 50%;
+  background: #071019;
+  box-shadow: 0 0 0 5px rgb(5 13 20 / 92%), 0 0 24px var(--bmfs-hud-accent-soft);
+}
+#bmfs-token-action-hud .bmfs-hud-portrait:hover { box-shadow: 0 0 0 5px rgb(5 13 20 / 92%), 0 0 30px var(--bmfs-hud-accent); }
+#bmfs-token-action-hud .bmfs-hud-portrait img { width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 50%; }
+#bmfs-token-action-hud header {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 54px;
+  padding: 7px 8px 7px 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 14%);
+  background: linear-gradient(90deg, var(--bmfs-hud-accent-soft), transparent 65%);
+}
+#bmfs-token-action-hud .bmfs-hud-drag-handle { cursor: grab; user-select: none; touch-action: none; }
+#bmfs-token-action-hud.bmfs-hud-dragging { opacity: 0.92; }
+#bmfs-token-action-hud.bmfs-hud-dragging .bmfs-hud-drag-handle { cursor: grabbing; }
+#bmfs-token-action-hud button { min-height: 29px; border: 1px solid rgb(145 191 213 / 36%); color: #edf8fc; background: rgb(30 55 69 / 74%); }
+#bmfs-token-action-hud button:hover:not(:disabled) { border-color: var(--bmfs-hud-accent); background: var(--bmfs-hud-accent-soft); }
+#bmfs-token-action-hud button:disabled { opacity: 0.42; cursor: not-allowed; }
+#bmfs-token-action-hud .bmfs-hud-identity { display: grid; min-width: 0; line-height: 1.05; }
+#bmfs-token-action-hud .bmfs-hud-identity .bmfs-hud-kicker { color: var(--bmfs-hud-accent); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.16em; }
+#bmfs-token-action-hud .bmfs-hud-identity strong { overflow: hidden; font-family: "Teko", "Roboto Condensed", sans-serif; font-size: 1.22rem; letter-spacing: 0.045em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-hud-identity > span:last-child { color: #a9c0cc; font-size: 0.75rem; }
+#bmfs-token-action-hud .bmfs-hud-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+#bmfs-token-action-hud .bmfs-hud-badges span { padding: 3px 6px; border: 1px solid rgb(255 255 255 / 15%); border-radius: 3px; background: rgb(0 0 0 / 22%); color: #c8dbe4; font-size: 0.68rem; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-hud-badges .bmfs-hud-fx { border-color: rgb(101 215 231 / 36%); color: #7ee8f4; }
+#bmfs-token-action-hud.bmfs-hud-fallback-fx .bmfs-hud-badges .bmfs-hud-fx { border-color: rgb(238 181 80 / 36%); color: #eeb550; }
+#bmfs-token-action-hud .bmfs-hud-window-tools { display: flex; gap: 4px; }
+#bmfs-token-action-hud .bmfs-hud-window-tools button { width: 29px; min-width: 29px; padding: 0; }
+#bmfs-token-action-hud .bmfs-hud-console { display: grid; grid-template-columns: minmax(0, 1fr) 126px; }
+#bmfs-token-action-hud .bmfs-hud-command-deck { min-width: 0; padding: 8px 9px 9px 18px; }
+#bmfs-token-action-hud .bmfs-hud-action-strip { display: flex; align-items: center; gap: 5px; min-width: 0; }
+#bmfs-token-action-hud .bmfs-hud-category-bar { display: flex; align-items: flex-start; gap: 4px; min-width: 0; overflow: visible; }
+#bmfs-token-action-hud .bmfs-hud-category { position: relative; flex: 1 1 auto; min-width: 0; }
+#bmfs-token-action-hud .bmfs-hud-category > summary {
+  min-height: 30px;
+  padding: 6px 7px;
+  overflow: hidden;
+  border: 1px solid rgb(145 191 213 / 36%);
+  border-radius: 4px;
+  background: rgb(30 55 69 / 74%);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+}
+#bmfs-token-action-hud .bmfs-hud-category > summary::-webkit-details-marker { display: none; }
+#bmfs-token-action-hud .bmfs-hud-category[open] > summary { border-color: var(--bmfs-hud-accent); background: var(--bmfs-hud-accent-soft); }
+#bmfs-token-action-hud .bmfs-hud-category-menu {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  z-index: 8;
+  display: grid;
+  gap: 3px;
+  width: max(190px, 100%);
+  max-width: min(360px, 80vw);
+  max-height: 45vh;
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid var(--bmfs-hud-accent);
+  border-radius: 4px;
+  background: rgb(7 16 25 / 98%);
+  box-shadow: 0 12px 25px rgb(0 0 0 / 58%);
+}
+#bmfs-token-action-hud .bmfs-hud-category-menu button { display: flex; gap: 6px; align-items: center; width: 100%; padding: 4px 7px; text-align: left; }
+#bmfs-token-action-hud .bmfs-hud-category-menu button img { width: 24px; height: 24px; object-fit: cover; border: 0; border-radius: 3px; }
+#bmfs-token-action-hud .bmfs-hud-category-menu details summary { padding: 3px 5px; color: var(--bmfs-hud-accent); font-weight: 800; cursor: pointer; }
+#bmfs-token-action-hud .bmfs-hud-menu-empty { padding: 4px 7px; color: #91aab6; font-size: 0.7rem; font-style: italic; }
+#bmfs-token-action-hud.bmfs-hud-unlocked .bmfs-hud-category > summary { outline: 1px dashed #f2c04e; cursor: grab; }
+#bmfs-token-action-hud .bmfs-hud-primary-action { flex: 0 0 auto; font-weight: 800; text-transform: uppercase; }
+#bmfs-token-action-hud .bmfs-hud-primary-action span { display: inline-grid; place-items: center; min-width: 20px; height: 18px; margin-left: 4px; border-radius: 9px; background: var(--bmfs-hud-accent); color: #071019; font-size: 0.7rem; }
+#bmfs-token-action-hud .bmfs-hud-melee, #bmfs-token-action-hud .bmfs-hud-dice { display: flex; gap: 3px; align-items: center; min-width: 0; }
+#bmfs-token-action-hud .bmfs-hud-melee > span { margin: 0 2px 0 5px; color: #e6b969; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; }
+#bmfs-token-action-hud .bmfs-hud-melee button, #bmfs-token-action-hud .bmfs-hud-dice button { min-height: 27px; padding: 2px 6px; font-size: 0.72rem; }
+#bmfs-token-action-hud .bmfs-hud-dice { margin-left: auto; }
+#bmfs-token-action-hud .bmfs-hud-fire-groups { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; margin-top: 8px; }
+#bmfs-token-action-hud .bmfs-fire-group-command { display: grid; align-content: center; min-height: 54px; padding: 5px 4px; border-bottom: 3px solid var(--bmfs-hud-accent); text-align: center; }
+#bmfs-token-action-hud .bmfs-fire-group-command > span { font-weight: 900; letter-spacing: 0.075em; }
+#bmfs-token-action-hud .bmfs-fire-group-command small { overflow: hidden; color: #aac2ce; font-size: 0.61rem; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-fire-group-command.bmfs-ammo-warning { border-color: #d56b55; color: #ffd3c8; }
+#bmfs-token-action-hud .bmfs-hud-empty { margin: 12px 0 0; color: #96aab4; font-style: italic; }
+#bmfs-token-action-hud .bmfs-hud-telemetry { display: grid; grid-template-columns: 1fr 54px; gap: 7px; align-items: stretch; padding: 8px; border-left: 1px solid rgb(255 255 255 / 13%); background: rgb(0 0 0 / 18%); }
+#bmfs-token-action-hud .bmfs-hud-telemetry section { display: grid; align-content: center; justify-items: center; gap: 4px; min-width: 0; }
+#bmfs-token-action-hud .bmfs-hud-telemetry section > span { color: #91aab6; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; }
+#bmfs-token-action-hud .bmfs-hud-telemetry section > strong { font-size: 0.78rem; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-ammo-gauge { position: relative; width: 34px; height: 55px; overflow: hidden; border: 1px solid #8199a5; background: rgb(0 0 0 / 42%); }
+#bmfs-token-action-hud .bmfs-ammo-gauge i { position: absolute; right: 0; bottom: 0; left: 0; height: var(--bmfs-ammo); background: linear-gradient(#f2c04e, #65d7e7); box-shadow: 0 0 10px rgb(101 215 231 / 36%); }
+#bmfs-token-action-hud .bmfs-heat-ladder { display: flex; flex-direction: column; gap: 3px; width: 35px; }
+#bmfs-token-action-hud .bmfs-heat-segment { height: 8px; border: 1px solid rgb(255 255 255 / 34%); background: rgb(0 0 0 / 38%); }
+#bmfs-token-action-hud .bmfs-heat-segment.is-active[data-level="1"] { background: #53c98b; }
+#bmfs-token-action-hud .bmfs-heat-segment.is-active[data-level="2"] { background: #b7d54b; }
+#bmfs-token-action-hud .bmfs-heat-segment.is-active[data-level="3"] { background: #f2c14e; }
+#bmfs-token-action-hud .bmfs-heat-segment.is-active[data-level="4"] { background: #ef853a; }
+#bmfs-token-action-hud .bmfs-heat-segment.is-active[data-level="5"] { background: #e44747; box-shadow: 0 0 9px rgb(228 71 71 / 78%); }
+#bmfs-token-action-hud .bmfs-hud-weapons { max-height: 180px; overflow-y: auto; padding: 7px 8px 8px 18px; border-top: 1px solid rgb(255 255 255 / 15%); background: rgb(3 9 14 / 74%); }
+#bmfs-token-action-hud .bmfs-hud-weapons[hidden] { display: none; }
+#bmfs-token-action-hud .bmfs-hud-weapons-heading { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 5px; color: var(--bmfs-hud-accent); font-size: 0.72rem; letter-spacing: 0.08em; }
+#bmfs-token-action-hud .bmfs-hud-weapons-heading span { color: #8fa6b1; font-size: 0.64rem; letter-spacing: normal; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row { display: grid; grid-template-columns: minmax(150px, 1fr) 86px; gap: 5px; width: 100%; margin-top: 4px; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row button { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 6px; align-items: center; overflow: hidden; padding: 2px 7px; text-align: left; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row button img { width: 22px; height: 22px; object-fit: cover; border: 0; border-radius: 3px; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row button small { color: #9db4bf; font-size: 0.65rem; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-hud-weapon-row select { min-height: 29px; padding: 2px 4px; color: #e8f1f7; background: #17242d; border: 1px solid rgb(255 255 255 / 24%); border-radius: 4px; }
+#bmfs-token-action-hud .bmfs-gator-panel { padding: 7px 9px 8px 18px; border-top: 1px solid rgb(255 255 255 / 14%); background: rgb(0 0 0 / 14%); }
+#bmfs-token-action-hud .bmfs-gator-heading { display: flex; justify-content: space-between; gap: 10px; color: var(--bmfs-hud-accent); font-size: 0.69rem; }
+#bmfs-token-action-hud .bmfs-gator-heading span { overflow: hidden; color: #afc3ce; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-gator-panel ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; }
+#bmfs-token-action-hud .bmfs-gator-panel li { display: grid; gap: 2px; min-width: 0; padding: 4px 5px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 3px; background: rgb(0 0 0 / 18%); font-size: 0.61rem; }
+#bmfs-token-action-hud .bmfs-gator-panel li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-gator-panel li strong { font-size: 0.75rem; }
+#bmfs-token-action-hud .bmfs-gator-panel li.is-active { border-color: var(--bmfs-hud-accent); background: var(--bmfs-hud-accent-soft); }
+#bmfs-token-action-hud .bmfs-gator-panel li.is-complete { opacity: 0.68; }
+#bmfs-token-action-hud .bmfs-gator-panel li.is-complete span::before { content: "✓ "; color: #75d59e; }
+
+.bmfs-combat-gator { display: flex; justify-content: space-between; gap: 8px; margin: 4px 6px; padding: 6px 8px; border: 1px solid rgb(83 185 223 / 42%); border-radius: 4px; background: rgb(20 42 55 / 72%); color: #dff5ff; font-size: 0.75rem; }
+.bmfs-combat-gator strong { color: #65d7e7; letter-spacing: 0.12em; }
+
+@container bmfs-hud (max-width: 610px) {
+  #bmfs-token-action-hud { padding-left: 0; }
+  #bmfs-token-action-hud .bmfs-hud-portrait { display: none; }
+  #bmfs-token-action-hud header { grid-template-columns: minmax(120px, 1fr) auto; padding-left: 9px; }
+  #bmfs-token-action-hud .bmfs-hud-badges { display: none; }
+  #bmfs-token-action-hud .bmfs-hud-console { grid-template-columns: 1fr; }
+  #bmfs-token-action-hud .bmfs-hud-telemetry { grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid rgb(255 255 255 / 13%); border-left: 0; }
+  #bmfs-token-action-hud .bmfs-hud-action-strip { flex-wrap: wrap; }
+  #bmfs-token-action-hud .bmfs-hud-dice { margin-left: 0; }
+  #bmfs-token-action-hud .bmfs-hud-fire-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #bmfs-token-action-hud .bmfs-gator-panel ol { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 850px) {
+  #bmfs-token-action-hud { left: 12px; width: calc(100vw - 24px); min-width: 360px; padding-left: 104px; }
+  #bmfs-token-action-hud .bmfs-hud-portrait { left: 8px; width: 88px; height: 88px; min-height: 88px; }
+  #bmfs-token-action-hud header { grid-template-columns: minmax(135px, 1fr) auto; padding-left: 14px; }
+  #bmfs-token-action-hud .bmfs-hud-badges { display: none; }
+  #bmfs-token-action-hud .bmfs-hud-console { grid-template-columns: minmax(0, 1fr) 104px; }
+  #bmfs-token-action-hud .bmfs-hud-dice { display: none; }
+  #bmfs-token-action-hud .bmfs-hud-melee button { padding-inline: 4px; }
+}
+
+@container bmfs-hud (max-width: 610px) {
+  #bmfs-token-action-hud { padding-left: 0; }
+  #bmfs-token-action-hud .bmfs-hud-portrait { display: none; }
+  #bmfs-token-action-hud .bmfs-hud-console { grid-template-columns: 1fr; }
+  #bmfs-token-action-hud .bmfs-hud-dice { display: flex; }
+}
+
+.bmfs-dice-overlay {
+  --bmfs-die-body: #1c6dd0;
+  --bmfs-die-pips: #fff;
+  --bmfs-die-size: 72px;
+  position: fixed;
+  left: 50%;
+  top: 48%;
+  z-index: 120;
+  min-width: 220px;
+  padding: 12px 20px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgb(255 255 255 / 34%);
+  border-radius: 12px;
+  background: rgb(8 15 24 / 82%);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 10px 35px rgb(0 0 0 / 62%);
+  animation: bmfs-dice-overlay-in 180ms ease-out both;
+}
+.bmfs-dice-label { font-weight: 700; text-shadow: 0 1px 3px #000; }
+.bmfs-dice-row { display: flex; justify-content: center; gap: 14px; margin: 9px 0 4px; perspective: 700px; }
+.bmfs-visual-die {
+  display: grid;
+  place-items: center;
+  width: var(--bmfs-die-size);
+  height: var(--bmfs-die-size);
+  border: 2px solid color-mix(in srgb, var(--bmfs-die-body), white 28%);
+  border-radius: 16%;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bmfs-die-body), white 18%), var(--bmfs-die-body) 58%, color-mix(in srgb, var(--bmfs-die-body), black 28%));
+  color: var(--bmfs-die-pips);
+  box-shadow: inset 5px 5px 10px rgb(255 255 255 / 18%), inset -7px -7px 12px rgb(0 0 0 / 28%), 0 7px 12px rgb(0 0 0 / 45%);
+  animation: bmfs-d6-tumble 1050ms cubic-bezier(.17,.67,.26,1.08) both;
+  animation-delay: calc(var(--bmfs-die-index) * 70ms);
+  transform-style: preserve-3d;
+}
+.bmfs-visual-die span { font-family: "Segoe UI Symbol", sans-serif; font-size: calc(var(--bmfs-die-size) * .83); line-height: 1; filter: drop-shadow(0 2px 1px rgb(0 0 0 / 35%)); }
+.bmfs-dice-total { font-size: 1.05rem; font-weight: 700; opacity: 0; transition: opacity 180ms ease; }
+.bmfs-dice-overlay.bmfs-dice-finished .bmfs-dice-total { opacity: 1; }
+.bmfs-dice-config { display: grid; gap: 10px; min-width: 310px; }
+.bmfs-dice-config label { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.bmfs-dice-config input[type="color"] { width: 64px; height: 34px; padding: 2px; }
+.bmfs-dice-config input[type="range"] { width: 170px; }
+.bmfs-map-generator { display: grid; gap: 10px; min-width: 340px; }
+.bmfs-map-generator label { display: grid; grid-template-columns: 130px 1fr; gap: 8px; align-items: center; }
+
+#bmfs-player-console {
+  --bmfs-console-accent: #53b9df;
+  position: fixed;
+  z-index: 75;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-width: 420px;
+  min-height: 340px;
+  max-width: calc(100vw - 12px);
+  max-height: calc(100vh - 12px);
+  overflow: hidden;
+  resize: both;
+  border: 1px solid rgb(83 185 223 / 68%);
+  border-radius: 8px;
+  background: linear-gradient(130deg, rgb(18 35 47 / 99%), rgb(7 15 23 / 99%));
+  color: #edf7fb;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 72%);
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+}
+#bmfs-player-console .bmfs-console-handle { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 7px 16px; border-bottom: 1px solid rgb(255 255 255 / 14%); background: linear-gradient(90deg, rgb(83 185 223 / 22%), transparent); cursor: grab; }
+#bmfs-player-console .bmfs-console-handle div { display: grid; }
+#bmfs-player-console .bmfs-console-handle span { color: var(--bmfs-console-accent); font-size: 0.65rem; font-weight: 900; letter-spacing: 0.16em; }
+#bmfs-player-console .bmfs-console-handle strong { font-family: "Teko", sans-serif; font-size: 1.25rem; text-transform: uppercase; }
+#bmfs-player-console button { border: 1px solid rgb(145 191 213 / 36%); color: #edf8fc; background: rgb(30 55 69 / 74%); }
+#bmfs-player-console button:hover { border-color: var(--bmfs-console-accent); background: rgb(83 185 223 / 20%); }
+#bmfs-player-console > nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 5px; border-bottom: 1px solid rgb(255 255 255 / 12%); }
+#bmfs-player-console > nav button[aria-selected="true"] { border-bottom: 3px solid var(--bmfs-console-accent); background: rgb(83 185 223 / 22%); }
+#bmfs-player-console > main { min-height: 0; padding: 12px; overflow: auto; }
+#bmfs-player-console [role="tabpanel"][hidden] { display: none; }
+#bmfs-player-console details { margin-bottom: 9px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 5px; background: rgb(0 0 0 / 15%); }
+#bmfs-player-console details > summary { padding: 7px 9px; color: var(--bmfs-console-accent); font-weight: 900; cursor: pointer; }
+#bmfs-player-console details > :not(summary) { margin-inline: 9px; }
+#bmfs-player-console .bmfs-pilot-overview { display: grid; grid-template-columns: minmax(130px, 32%) 1fr; gap: 18px; align-items: start; }
+#bmfs-player-console .bmfs-pilot-overview > img { width: 100%; aspect-ratio: 1; object-fit: cover; border: 2px solid var(--bmfs-console-accent); border-radius: 50%; }
+#bmfs-player-console h2 { margin: 0 0 4px; font-family: "Teko", sans-serif; font-size: 1.8rem; text-transform: uppercase; }
+#bmfs-player-console dl { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; }
+#bmfs-player-console dt { color: #9eb8c4; }
+#bmfs-player-console dd { margin: 0; font-weight: 800; text-align: right; }
+#bmfs-player-console .bmfs-lance-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-block: 8px; }
+#bmfs-player-console .bmfs-lance-card { display: grid; grid-template-columns: 58px minmax(0, 1fr) 30px; gap: 8px; align-items: center; min-height: 68px; padding: 6px; border-left: 4px solid #67ce91; background: rgb(255 255 255 / 5%); }
+#bmfs-player-console .bmfs-lance-card.is-warning { border-color: #e08255; }
+#bmfs-player-console .bmfs-lance-card.is-empty { grid-template-columns: 1fr; border-color: #536771; opacity: 0.65; }
+#bmfs-player-console .bmfs-lance-card img { width: 58px; height: 58px; object-fit: cover; border: 0; }
+#bmfs-player-console .bmfs-lance-card div { display: grid; min-width: 0; }
+#bmfs-player-console .bmfs-lance-card div > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-player-console .bmfs-lance-card small { color: #a7bdc7; }
+#bmfs-player-console .bmfs-lance-card b { color: #69d79a; font-size: 0.72rem; }
+#bmfs-player-console .bmfs-mission-heading, #bmfs-player-console .bmfs-bay-ledger, #bmfs-player-console .bmfs-mission-ledger { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; }
+#bmfs-player-console .bmfs-mission-ledger span { flex: 1; padding: 8px; border: 1px solid rgb(255 255 255 / 12%); text-align: center; }
+#bmfs-player-console .bmfs-inventory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+#bmfs-player-console .bmfs-console-empty { color: #8fa6b1; font-style: italic; }
+
+@media (max-width: 680px) {
+  #bmfs-player-console { min-width: 350px; }
+  #bmfs-player-console > nav { grid-template-columns: repeat(2, 1fr); }
+  #bmfs-player-console .bmfs-lance-grid, #bmfs-player-console .bmfs-inventory-grid { grid-template-columns: 1fr; }
+}
+
+@keyframes bmfs-dice-overlay-in {
+  from { opacity: 0; transform: translate(-50%, -44%) scale(.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes bmfs-d6-tumble {
+  0% { opacity: 0; transform: translate3d(-80px, -130px, 80px) rotateX(20deg) rotateY(40deg) rotateZ(-18deg) scale(.55); }
+  28% { opacity: 1; transform: translate3d(22px, 15px, 35px) rotateX(245deg) rotateY(190deg) rotateZ(110deg) scale(1.08); }
+  58% { transform: translate3d(-12px, -20px, 18px) rotateX(510deg) rotateY(410deg) rotateZ(250deg) scale(.92); }
+  82% { transform: translate3d(4px, 5px, 6px) rotateX(690deg) rotateY(580deg) rotateZ(350deg) scale(1.03); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotateX(720deg) rotateY(720deg) rotateZ(360deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bmfs-dice-overlay, .bmfs-visual-die { animation-duration: 1ms; animation-delay: 0ms; }
+}
