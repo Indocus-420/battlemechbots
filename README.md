@@ -1,6 +1,12 @@
 # BattleMech Foundry System — Phase 0
 
-Target: Foundry Virtual Tabletop 14.364.
+Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
+
+## 0.11.2-alpha.0 Foundry 14.363 compatibility
+
+- Lowers the minimum supported Foundry VTT release to 14.363.
+- Retains verification through Foundry VTT 14.364.
+- Includes the complete 0.11.1 feature set and aerospace targeting frames.
 
 ## 0.11.1-alpha.0 aerospace targeting arcs
 

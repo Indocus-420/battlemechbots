@@ -66,11 +66,11 @@ globalThis.CONFIG = {
   Canvas: { vfx: { enabled: false } }
 };
 globalThis.game = {
-  version: "14.364",
-  release: { version: "14.364", generation: 14 },
+  version: "14.363",
+  release: { version: "14.363", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.11.1-alpha.0",
+    version: "0.11.2-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { id: "player", isGM: false },
@@ -82,7 +82,7 @@ globalThis.game = {
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.11.1-alpha.0"
+    get: () => "0.11.2-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -108,7 +108,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.11.1-alpha.0");
+  assert.equal(game.bmfs.version, "0.11.2-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");

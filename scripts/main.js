@@ -101,7 +101,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.11.1-alpha.0";
+const SYSTEM_VERSION = "0.11.2-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -116,7 +116,7 @@ const DICE_ANIMATION_TIMEOUT = 4000;
 const pendingCombatActions = new Map();
 const combatActionLocks = new Set();
 const DICE_GLYPHS = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-const TARGET_FOUNDRY = "14.364";
+const TARGET_FOUNDRY = "14.363+";
 const WEAPON_DICE_THEMES = Object.freeze({
   laserShort: { id: "laser-short", label: "Short Laser (Red)", foreground: "#ffffff", background: "#c62828", outline: "#4a0909", edge: "#ef5350" },
   laserMedium: { id: "laser-medium", label: "Medium Laser (Green)", foreground: "#ffffff", background: "#15803d", outline: "#052e16", edge: "#4ade80" },
