@@ -2,12 +2,147 @@
 
 Target: Foundry Virtual Tabletop 14.364.
 
+## 0.11.1-alpha.0 aerospace targeting arcs
+
+- Adds an original transparent Tokenizer ring for aerospace nose, wing-overlap, left/right wing, and aft weapon arcs.
+- Adds deterministic aerospace bearing classification for future aerospace-unit attack validation and HUD display.
+- Registers the aerospace frame beside the BattleMech firing-arc and incoming-hit-zone frames without adding a Tokenizer dependency.
+
+## 0.11.0-alpha.0 Pilot command, targeting, maps, and synchronized presentation
+
+- Adds a configurable `P` shortcut for a resizable four-tab Pilot and Lance window: Overview, Lance, Mission, and Mech Bay.
+- Remembers the player window's size, position, active tab, and collapsed sections for each Foundry user.
+- Presents four BattleMech slots and three vehicle-support slots with armor, internals, heat, ammunition, pilot, and readiness summaries.
+- Rebuilds the action HUD around compact horizontal categories with nested Energy, Ballistic, Missile, Equipment, firing-group, physical, movement, systems, pilot, and utility menus.
+- Supports right-click item-sheet access plus an unlock mode for reorganizing HUD categories while retaining the established command-console appearance and resize behavior.
+- Adds two original transparent Tokenizer frames for BattleMech firing arcs and incoming hit zones.
+- Adds seeded native random hex-map generation at 25x25, 50x50, 75x75, 100x100, and 125x125, with selectable terrain Drawings and Regions compatible with bulk-selection and Mass Edit workflows.
+- Synchronizes fire, hit, miss, melee, walking, running, and jumping audio for all connected clients; JB2A and Sequencer are preferred when available, with the Foundry 14 VFX fallback retained.
+- Adds automated coverage for map sizes and seed repeatability, firing arcs and hit zones, Tokenizer registration, player/lance slot construction, readiness, and the expanded entrypoint.
+
+## 0.10.15-alpha.0 Foundry 14 visual-effects correction
+
+- Removes numeric VFX timeline positions that Foundry 14 passes to animejs as timeline labels.
+- Restores packaged weapon and melee effects without the `r.indexOf is not a function` playback failure.
+- Retains the verified 0.10.14 ammunition accounting and shared-bin weapon-group preflight.
+- Adds a regression test for Foundry 14 weapon and melee VFX timelines.
+
+## 0.10.14-alpha.0 ammunition transaction correction
+
+- Tracks SRM and LRM stock as individual missiles and consumes the launcher rack size per volley.
+- Consumes one ammunition unit for each autocannon attack and 200 rounds for each machine-gun attack.
+- Updates core missile bins to individual missile counts and machine-gun bins to 1,000 rounds.
+- Migrates legacy salvo-count missile bins and 200-round machine-gun bins once when the GM loads the world.
+- Preflights every firing group against shared compatible bins before the first weapon fires, preventing partial group attacks caused by insufficient stock.
+- Keeps current/maximum ammunition and readiness synchronized in the Action HUD.
+
+## 0.10.13-alpha.0 command-console HUD and GM free movement
+
+- Restores the compact dark command-console HUD appearance with its circular portrait, cyan default accents, dense controls, ammunition gauge, and heat ladder.
+- Keeps the 0.10.12 resizing, responsive layout, scrollbars, per-user geometry, ammunition values, GATOR display, and faction selection.
+- Limits Great House styling to accent colors so every faction retains the established command-console appearance.
+- Allows a Gamemaster to place and move tokens freely without BattleTech movement, status, heat, MP, turn, or GATOR restrictions; Foundry's normal GM pause override remains available.
+- Leaves normal ownership and BattleTech movement validation in force for players.
+
+## 0.10.12-alpha.0 responsive faction HUD and GATOR display
+
+- Makes the Action HUD manually resizable, responsive, scrollable, and able to remember each user's own size and position.
+- Adds automatic CSS-only HUD themes for independent units and Houses Davion, Kurita, Liao, Marik, and Steiner.
+- Adds a faction selector to the BattleMech sheet and migrates existing units safely to Independent.
+- Shows compatible ammunition as current/maximum on every ammunition weapon and warns or disables attacks when no compatible stock remains.
+- Adds a five-step GATOR display to the HUD and Combat Tracker, with Gamemaster previous, advance, and reset controls.
+- Refreshes the open HUD immediately when its BattleMech or embedded equipment changes.
+
+## 0.10.11-alpha.0 authoritative attacker-token routing
+
+- Player weapon and physical-attack requests now identify the exact attacking
+  Scene token.
+- The active Gamemaster validates that token against the owned BattleMech and
+  resolves range, facing, effects, and audio from that exact token.
+- This removes ambiguous world-Actor token selection found during the live 4v4
+  multiplayer facing test.
+
+## 0.10.10-alpha.0 non-blocking multiplayer dice
+
+- Adds a strict four-second ceiling to direct Dice So Nice playback.
+- Prevents a hidden or inactive Gamemaster browser from blocking authoritative player attacks while waiting for a 3D dice animation.
+- Preserves Dice So Nice synchronization, weapon colors, and duplicate-animation suppression after the timeout.
+- Guarantees that chat output and the response to Player3 or Player4 continue even if Dice So Nice never resolves its animation promise.
+- Corrects the live 0.10.9 test where GM authority applied heat and fired-location state but the player request timed out before chat and response delivery.
+
+## 0.10.9-alpha.0 multiplayer teams
+
+- Adds explicit Team A and Team B encounter rosters supporting 1v1 through 4v4, including the requested 2v2, 3v3, and 4v4 formats.
+- Adds GM token controls to assign controlled tokens to either team, clear selected assignments, and display the complete roster.
+- Automatically adds selected BattleMech and combat-vehicle tokens to the active Combat Tracker before assigning their team.
+- Stores team identity on Combatants rather than depending on token ownership or disposition, allowing Player3 and Player4 to share a team cleanly.
+- Prevents either team from exceeding four operational units and rejects duplicate or cross-team unit membership.
+- Feeds Team A and Team B directly into the existing Initiative, loser-first movement, weapon, and physical attack activation sequence.
+
+## 0.10.8-alpha.0 authoritative player combat
+
+- Enables Foundry's authenticated system socket in `system.json`; the live 0.10.6 audit confirmed that combat-effect messages were not relayed without this required manifest declaration.
+- Routes non-Gamemaster weapon and physical attacks to the active Gamemaster for authoritative resolution.
+- Validates the server-supplied socket sender, connected user, attacker ownership, embedded weapon ownership, active Scene, and target before accepting an action.
+- Resolves enemy damage, critical hits, heat, ammunition, fired locations, kick Piloting checks, chat, dice, sound, and visuals from the Gamemaster client so a player never needs ownership of the enemy Actor.
+- Locks each attacker while its authoritative action is resolving, preventing double-clicks or overlapping requests from spending ammunition or applying damage twice.
+- Blocks non-Gamemaster attacks cleanly when no Gamemaster is connected instead of partially spending ammunition or heat.
+- Adds Player3-role regression coverage for weapon and physical combat authority boundaries.
+
+## 0.10.7-alpha.0 stabilization and live-world repair
+
+- Repairs system-owned BattleMech and vehicle compendiums by replacing their packed Actor copies with clean catalog sources, preventing repeated synchronization from preserving duplicated embedded weapons, ammunition, or equipment. World Actors are never replaced or reset.
+- Removes duplicate same-name compendium entries and prunes obsolete entries during synchronization.
+- Reports the exact reason each weapon in a firing group did not fire, including range, line-of-sight, ammunition, destruction, targeting, and other attack validation failures.
+- Expands invalid Combat Tracker side errors with the current assignment of every eligible unit and direct guidance for correcting token dispositions or explicit BattleTech side flags.
+- Audited the deployed Foundry 14.364 world with the active optional-module stack and the newly installed Rideable and routinglib modules.
+
+## 0.10.6-alpha.0 synchronized combat presentation and collateral damage
+
+- Adds four configurable action-hub firing groups: Group 1, Group 2, Group 3, and Alpha. Every weapon can be assigned from its action-hub row, with unassigned and existing weapons defaulting to Alpha.
+- Fires every operational weapon in a selected group through the normal attack engine, preserving individual attack rolls, ranges, heat, ammunition use, hit/miss resolution, scatter, collateral damage, effects, and sound.
+- Posts a group summary naming the pilot and firing group, then reports each weapon's roll, target number, range bracket, damage, heat, ammunition remaining, plus combined hits, misses, collateral hits, heat, ammunition spent, and applied damage.
+- Sends built-in weapon and melee hit/miss visuals to every connected client and broadcasts packaged combat audio through Foundry's socket-aware audio helper.
+- Adds distinct synthesized sounds for small, medium, and large lasers, PPCs, missiles, ballistic weapons, melee hits, and melee misses.
+- Gives punch and kick attacks visible hit and miss effects.
+- Scatters every missed weapon attack into a random adjacent hex using 1D6. An operational BattleMech in that hex receives normal weapon damage; missiles also resolve their cluster roll and damage groups. Empty impact hexes receive the effect without damage.
+- Expands weapon chat cards with attack roll, target number, complete weapon statistics, GATOR breakdown, heat, ammunition before/after, scatter result, cluster grouping, damage output, receiving unit, armor/internal damage, destruction, and critical results.
+- Verifies every operational sheet weapon appears in the action hub and adds catalog-wide tests for media, ammunition matching/stock, and damage output.
+
+## 0.10.5-alpha.0 weapon dice themes
+
+- Gives Dice So Nice attack rolls weapon-specific custom colors: Small/Medium/Large Lasers use red/green/blue; SRM/MRM/LRM launchers use yellow/orange/brown; PPCs use blue-white; and ballistic weapons use white.
+- Classifies known weapons by weapon family and name, with the current range bracket as a fallback for future generic laser or missile items.
+- Leaves ordinary skill, initiative, piloting, and other BattleTech rolls under each player's normal Dice So Nice appearance.
+
+## 0.10.4-alpha.0 Dice So Nice palette routing hotfix
+
+- Activates the Dice So Nice sidebar panel when necessary before opening its 3D Dice Settings dialog, so the action-hub palette works even when that sidebar panel has not previously been rendered.
+
+## 0.10.3-alpha.0 Dice So Nice integration
+
+- Detects the active Dice So Nice module and sends system roll objects directly to `game.dice3d.showForRoll`.
+- Marks the matching Foundry chat message with Dice So Nice's developer `skip` flag after a successful direct handoff, preventing duplicate animations.
+- Uses the built-in animated BattleTech dice only when Dice So Nice is inactive, unavailable, or its direct API fails.
+- Routes the action-hub palette to Dice So Nice's 3D configuration when the module is active; the built-in appearance dialog remains the fallback controller.
+
+## 0.10.2-alpha.0 dice customization persistence fix
+
+- Reads Foundry VTT 14 `DialogV2.input` results through its `FormDataExtended.get` interface so visual-dice visibility, colors, and size save correctly and the preview is displayed.
+
+## 0.10.1-alpha.0 movable action hub and visual dice
+
+- Drag the action hub by its header; its position is retained in that browser.
+- Every system D6 control now produces a built-in on-screen tumble animation as well as the standard Foundry chat roll.
+- Use the palette button in the action hub to enable or disable visual dice and customize their body color, pip color, and size.
+- Dice So Nice remains an optional enhancement and continues to receive standard Foundry roll messages when installed.
+
 ## 0.10.0-alpha.0 D6, HUD, integrations, and catalog media
 
 - Adds 1D6 and 2D6 Scene controls plus Gunnery and Piloting checks in a native BattleTech token action HUD. All rolls use Foundry `Roll` and `toMessage`, so Dice So Nice animates them automatically when enabled.
 - Adds a Tokenizer action to the BattleMech sheet and controlled-token HUD. Tokenizer remains optional and enforces Foundry file-upload permissions.
 - Uses supported JB2A and Sequencer APIs for laser, PPC, autocannon, and missile effects when both modules are active; built-in SVG effects remain the automatic fallback.
-- Adapts the Token Action HUD interaction model into a dependency-free BattleTech HUD with D6 checks, sheet access, token editing, physical attacks, and operational mech weapons.
+- Adapts the Token Action HUD interaction model into a dependency-free BattleTech command console with a circular unit portrait, pilot and movement identity, four summarized firing groups, direct weapon and melee controls, ammunition gauge, five-stage heat ladder, D6 checks, sheet access, and token editing. Optional integrations can extend the HUD through `bmfs.actionHudModel` and `bmfs.actionHudRendered` hooks without replacing it.
 - Splits the item catalog into Energy, Ballistic, Missile, and Equipment compendiums. The original item collection becomes Energy and is pruned during migration.
 - Gives all 44 catalog items distinct original SVG icons.
 - Gives all six original vehicles distinct SVG token portraits, synthesized WAV activation sounds, and selection effects.

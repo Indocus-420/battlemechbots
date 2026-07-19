@@ -11,6 +11,16 @@
         <label>Variant <input name="system.mech.variant" type="text" value="{{system.mech.variant}}"></label>
         <label>Tons <input name="system.mech.tonnage" type="number" value="{{system.mech.tonnage}}"></label>
         <label>Role <input name="system.mech.role" type="text" value="{{system.mech.role}}"></label>
+        <label>Faction / House
+          <select name="system.mech.faction">
+            <option value="independent" {{#if (eq system.mech.faction "independent")}}selected{{/if}}>Independent / Mercenary</option>
+            <option value="davion" {{#if (eq system.mech.faction "davion")}}selected{{/if}}>House Davion — Federated Suns</option>
+            <option value="kurita" {{#if (eq system.mech.faction "kurita")}}selected{{/if}}>House Kurita — Draconis Combine</option>
+            <option value="liao" {{#if (eq system.mech.faction "liao")}}selected{{/if}}>House Liao — Capellan Confederation</option>
+            <option value="marik" {{#if (eq system.mech.faction "marik")}}selected{{/if}}>House Marik — Free Worlds League</option>
+            <option value="steiner" {{#if (eq system.mech.faction "steiner")}}selected{{/if}}>House Steiner — Lyran Commonwealth</option>
+          </select>
+        </label>
       </div>
     </div>
   </header>

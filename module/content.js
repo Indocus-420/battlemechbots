@@ -48,6 +48,12 @@ function vehiclePresentation(name, tonnage) {
 }
 
 function weapon(name, weaponType, damage, heat, ranges, slots, notes = "") {
+  const missileRack = name.match(/\b(?:SRM|LRM)\s*(2|4|5|6|10|15|20)\b/i);
+  const ammoPerShot = /\bMachine Gun\b/i.test(name)
+    ? 200
+    : missileRack
+      ? Number(missileRack[1])
+      : ["missile", "autocannon"].includes(weaponType) ? 1 : 0;
   return {
     name,
     type: "weapon",
@@ -57,7 +63,7 @@ function weapon(name, weaponType, damage, heat, ranges, slots, notes = "") {
       location: "rightArm",
       damage,
       heat,
-      ammoPerShot: ["missile", "autocannon"].includes(weaponType) ? 1 : 0,
+      ammoPerShot,
       shots: 0,
       slotStart: 1,
       slots,
@@ -128,18 +134,18 @@ export const CORE_ITEMS = Object.freeze([
   weapon("LRM 15", "missile", 1, 5, range(6, 7, 14, 21), 3, "Damage is per missile; cluster resolution remains a later combat increment."),
   weapon("LRM 20", "missile", 1, 6, range(6, 7, 14, 21), 5, "Damage is per missile; cluster resolution remains a later combat increment."),
 
-  ammo("Machine Gun Ammunition", "Machine Gun", 200, 2),
+  ammo("Machine Gun Ammunition", "Machine Gun", 1000, 2, "Each machine gun attack consumes 200 rounds."),
   ammo("Autocannon/2 Ammunition", "AC/2", 45, 2),
   ammo("Autocannon/5 Ammunition", "AC/5", 20, 5),
   ammo("Autocannon/10 Ammunition", "AC/10", 10, 10),
   ammo("Autocannon/20 Ammunition", "AC/20", 5, 20),
-  ammo("SRM 2 Ammunition", "SRM 2", 50, 4, "Shots are launcher salvos; explosion damage per salvo includes both missiles."),
-  ammo("SRM 4 Ammunition", "SRM 4", 25, 8, "Shots are launcher salvos; explosion damage per salvo includes all missiles."),
-  ammo("SRM 6 Ammunition", "SRM 6", 15, 12, "Shots are launcher salvos; explosion damage per salvo includes all missiles."),
-  ammo("LRM 5 Ammunition", "LRM 5", 24, 5, "Shots are launcher salvos; explosion damage per salvo includes all missiles."),
-  ammo("LRM 10 Ammunition", "LRM 10", 12, 10, "Shots are launcher salvos; explosion damage per salvo includes all missiles."),
-  ammo("LRM 15 Ammunition", "LRM 15", 8, 15, "Shots are launcher salvos; explosion damage per salvo includes all missiles."),
-  ammo("LRM 20 Ammunition", "LRM 20", 6, 20, "Shots are launcher salvos; explosion damage per salvo includes all missiles."),
+  ammo("SRM 2 Ammunition", "SRM 2", 100, 2, "Tracked as individual missiles; an SRM 2 volley consumes 2."),
+  ammo("SRM 4 Ammunition", "SRM 4", 100, 2, "Tracked as individual missiles; an SRM 4 volley consumes 4."),
+  ammo("SRM 6 Ammunition", "SRM 6", 90, 2, "Tracked as individual missiles; an SRM 6 volley consumes 6."),
+  ammo("LRM 5 Ammunition", "LRM 5", 120, 1, "Tracked as individual missiles; an LRM 5 volley consumes 5."),
+  ammo("LRM 10 Ammunition", "LRM 10", 120, 1, "Tracked as individual missiles; an LRM 10 volley consumes 10."),
+  ammo("LRM 15 Ammunition", "LRM 15", 120, 1, "Tracked as individual missiles; an LRM 15 volley consumes 15."),
+  ammo("LRM 20 Ammunition", "LRM 20", 120, 1, "Tracked as individual missiles; an LRM 20 volley consumes 20."),
 
   equipment("Fusion Engine", "engine", "centerTorso", 6),
   equipment("Gyro", "gyro", "centerTorso", 4),

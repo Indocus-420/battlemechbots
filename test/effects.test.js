@@ -2,7 +2,21 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { CORE_MECHS } from "../module/content.js";
-import { jb2aWeaponEffectProfile, mechPresentationProfile, playJB2AWeaponEffect, weaponEffectProfile } from "../module/effects.js";
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+import {
+  jb2aWeaponEffectProfile,
+  meleeEffectProfile,
+  mechPresentationProfile,
+  playJB2AWeaponEffect,
+  playMeleeEffect,
+  playWeaponEffect,
+  weaponEffectProfile
+} from "../module/effects.js";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const weapon = (name, weaponType) => ({ name, system: { weaponType } });
 
@@ -45,6 +59,32 @@ test("JB2A integration plays through Sequencer when both optional modules are ac
   delete globalThis.Sequencer;
 });
 
+test("Foundry 14 VFX timelines omit numeric positions rejected by animejs", async () => {
+  const effects = [];
+  class FakeVFXEffect {
+    constructor(data) {
+      this.data = data;
+      effects.push(data);
+    }
+    async play() {
+      return true;
+    }
+  }
+  globalThis.canvas = { ready: true };
+  globalThis.CONFIG = { Canvas: { vfx: { enabled: true } } };
+  globalThis.foundry = { canvas: { vfx: { VFXEffect: FakeVFXEffect } } };
+  const token = { center: { x: 10, y: 10 }, document: { elevation: 0 } };
+  assert.equal(await playWeaponEffect(token, token, weapon("Medium Laser", "laser"), { audio: false, jb2a: false }), true);
+  assert.equal(await playMeleeEffect(token, token, { audio: false }), true);
+  assert.deepEqual(effects.map(effect => effect.timeline), [
+    [{ component: "flight" }],
+    [{ component: "strike" }]
+  ]);
+  delete globalThis.canvas;
+  delete globalThis.CONFIG;
+  delete globalThis.foundry;
+});
+
 test("the 20 BattleMechs expose distinct activation media profiles", () => {
   const profiles = CORE_MECHS.map(mechPresentationProfile);
   assert.equal(new Set(profiles.map(profile => profile.image)).size, 20);
@@ -64,5 +104,31 @@ test("effect profiles use only packaged system assets", () => {
     const profile = weaponEffectProfile(sample);
     assert.ok(profile.texture.startsWith("systems/battletech-foundry-system/assets/vfx/"));
     assert.ok(profile.impact.startsWith("systems/battletech-foundry-system/assets/vfx/"));
+    assert.ok(profile.sound.startsWith("systems/battletech-foundry-system/assets/audio/combat/"));
+  }
+});
+
+test("every weapon family and melee outcome has packaged visual and valid WAV media", () => {
+  const profiles = [
+    weaponEffectProfile(weapon("Small Laser", "laser")),
+    weaponEffectProfile(weapon("Medium Laser", "laser")),
+    weaponEffectProfile(weapon("Large Laser", "laser")),
+    weaponEffectProfile(weapon("PPC", "ppc")),
+    weaponEffectProfile(weapon("SRM 6", "missile")),
+    weaponEffectProfile(weapon("Autocannon/20", "autocannon")),
+    meleeEffectProfile("punch", true),
+    meleeEffectProfile("kick", false)
+  ];
+  for (const profile of profiles) {
+    const media = [profile.texture, profile.impact, profile.sound].filter(Boolean);
+    for (const path of media) {
+      const local = join(root, path.replace("systems/battletech-foundry-system/", ""));
+      assert.equal(existsSync(local), true, path);
+      if (path.endsWith(".wav")) {
+        const bytes = readFileSync(local);
+        assert.equal(bytes.subarray(0, 4).toString(), "RIFF");
+        assert.equal(bytes.subarray(8, 12).toString(), "WAVE");
+      }
+    }
   }
 });

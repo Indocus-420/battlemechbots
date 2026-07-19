@@ -3,7 +3,10 @@ import test from "node:test";
 
 import {
   ammunitionTypeForWeapon,
+  ammunitionUnitsPerAttack,
+  legacyAmmunitionMigration,
   missileLauncherProfile,
+  planAmmunitionConsumption,
   resolveMissileCluster,
   selectAmmunitionBin
 } from "../module/missiles.js";
@@ -36,3 +39,38 @@ test("ammunition selection uses a nonempty matching bin and empties small bins f
   assert.equal(selectAmmunitionBin(bins, "Autocannon/20"), null);
 });
 
+test("ammunition usage follows rack, ballistic, and machine-gun rules", () => {
+  assert.equal(ammunitionUnitsPerAttack({ name: "SRM 4", system: { ammoPerShot: 1 } }), 4);
+  assert.equal(ammunitionUnitsPerAttack({ name: "LRM 20", system: { ammoPerShot: 1 } }), 20);
+  assert.equal(ammunitionUnitsPerAttack({ name: "Machine Gun", system: { ammoPerShot: 1 } }), 200);
+  assert.equal(ammunitionUnitsPerAttack({ name: "Autocannon/10", system: { ammoPerShot: 1 } }), 1);
+  assert.equal(ammunitionUnitsPerAttack({ name: "Medium Laser", system: { ammoPerShot: 0 } }), 0);
+});
+
+test("weapon groups preflight shared ammunition before firing", () => {
+  const weapons = [
+    { id: "left", name: "LRM 10", type: "weapon", system: {} },
+    { id: "right", name: "LRM 10 - Left", type: "weapon", system: {} }
+  ];
+  const bin = shots => ({ id: "bin", name: "LRM Bin", type: "ammo", system: { ammoType: "LRM 10", shots, destroyed: false } });
+  assert.equal(planAmmunitionConsumption([bin(19)], weapons).ready, false);
+  const ready = planAmmunitionConsumption([bin(20)], weapons);
+  assert.equal(ready.ready, true);
+  assert.equal(ready.remainingById.get("bin"), 0);
+});
+
+test("legacy salvo bins migrate to individual ammunition units once", () => {
+  assert.deepEqual(legacyAmmunitionMigration({
+    type: "ammo",
+    system: { ammoType: "SRM 4", shots: 20, maxShots: 25, damagePerShot: 8, notes: "Shots are launcher salvos." }
+  }), {
+    shots: 80,
+    maxShots: 100,
+    damagePerShot: 2,
+    notes: "Tracked as individual missiles; an SRM 4 volley consumes 4."
+  });
+  assert.equal(legacyAmmunitionMigration({
+    type: "ammo",
+    system: { ammoType: "SRM 4", shots: 80, maxShots: 100, damagePerShot: 2, notes: "Tracked as individual missiles." }
+  }), null);
+});

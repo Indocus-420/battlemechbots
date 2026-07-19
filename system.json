@@ -1,8 +1,11 @@
 {
   "id": "battletech-foundry-system",
   "title": "BattleMech Foundry System",
-  "description": "BattleMech combat alpha for Foundry VTT 14.364 with D6 tools, token action HUD, GATOR combat, Heat and End Phase automation, class-separated mechs and items, vehicle media, token editing, and optional JB2A effects.",
-  "version": "0.10.0-alpha.0",
+  "description": "BattleMech combat alpha for Foundry VTT 14.364 with a Pilot and Lance command window, compact nested action HUD, Tokenizer firing-arc frames, seeded random hex maps, synchronized weapon and movement effects, GATOR combat, Heat and End Phase automation, and class-separated content.",
+  "version": "0.11.1-alpha.0",
+  "url": "https://github.com/Indocus-420/battlemechbots",
+  "manifest": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.11.1-alpha.0/system.json",
+  "download": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.11.1-alpha.0/battletech-foundry-system-0.11.1-alpha.0.zip",
   "compatibility": {
     "minimum": "14.364",
     "verified": "14.364"
@@ -15,6 +18,7 @@
   "esmodules": [
     "scripts/main.js"
   ],
+  "socket": true,
   "styles": [
     "styles/system.css"
   ],

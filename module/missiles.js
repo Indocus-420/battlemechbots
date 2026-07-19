@@ -54,15 +54,87 @@ export function ammunitionTypeForWeapon(weaponName) {
   return null;
 }
 
-export function selectAmmunitionBin(items, weaponName) {
+export function ammunitionUnitsPerAttack(weapon) {
+  const weaponName = typeof weapon === "string" ? weapon : weapon?.name;
+  if (!ammunitionTypeForWeapon(weaponName)) return 0;
+  if (/\bMachine Gun\b/i.test(weaponName)) return 200;
+  const launcher = missileLauncherProfile(weaponName);
+  if (launcher) return launcher.size;
+  return Math.max(1, Number(weapon?.system?.ammoPerShot) || 1);
+}
+
+export function selectAmmunitionBin(items, weaponName, required = 1, remainingById = null) {
   const ammoType = ammunitionTypeForWeapon(weaponName);
   if (!ammoType) return null;
+  const amount = Math.max(1, Number(required) || 1);
   const candidates = [...items].filter(item => item.type === "ammo"
     && item.system.ammoType === ammoType
     && !item.system.destroyed
-    && Number(item.system.shots) > 0);
-  candidates.sort((left, right) => Number(left.system.shots) - Number(right.system.shots)
+    && Number(remainingById?.get(item.id) ?? item.system.shots) >= amount);
+  candidates.sort((left, right) =>
+    Number(remainingById?.get(left.id) ?? left.system.shots) - Number(remainingById?.get(right.id) ?? right.system.shots)
     || String(left.name).localeCompare(String(right.name)));
   return candidates[0] ?? null;
 }
 
+export function planAmmunitionConsumption(items, weapons) {
+  const remainingById = new Map(
+    [...items].filter(item => item.type === "ammo").map(item => [item.id, Number(item.system.shots) || 0])
+  );
+  const plan = [];
+  for (const weapon of weapons) {
+    const required = ammunitionUnitsPerAttack(weapon);
+    if (!required) {
+      plan.push({ weaponId: weapon.id, weaponName: weapon.name, ammunitionType: null, required: 0, binId: null });
+      continue;
+    }
+    const bin = selectAmmunitionBin(items, weapon.name, required, remainingById);
+    const ammunitionType = ammunitionTypeForWeapon(weapon.name);
+    if (!bin) {
+      return {
+        ready: false,
+        reason: `${weapon.name} requires ${required} ${ammunitionType} ammunition, but no compatible bin has enough remaining.`,
+        plan
+      };
+    }
+    const remaining = remainingById.get(bin.id) - required;
+    remainingById.set(bin.id, remaining);
+    plan.push({
+      weaponId: weapon.id,
+      weaponName: weapon.name,
+      ammunitionType,
+      required,
+      binId: bin.id,
+      binName: bin.name,
+      remaining
+    });
+  }
+  return { ready: true, reason: null, plan, remainingById };
+}
+
+export function legacyAmmunitionMigration(item) {
+  if (item?.type !== "ammo") return null;
+  const system = item.system ?? {};
+  const ammoType = String(system.ammoType ?? "");
+  const notes = String(system.notes ?? "");
+  const launcher = missileLauncherProfile(ammoType);
+  if (launcher && /launcher salvos/i.test(notes)) {
+    return {
+      shots: (Number(system.shots) || 0) * launcher.size,
+      maxShots: (Number(system.maxShots) || 0) * launcher.size,
+      damagePerShot: launcher.family === "SRM" ? 2 : 1,
+      notes: `Tracked as individual missiles; an ${launcher.family} ${launcher.size} volley consumes ${launcher.size}.`
+    };
+  }
+  if (ammoType === "Machine Gun"
+    && Number(system.maxShots) === 200
+    && Number(system.damagePerShot) === 2) {
+    return {
+      shots: (Number(system.shots) || 0) * 5,
+      maxShots: 1000,
+      damagePerShot: 2,
+      notes: "Each machine gun attack consumes 200 rounds."
+    };
+  }
+  return null;
+}
