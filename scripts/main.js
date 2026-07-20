@@ -31,6 +31,7 @@ import {
 import { meleeEffectProfile, mechPresentationProfile, movementEffectProfile, playMechActivationEffect, playMeleeEffect, playMovementEffect, playWeaponEffect, weaponEffectProfile } from "../module/effects.js";
 import { createRandomBattleTechScene, promptRandomBattleTechMap, randomBattleTechMapPlan } from "../module/map-generator.js";
 import { playerConsoleModel, renderPlayerConsole, unitCondition, unitReadiness } from "../module/player-console.js";
+import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, requestStorePurchase, STORE_CATALOG } from "../module/economy.js";
 import { aerospaceFiringArcForBearing, aerospaceTargetingArc, registerTokenizerTargetingFrames, targetingArc, TOKENIZER_TARGETING_FRAMES } from "../module/targeting.js";
 import {
   addTerrainProfiles,
@@ -101,7 +102,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.11.2-alpha.0";
+const SYSTEM_VERSION = "0.12.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -3191,6 +3192,11 @@ Hooks.once("ready", () => {
     maximumTeamSize: MAX_TEAM_SIZE,
     normalizeCombatTeam,
     validateCombatTeamRosters,
+    storeCatalog: STORE_CATALOG,
+    campaignLedger,
+    adjustMNotes,
+    executePurchase,
+    requestStorePurchase,
     combatTeamRoster,
     assignControlledCombatantsToTeam,
     clearControlledCombatantTeams,
@@ -3218,6 +3224,7 @@ Hooks.once("ready", () => {
   void registerTokenizerTargetingFrames().catch(error => console.warn("BMFS | Tokenizer targeting frames could not be registered", error));
 
   configureCombatEffectSocket();
+  configureEconomySocket();
 
   console.log("BMFS | Ready", game.bmfs.runDiagnostics());
   ui.notifications.info(`BattleMech Foundry System ${SYSTEM_VERSION} loaded.`);

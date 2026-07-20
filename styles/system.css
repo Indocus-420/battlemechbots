@@ -345,11 +345,34 @@
 #bmfs-player-console .bmfs-mission-ledger span { flex: 1; padding: 8px; border: 1px solid rgb(255 255 255 / 12%); text-align: center; }
 #bmfs-player-console .bmfs-inventory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 #bmfs-player-console .bmfs-console-empty { color: #8fa6b1; font-style: italic; }
+#bmfs-player-console .bmfs-mnotes-controls { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(120px, .7fr) minmax(180px, 1.4fr) auto; gap: 7px; align-items: end; margin-block: 8px; }
+#bmfs-player-console .bmfs-mnotes-controls label, #bmfs-player-console .bmfs-store-toolbar label { display: grid; gap: 3px; color: #9eb8c4; font-size: .72rem; font-weight: 800; }
+#bmfs-player-console .bmfs-mnotes-controls input, #bmfs-player-console .bmfs-mnotes-controls select, #bmfs-player-console .bmfs-store-toolbar input, #bmfs-player-console .bmfs-store-toolbar select { min-height: 30px; border: 1px solid rgb(145 191 213 / 36%); color: #edf8fc; background: #13242e; }
+#bmfs-player-console .bmfs-store-toolbar { position: sticky; z-index: 2; top: -12px; display: grid; grid-template-columns: minmax(160px, 1fr) minmax(120px, .6fr) minmax(180px, 1fr); gap: 7px; margin: 0; padding: 8px 0; background: #101c24; }
+#bmfs-player-console .bmfs-store-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-height: 360px; margin-block: 7px 10px; overflow: auto; }
+#bmfs-player-console .bmfs-store-card { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 7px; align-items: center; min-height: 66px; padding: 6px; border: 1px solid rgb(255 255 255 / 12%); border-left: 3px solid var(--bmfs-console-accent); background: rgb(255 255 255 / 4%); }
+#bmfs-player-console .bmfs-store-card[hidden] { display: none; }
+#bmfs-player-console .bmfs-store-card img { width: 52px; height: 52px; object-fit: contain; border: 0; }
+#bmfs-player-console .bmfs-store-card > div { display: grid; min-width: 0; }
+#bmfs-player-console .bmfs-store-card strong, #bmfs-player-console .bmfs-store-card small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-player-console .bmfs-store-card small { color: #9eb8c4; }
+#bmfs-player-console .bmfs-store-card a { color: #77ccec; font-size: .68rem; }
+#bmfs-player-console .bmfs-store-card aside { display: grid; gap: 5px; justify-items: end; }
+#bmfs-player-console .bmfs-store-card aside b { color: #f3d477; white-space: nowrap; }
+#bmfs-player-console .bmfs-store-card button:disabled { opacity: .45; cursor: not-allowed; }
+#bmfs-player-console .bmfs-transaction-list { display: grid; gap: 4px; margin-block: 8px; padding: 0; list-style: none; }
+#bmfs-player-console .bmfs-transaction-list li { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 8px; padding: 6px; background: rgb(255 255 255 / 4%); }
+#bmfs-player-console .bmfs-transaction-list li > span { font-weight: 900; text-align: right; }
+#bmfs-player-console .bmfs-transaction-list .is-credit { color: #69d79a; }
+#bmfs-player-console .bmfs-transaction-list .is-debit { color: #f08f76; }
+#bmfs-player-console .bmfs-transaction-list div { display: grid; }
+#bmfs-player-console .bmfs-transaction-list small { color: #9eb8c4; }
 
 @media (max-width: 680px) {
   #bmfs-player-console { min-width: 350px; }
   #bmfs-player-console > nav { grid-template-columns: repeat(2, 1fr); }
-  #bmfs-player-console .bmfs-lance-grid, #bmfs-player-console .bmfs-inventory-grid { grid-template-columns: 1fr; }
+  #bmfs-player-console .bmfs-lance-grid, #bmfs-player-console .bmfs-inventory-grid, #bmfs-player-console .bmfs-store-list { grid-template-columns: 1fr; }
+  #bmfs-player-console .bmfs-mnotes-controls, #bmfs-player-console .bmfs-store-toolbar { grid-template-columns: 1fr; }
 }
 
 @keyframes bmfs-dice-overlay-in {

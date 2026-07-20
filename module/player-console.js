@@ -1,3 +1,5 @@
+import { adjustMNotes, campaignLedger, requestStorePurchase, STORE_CATALOG } from "./economy.js";
+
 const SYSTEM_ID = "battletech-foundry-system";
 const WINDOW_ID = "bmfs-player-console";
 const DEFAULT_STATE = Object.freeze({ left: 120, top: 90, width: 760, height: 560, tab: "overview", collapsed: {} });
@@ -74,7 +76,7 @@ export function playerConsoleModel({ game = globalThis.game, controlled = global
     && (user?.isGM || actor.isOwner || actor.testUserPermission?.(user, "OWNER")));
   const selected = collectionValues(controlled).map(token => token.actor).find(actor => actor?.type === "mech");
   const assigned = selected ?? (user?.character?.type === "mech" ? user.character : null) ?? owned.find(actor => actor.type === "mech") ?? null;
-  const campaign = user?.getFlag?.(SYSTEM_ID, "campaign") ?? {};
+  const campaign = campaignLedger(user);
   const lanceFlag = user?.getFlag?.(SYSTEM_ID, "lance") ?? {};
   const actorById = id => actors.find(actor => actor.id === id);
   const mechs = (lanceFlag.mechs ?? []).map(actorById).filter(Boolean);
@@ -122,6 +124,11 @@ export function playerConsoleModel({ game = globalThis.game, controlled = global
       equipment: owned.flatMap(actor => collectionValues(actor.items).filter(item => item.type === "equipment")),
       salvage: Array.isArray(campaign.salvage) ? campaign.salvage : [],
       transactions: Array.isArray(campaign.transactions) ? campaign.transactions : []
+    },
+    store: {
+      catalog: STORE_CATALOG,
+      deliveryActors: owned.filter(actor => ["mech", "vehicle"].includes(actor.type)),
+      users: user?.isGM ? collectionValues(game?.users) : []
     }
   };
 }
@@ -159,6 +166,24 @@ function unitCard(unit, slot, kind) {
 
 function list(values, empty = "None") {
   return values.length ? `<ul>${values.map(value => `<li>${escape(value?.name ?? value)}</li>`).join("")}</ul>` : `<p class="bmfs-console-empty">${escape(empty)}</p>`;
+}
+
+function transactionList(values) {
+  if (!values.length) return `<p class="bmfs-console-empty">No transactions</p>`;
+  return `<ol class="bmfs-transaction-list">${values.map(transaction => {
+    const amount = numeric(transaction.amount);
+    const date = new Date(numeric(transaction.timestamp));
+    return `<li><span class="${amount < 0 ? "is-debit" : "is-credit"}">${amount > 0 ? "+" : ""}${amount.toLocaleString()}</span><div><strong>${escape(transaction.description)}</strong><small>${Number.isNaN(date.valueOf()) ? "" : date.toLocaleString()} · Balance ${numeric(transaction.balance).toLocaleString()}</small></div></li>`;
+  }).join("")}</ol>`;
+}
+
+function storeCard(entry, balance, hasDeliveryActor) {
+  const canAfford = balance >= entry.price;
+  const canDeliver = entry.kind !== "item" || hasDeliveryActor;
+  return `<article class="bmfs-store-card" data-store-group="${escape(entry.group)}" data-store-search="${escape(`${entry.name} ${entry.group} ${entry.kind}`.toLowerCase())}">
+    <img src="${escape(entry.image)}" alt=""><div><strong>${escape(entry.name)}</strong><small>${escape(entry.description)}</small><a href="${escape(entry.sourceUrl)}" target="_blank" rel="noopener">Reference</a></div>
+    <aside><b>${entry.price.toLocaleString()} M</b><button type="button" data-console-action="purchase" data-entry-id="${escape(entry.id)}" ${canAfford && canDeliver ? "" : "disabled"}>${canAfford ? (canDeliver ? "Buy" : "Select unit") : "Insufficient"}</button></aside>
+  </article>`;
 }
 
 export function closePlayerConsole() {
@@ -201,13 +226,31 @@ export function renderPlayerConsole() {
       </section>
       <section role="tabpanel" data-panel="bay" ${state.tab === "bay" ? "" : "hidden"}>
         <div class="bmfs-bay-ledger"><strong>M-Notes ${model.pilot.mNotes.toLocaleString()}</strong><span>${model.bay.length} owned unit(s)</span></div>
+        ${globalThis.game?.user?.isGM ? `<details data-section="mnotes" open><summary>GM M-Notes Controls</summary><form class="bmfs-mnotes-controls">
+          <label>Player<select name="userId">${model.store.users.map(user => `<option value="${escape(user.id)}">${escape(user.name)} · ${campaignLedger(user).mNotes.toLocaleString()} M</option>`).join("")}</select></label>
+          <label>Amount<input type="number" name="amount" step="1" placeholder="+40000 or -5000" required></label>
+          <label>Reason<input type="text" name="reason" value="GM adjustment" maxlength="120" required></label>
+          <button type="submit" data-console-action="adjust-mnotes">Apply</button>
+        </form></details>` : ""}
+        <details data-section="store" ${state.collapsed?.store ? "" : "open"}><summary>Equipment Storefront · ${model.store.catalog.length} listings</summary>
+          <div class="bmfs-store-toolbar"><input type="search" data-store-search placeholder="Search storefront">
+            <select data-store-group><option value="">All categories</option>${[...new Set(model.store.catalog.map(entry => entry.group))].map(group => `<option value="${escape(group)}">${escape(group[0].toUpperCase() + group.slice(1))}</option>`).join("")}</select>
+            <label>Deliver equipment to<select data-store-delivery><option value="">Select owned unit</option>${model.store.deliveryActors.map(actor => `<option value="${escape(actor.id)}">${escape(actor.name)}</option>`).join("")}</select></label>
+          </div>
+          <div class="bmfs-store-list">${model.store.catalog.map(entry => storeCard(entry, model.pilot.mNotes, model.store.deliveryActors.length > 0)).join("")}</div>
+        </details>
         <details data-section="owned" ${state.collapsed?.owned ? "" : "open"}><summary>Owned Chassis and Repair / Refit</summary><div class="bmfs-lance-grid">${model.bay.map((unit, index) => unitCard(unit, index + 1, "Unit")).join("")}</div></details>
         <div class="bmfs-inventory-grid"><details data-section="weapons" open><summary>Weapons (${model.inventory.weapons.length})</summary>${list(model.inventory.weapons)}</details><details data-section="ammo" open><summary>Ammunition (${model.inventory.ammunition.length})</summary>${list(model.inventory.ammunition)}</details><details data-section="equipment" open><summary>Equipment (${model.inventory.equipment.length})</summary>${list(model.inventory.equipment)}</details><details data-section="salvage" open><summary>Parts and Salvage</summary>${list(model.inventory.salvage)}</details></div>
-        <details data-section="transactions" ${state.collapsed?.transactions ? "" : "open"}><summary>Transaction History</summary>${list(model.inventory.transactions, "No transactions")}</details>
+        <details data-section="transactions" ${state.collapsed?.transactions ? "" : "open"}><summary>Transaction History</summary>${transactionList(model.inventory.transactions)}</details>
       </section>
     </main>`;
   document.body.append(element);
-  element.addEventListener("click", event => {
+  const rerender = () => {
+    saveState(element);
+    element.remove();
+    renderPlayerConsole();
+  };
+  element.addEventListener("click", async event => {
     const tab = event.target.closest('[role="tab"]');
     if (tab) {
       for (const button of element.querySelectorAll('[role="tab"]')) button.setAttribute("aria-selected", String(button === tab));
@@ -221,7 +264,40 @@ export function renderPlayerConsole() {
       element.remove();
     }
     if (action === "sheet") globalThis.game?.actors?.get?.(event.target.closest("[data-actor-id]")?.dataset.actorId)?.sheet?.render?.({ force: true });
+    if (action === "purchase") {
+      const button = event.target.closest("[data-entry-id]");
+      button.disabled = true;
+      try {
+        const result = await requestStorePurchase(button.dataset.entryId, element.querySelector("[data-store-delivery]")?.value ?? "");
+        globalThis.ui?.notifications?.info?.(`Purchased ${result.itemName ?? "store item"} for delivery to ${result.destination ?? "the Mech Bay"}.`);
+        rerender();
+      } catch (error) {
+        button.disabled = false;
+        globalThis.ui?.notifications?.error?.(error.message);
+      }
+    }
   });
+  element.querySelector(".bmfs-mnotes-controls")?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const user = globalThis.game?.users?.get?.(data.get("userId")) ?? collectionValues(globalThis.game?.users).find(candidate => candidate.id === data.get("userId"));
+    try {
+      const result = await adjustMNotes(user, data.get("amount"), data.get("reason"));
+      globalThis.ui?.notifications?.info?.(`${user.name} now has ${result.balance.toLocaleString()} M-Notes.`);
+      rerender();
+    } catch (error) {
+      globalThis.ui?.notifications?.error?.(error.message);
+    }
+  });
+  const filterStore = () => {
+    const query = element.querySelector("[data-store-search]")?.value?.trim().toLowerCase() ?? "";
+    const group = element.querySelector("select[data-store-group]")?.value ?? "";
+    for (const card of element.querySelectorAll(".bmfs-store-card")) {
+      card.hidden = Boolean((query && !card.dataset.storeSearch.includes(query)) || (group && card.dataset.storeGroup !== group));
+    }
+  };
+  element.querySelector("[data-store-search]")?.addEventListener("input", filterStore);
+  element.querySelector("select[data-store-group]")?.addEventListener("change", filterStore);
   element.addEventListener("toggle", () => saveState(element), true);
   const handle = element.querySelector(".bmfs-console-handle");
   handle.addEventListener("pointerdown", event => {

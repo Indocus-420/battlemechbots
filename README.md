@@ -2,6 +2,16 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.12.0-alpha.0 M-Notes storefront
+
+- Adds an authoritative M-Notes economy stored per Foundry user.
+- Adds GM controls to add or remove M-Notes with a required reason.
+- Adds a searchable storefront containing every supported system item, all 20 original BattleMechs, and all 6 original vehicles.
+- Delivers purchased equipment to an owned BattleMech or vehicle and newly purchased units to the buyer's Mech Bay.
+- Deducts the exact listed price, rejects insufficient funds, and records a 250-entry transaction ledger.
+- Routes player purchases through a connected Gamemaster so clients cannot submit their own prices or balances.
+- Uses campaign-market pricing informed by Sarna equipment references and the HBS BattleTech economy; these M-Notes prices remain editable in source for campaign balancing.
+
 ## 0.11.2-alpha.0 Foundry 14.363 compatibility
 
 - Lowers the minimum supported Foundry VTT release to 14.363.
