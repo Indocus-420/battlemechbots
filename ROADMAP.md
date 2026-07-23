@@ -75,3 +75,17 @@ Version 0.10.0 adds a native BattleTech token action HUD, D6-only quick rolls, D
 - Repairs and salvage.
 - Pilot experience.
 - Contracts and finances.
+
+Status: first economy increment complete in 0.12.0. The live storefront includes
+70 supported listings, GM-controlled M-Notes adjustments, exact-price purchase
+deductions, insufficient-funds protection, unit/equipment delivery, and a
+250-entry transaction ledger. Shared company accounts, mission payouts, repairs,
+salvage, contracts, and pilot progression remain planned.
+
+## Living project documentation
+
+The repository and release ZIP include
+`docs/BattleMech_Foundry_VTT_Project_Master.txt`, which combines the Game Design
+Document, Technical Design Document, developer roadmap and issue hierarchy,
+rules-to-implementation reference, backlog, decisions, change log, and developer
+notes. Update it with every material design or implementation change.

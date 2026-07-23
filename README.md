@@ -2,6 +2,15 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.12.1-alpha.0 living project
+
+The working Foundry system, implementation roadmap, and long-term Game Design,
+Technical Design, and Rules master document now ship as one maintained project.
+
+- [Living Project Master](docs/BattleMech_Foundry_VTT_Project_Master.txt)
+- [Implementation Roadmap](ROADMAP.md)
+- [Foundry Manifest](system.json)
+
 ## 0.12.0-alpha.0 M-Notes storefront
 
 - Adds an authoritative M-Notes economy stored per Foundry user.
