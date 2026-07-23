@@ -1,4 +1,5 @@
 import { CORE_ITEMS, CORE_MECHS, CORE_VEHICLES, itemCatalogGroup, mechWeightClass } from "./content.js";
+import { SARNA_REFERENCE_CATALOG } from "./sarna-catalog.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
 const ECONOMY_SOCKET = `system.${SYSTEM_ID}`;
@@ -95,6 +96,29 @@ function itemEntry(item) {
   });
 }
 
+function referenceEntry(reference) {
+  const isWeapon = reference.type === "weapon";
+  return Object.freeze({
+    id: `item-sarna-${slug(reference.type)}-${slug(reference.name)}`,
+    kind: "item",
+    group: reference.group,
+    name: reference.name,
+    image: "assets/items/sarna-reference.svg",
+    price: isWeapon ? 50000 : 25000,
+    description: `Sarna ${isWeapon ? "weapon" : "equipment"} reference entry. Rules and era availability are linked for manual validation.`,
+    sourceUrl: reference.sourceUrl,
+    referenceOnly: true,
+    document: {
+      name: reference.name,
+      type: reference.type,
+      img: "assets/items/sarna-reference.svg",
+      system: isWeapon
+        ? { weaponType: "reference", location: "rightArm", damage: 0, heat: 0, slots: 1, range: { minimum: 0, short: 0, medium: 0, long: 0 }, notes: `Reference-only catalog entry: ${reference.sourceUrl}` }
+        : { equipmentType: "reference", location: "rightTorso", slots: 1, notes: `Reference-only catalog entry: ${reference.sourceUrl}` }
+    }
+  });
+}
+
 function unitPrice(unit, vehicle = false) {
   const tonnage = numeric(vehicle ? unit.system?.vehicle?.tonnage : unit.system?.mech?.tonnage);
   const equipmentValue = collectionValues(unit.items).reduce((total, item) => total + numeric(ITEM_PRICES[item.name]), 0);
@@ -131,8 +155,12 @@ function unitEntry(unit, vehicle = false) {
   });
 }
 
+const CORE_ITEM_NAMES = new Set(CORE_ITEMS.map(item => item.name.toLowerCase()));
+const REFERENCE_ITEMS = SARNA_REFERENCE_CATALOG.filter(reference => !CORE_ITEM_NAMES.has(reference.name.toLowerCase()));
+
 export const STORE_CATALOG = Object.freeze([
   ...CORE_ITEMS.map(itemEntry),
+  ...REFERENCE_ITEMS.map(referenceEntry),
   ...CORE_MECHS.map(unit => unitEntry(unit, false)),
   ...CORE_VEHICLES.map(unit => unitEntry(unit, true))
 ]);

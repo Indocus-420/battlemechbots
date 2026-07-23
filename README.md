@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.14.0-alpha.0 Mech Bay Exchange
+
+- Restyles the player storefront as an in-world Mech Bay quartermaster terminal.
+- Indexes all 256 weapon and 64 equipment pages currently exposed by Sarna's category APIs.
+- Keeps 45 system-supported items fully automated and marks the remaining 303 catalog entries as reference stock requiring manual rules validation.
+- Includes all 20 requested playable BattleMechs in the same searchable, GM-authoritative storefront.
+- Retains the tested 25×25 through 125×125 seeded mission-map generator and 1v1 through 4v4 team rosters.
+
 ## 0.13.0-alpha.0 classic BattleMech roster
 
 - Replaces the sample BattleMech roster with 20 requested stock variants:

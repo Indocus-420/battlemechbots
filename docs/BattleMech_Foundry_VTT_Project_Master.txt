@@ -18,17 +18,17 @@ Primary implementation language: JavaScript ES modules (current); TypeScript rem
 
 CURRENT LIVE BUILD
 
-Release: 0.13.0-alpha.0
+Release: 0.14.0-alpha.0
 Repository: https://github.com/Indocus-420/battlemechbots
-Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.13.0-alpha.0/system.json
-Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.13.0-alpha.0/battletech-foundry-system-0.13.0-alpha.0.zip
+Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.0-alpha.0/system.json
+Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.0-alpha.0/battletech-foundry-system-0.14.0-alpha.0.zip
 
 This master document now ships inside the same repository and ZIP as the working
 Foundry VTT system. The repository is the canonical living project. Design,
 technical, roadmap, rules-reference, implementation, test, and release changes
 should be maintained together.
 
-IMPLEMENTATION SNAPSHOT (0.13.0-alpha.0)
+IMPLEMENTATION SNAPSHOT (0.14.0-alpha.0)
 
   COMPLETE       Foundry VTT 14.363+ system bootstrap and packaging
   COMPLETE       BattleMech, vehicle, weapon, equipment, and ammunition data
@@ -37,13 +37,20 @@ IMPLEMENTATION SNAPSHOT (0.13.0-alpha.0)
   COMPLETE       Pilot/Lance command window and compact token action HUD
   COMPLETE       20 requested stock BattleMech variants, 6 vehicles, and
                  original project-created packaged media
-  COMPLETE       71-entry Mech Bay storefront, including Hatchet equipment
+  COMPLETE       374-entry Mech Bay Exchange: 20 playable BattleMechs,
+                 6 vehicles, automated core inventory, and Sarna's current
+                 256-weapon / 64-equipment category index
+  COMPLETE       Seeded random mission maps at 25x25, 50x50, 75x75,
+                 100x100, and 125x125
+  COMPLETE       Two-team encounter rosters supporting 1v1 through 4v4
   COMPLETE       GM-controlled individual M-Notes balances and audit ledger
   COMPLETE       Exact purchase deductions, insufficient-funds validation,
                  and delivery of units/equipment
   PARTIAL        Campaign economy; shared accounts, mission payouts, repairs,
                  salvage, contracts, and selling remain planned
   PARTIAL        MechLab/construction validation remains planned
+  PARTIAL        303 Sarna-only shop entries are reference inventory; combat
+                 statistics and era legality require official-rules validation
 
 Release validation is defined by the repository's automated test suite and
 package inspection. Update this snapshot whenever a release changes feature

@@ -181,7 +181,7 @@ function storeCard(entry, balance, hasDeliveryActor) {
   const canAfford = balance >= entry.price;
   const canDeliver = entry.kind !== "item" || hasDeliveryActor;
   return `<article class="bmfs-store-card" data-store-group="${escape(entry.group)}" data-store-search="${escape(`${entry.name} ${entry.group} ${entry.kind}`.toLowerCase())}">
-    <img src="${escape(entry.image)}" alt=""><div><strong>${escape(entry.name)}</strong><small>${escape(entry.description)}</small><a href="${escape(entry.sourceUrl)}" target="_blank" rel="noopener">Reference</a></div>
+    <img src="${escape(entry.image)}" alt=""><div><span class="bmfs-stock-badge ${entry.referenceOnly ? "is-reference" : ""}">${entry.referenceOnly ? "REFERENCE STOCK" : entry.kind === "mech" ? "CHASSIS" : "BAY CERTIFIED"}</span><strong>${escape(entry.name)}</strong><small>${escape(entry.description)}</small><a href="${escape(entry.sourceUrl)}" target="_blank" rel="noopener">Sarna technical reference</a></div>
     <aside><b>${entry.price.toLocaleString()} M</b><button type="button" data-console-action="purchase" data-entry-id="${escape(entry.id)}" ${canAfford && canDeliver ? "" : "disabled"}>${canAfford ? (canDeliver ? "Buy" : "Select unit") : "Insufficient"}</button></aside>
   </article>`;
 }
@@ -225,6 +225,7 @@ export function renderPlayerConsole() {
         <details data-section="history" ${state.collapsed?.history ? "" : "open"}><summary>Mission History</summary>${list(model.mission.history, "No completed missions")}</details>
       </section>
       <section role="tabpanel" data-panel="bay" ${state.tab === "bay" ? "" : "hidden"}>
+        <div class="bmfs-mechbay-marquee"><div><span>AUTHORIZED QUARTERMASTER TERMINAL</span><h2>MECH BAY EXCHANGE</h2><p>Chassis · weapons · ammunition · equipment</p></div><b>BAY 04<br><small>ONLINE</small></b></div>
         <div class="bmfs-bay-ledger"><strong>M-Notes ${model.pilot.mNotes.toLocaleString()}</strong><span>${model.bay.length} owned unit(s)</span></div>
         ${globalThis.game?.user?.isGM ? `<details data-section="mnotes" open><summary>GM M-Notes Controls</summary><form class="bmfs-mnotes-controls">
           <label>Player<select name="userId">${model.store.users.map(user => `<option value="${escape(user.id)}">${escape(user.name)} · ${campaignLedger(user).mNotes.toLocaleString()} M</option>`).join("")}</select></label>

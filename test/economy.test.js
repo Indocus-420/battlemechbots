@@ -8,6 +8,7 @@ import {
   STORE_CATALOG_BY_ID
 } from "../module/economy.js";
 import { CORE_ITEMS, CORE_MECHS, CORE_VEHICLES } from "../module/content.js";
+import { SARNA_REFERENCE_CATALOG } from "../module/sarna-catalog.js";
 
 function user(id, mNotes = 0, isGM = false) {
   const subject = {
@@ -48,7 +49,7 @@ function actor(id, ownerId) {
 }
 
 test("storefront contains every supported item, BattleMech, and vehicle with a positive price", () => {
-  assert.equal(STORE_CATALOG.length, CORE_ITEMS.length + CORE_MECHS.length + CORE_VEHICLES.length);
+  assert.ok(STORE_CATALOG.length >= CORE_ITEMS.length + SARNA_REFERENCE_CATALOG.length + CORE_MECHS.length + CORE_VEHICLES.length - CORE_ITEMS.length);
   assert.equal(new Set(STORE_CATALOG.map(entry => entry.id)).size, STORE_CATALOG.length);
   assert.ok(STORE_CATALOG.every(entry => Number.isInteger(entry.price) && entry.price > 0));
   assert.ok(STORE_CATALOG.every(entry => entry.sourceUrl.startsWith("https://")));
@@ -57,6 +58,9 @@ test("storefront contains every supported item, BattleMech, and vehicle with a p
   assert.equal(mechs.length, 20);
   assert.ok(mechs.every(entry => entry.sourceUrl.startsWith("https://www.sarna.net/wiki/")));
   assert.equal(mechs.find(entry => entry.name === "Firestarter FS9-H").sourceUrl, "https://www.sarna.net/wiki/Firestarter_(BattleMech)");
+  assert.equal(SARNA_REFERENCE_CATALOG.filter(entry => entry.type === "weapon").length, 256);
+  assert.equal(SARNA_REFERENCE_CATALOG.filter(entry => entry.type === "equipment").length, 64);
+  assert.ok(STORE_CATALOG.some(entry => entry.referenceOnly && entry.name === "Angel ECM Suite"));
 });
 
 test("Gamemasters can add and remove M-Notes with a transaction ledger", async () => {

@@ -349,6 +349,14 @@
 #bmfs-player-console .bmfs-mnotes-controls label, #bmfs-player-console .bmfs-store-toolbar label { display: grid; gap: 3px; color: #9eb8c4; font-size: .72rem; font-weight: 800; }
 #bmfs-player-console .bmfs-mnotes-controls input, #bmfs-player-console .bmfs-mnotes-controls select, #bmfs-player-console .bmfs-store-toolbar input, #bmfs-player-console .bmfs-store-toolbar select { min-height: 30px; border: 1px solid rgb(145 191 213 / 36%); color: #edf8fc; background: #13242e; }
 #bmfs-player-console .bmfs-store-toolbar { position: sticky; z-index: 2; top: -12px; display: grid; grid-template-columns: minmax(160px, 1fr) minmax(120px, .6fr) minmax(180px, 1fr); gap: 7px; margin: 0; padding: 8px 0; background: #101c24; }
+#bmfs-player-console .bmfs-mechbay-marquee { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:14px 16px; border:1px solid rgb(119 204 236 / 45%); border-left:6px solid #cf5d43; background:linear-gradient(115deg, rgb(14 28 36 / 96%), rgb(45 67 75 / 88%)); box-shadow:inset 0 0 22px rgb(0 0 0 / 45%); }
+#bmfs-player-console .bmfs-mechbay-marquee span { color:#f3d477; font-size:.65rem; font-weight:900; letter-spacing:.14em; }
+#bmfs-player-console .bmfs-mechbay-marquee h2 { margin:2px 0; color:#edf8fc; font-size:1.4rem; letter-spacing:.08em; }
+#bmfs-player-console .bmfs-mechbay-marquee p { margin:0; color:#9eb8c4; font-size:.75rem; }
+#bmfs-player-console .bmfs-mechbay-marquee > b { padding-left:14px; border-left:1px solid rgb(255 255 255 / 18%); color:#77ccec; text-align:right; }
+#bmfs-player-console .bmfs-mechbay-marquee small { color:#72d398; }
+#bmfs-player-console .bmfs-stock-badge { width:max-content; margin-bottom:2px; padding:1px 4px; border:1px solid rgb(114 211 152 / 50%); color:#72d398; font-size:.55rem; font-weight:900; letter-spacing:.07em; }
+#bmfs-player-console .bmfs-stock-badge.is-reference { border-color:rgb(243 212 119 / 55%); color:#f3d477; }
 #bmfs-player-console .bmfs-store-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-height: 360px; margin-block: 7px 10px; overflow: auto; }
 #bmfs-player-console .bmfs-store-card { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 7px; align-items: center; min-height: 66px; padding: 6px; border: 1px solid rgb(255 255 255 / 12%); border-left: 3px solid var(--bmfs-console-accent); background: rgb(255 255 255 / 4%); }
 #bmfs-player-console .bmfs-store-card[hidden] { display: none; }
