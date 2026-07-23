@@ -2,6 +2,13 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.14.2-alpha.0 player-tested map controls
+
+- Exposes the random map generator directly in Foundry 14's Region Controls.
+- Live-tested map creation through the visible GM interface.
+- Live-tested a separate player login receiving unexplored fog on the activated test scene.
+- Visually verified generated walls in Wall Controls and the 30-hex BattleMech radar field on the actor sheet.
+
 ## 0.14.1-alpha.0 sensor vision and battlefield walls
 
 - Generated battlefields enable native token vision and fog exploration with global illumination disabled.

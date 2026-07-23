@@ -103,7 +103,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.14.1-alpha.0";
+const SYSTEM_VERSION = "0.14.2-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -2763,6 +2763,15 @@ Hooks.on("getSceneControlButtons", controls => {
   const regionTools = controls.regions?.tools;
   if (regionTools) {
     let order = Math.max(0, ...Object.values(regionTools).map(tool => tool.order ?? 0)) + 1;
+    regionTools.bmfsGenerateMap = {
+      name: "bmfsGenerateMap",
+      title: "Generate Random BattleTech Hex Map",
+      icon: "fa-solid fa-map",
+      order: order++,
+      button: true,
+      visible: true,
+      onChange: () => runTurnControl(promptRandomBattleTechMap)
+    };
     for (const [key, preset] of Object.entries(REGION_TERRAINS)) {
       regionTools[`bmfsTerrain${key}`] = {
         name: `bmfsTerrain${key}`,
