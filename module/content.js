@@ -379,6 +379,8 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
       name: `${name} ${variant}`,
       actorLink: true,
       disposition: 0,
+      sight: { enabled: true, range: 30, angle: 360, visionMode: "basic" },
+      detectionModes: [{ id: "basicSight", enabled: true, range: 30 }],
       texture: { src: presentation.image, scaleX: 1, scaleY: 1 }
     },
     flags: { [SYSTEM_ID]: { presentation } },
@@ -391,6 +393,7 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
         attackerModifier: 0, targetModifier: 0, heatGenerated: 0, terrain: zeroTerrain
       },
       heat: { current: 0, sinks, overflow: 0, shutdown: false },
+      sensors: { range: 30 },
       criticals: {
         engineHits: 0, gyroHits: 0, sensorHits: 0, lifeSupportHits: 0,
         cockpitDestroyed: false, pending

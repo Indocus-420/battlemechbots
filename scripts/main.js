@@ -30,6 +30,7 @@ import {
 } from "../module/turn-sequence.js";
 import { meleeEffectProfile, mechPresentationProfile, movementEffectProfile, playMechActivationEffect, playMeleeEffect, playMovementEffect, playWeaponEffect, weaponEffectProfile } from "../module/effects.js";
 import { createRandomBattleTechScene, promptRandomBattleTechMap, randomBattleTechMapPlan } from "../module/map-generator.js";
+import { synchronizeActorTokenVision, tokenVisionUpdate } from "../module/vision.js";
 import { playerConsoleModel, renderPlayerConsole, unitCondition, unitReadiness } from "../module/player-console.js";
 import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, requestStorePurchase, STORE_CATALOG } from "../module/economy.js";
 import { aerospaceFiringArcForBearing, aerospaceTargetingArc, registerTokenizerTargetingFrames, targetingArc, TOKENIZER_TARGETING_FRAMES } from "../module/targeting.js";
@@ -102,7 +103,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.14.0-alpha.0";
+const SYSTEM_VERSION = "0.14.1-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -2879,6 +2880,7 @@ Hooks.on("renderCombatTracker", (_application, html) => {
 
 Hooks.on("controlToken", (token, controlled) => refreshTokenActionHud(controlled ? token : null));
 Hooks.on("updateActor", actor => {
+  void synchronizeActorTokenVision(actor).catch(error => console.warn("BMFS | Sensor vision synchronization failed", error));
   const controlled = canvas?.tokens?.controlled?.find(token => token.actor?.id === actor.id);
   if (controlled) refreshTokenActionHud(controlled);
 });
@@ -2887,7 +2889,18 @@ Hooks.on("updateItem", item => {
   const controlled = canvas?.tokens?.controlled?.find(token => token.actor?.id === actor?.id);
   if (controlled) refreshTokenActionHud(controlled);
 });
-Hooks.on("canvasReady", () => refreshTokenActionHud());
+Hooks.on("preCreateToken", token => {
+  const update = tokenVisionUpdate(token.actor);
+  if (update) token.updateSource(update);
+});
+Hooks.on("canvasReady", () => {
+  refreshTokenActionHud();
+  for (const token of canvas?.tokens?.placeables ?? []) {
+    if (token.actor?.type === "mech") {
+      void synchronizeActorTokenVision(token.actor).catch(error => console.warn("BMFS | Sensor vision synchronization failed", error));
+    }
+  }
+});
 Hooks.on("canvasTearDown", removeTokenActionHud);
 
 Hooks.on("preMoveToken", (token, movement) => {

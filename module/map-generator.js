@@ -59,6 +59,33 @@ export function randomBattleTechMapPlan({ size = 25, seed = Date.now(), hexSize 
   };
 }
 
+export function generatedWallSources(plan) {
+  const normal = globalThis.CONST?.WALL_SENSE_TYPES?.NORMAL ?? 1;
+  return plan.zones
+    .filter(zone => zone.elevation > 0 || zone.terrain === "rubble")
+    .flatMap(zone => {
+      const x1 = zone.column * plan.grid;
+      const y1 = zone.row * plan.grid;
+      const x2 = x1 + zone.width * plan.grid;
+      const y2 = y1 + zone.height * plan.grid;
+      const common = {
+        move: normal,
+        sight: normal,
+        light: normal,
+        sound: normal,
+        door: 0,
+        dir: 0,
+        flags: { [SYSTEM_ID]: { generated: true, terrain: zone.terrain, seed: plan.seed } }
+      };
+      return [
+        { ...common, c: [x1, y1, x2, y1] },
+        { ...common, c: [x2, y1, x2, y2] },
+        { ...common, c: [x2, y2, x1, y2] },
+        { ...common, c: [x1, y2, x1, y1] }
+      ];
+    });
+}
+
 function regionSource(zone, plan) {
   const terrain = GENERATED_TERRAINS[zone.terrain];
   return {
@@ -125,6 +152,10 @@ export async function createRandomBattleTechScene(options = {}) {
     padding: 0,
     grid: { type: hexType, size: plan.grid, distance: 1, units: "hex" },
     backgroundColor: "#9a924e",
+    tokenVision: true,
+    fogExploration: true,
+    globalLight: false,
+    darkness: 0,
     flags: {
       [SYSTEM_ID]: {
         generatedMap: true,
@@ -134,6 +165,7 @@ export async function createRandomBattleTechScene(options = {}) {
     }
   });
   await scene.createEmbeddedDocuments("Drawing", plan.zones.map(zone => drawingSource(zone, plan)));
+  await scene.createEmbeddedDocuments("Wall", generatedWallSources(plan));
   try {
     await scene.createEmbeddedDocuments("Region", plan.zones.map(zone => regionSource(zone, plan)));
   } catch (error) {

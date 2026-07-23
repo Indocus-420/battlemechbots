@@ -107,7 +107,7 @@ function clampLegacyCurrentValues(source) {
 export class MechDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      schemaVersion: integer(5, { min: 1 }),
+      schemaVersion: integer(6, { min: 1 }),
       pilot: new SchemaField({
         name: text(),
         gunnery: integer(4, { min: 0 }),
@@ -164,6 +164,9 @@ export class MechDataModel extends foundry.abstract.TypeDataModel {
         sinks: integer(10, { min: 0 }),
         overflow: integer(0, { min: 0 }),
         shutdown: flag(false)
+      }),
+      sensors: new SchemaField({
+        range: integer(30, { min: 0, max: 250 })
       }),
       criticals: new SchemaField({
         engineHits: integer(0, { min: 0, max: 3 }),
@@ -261,6 +264,11 @@ export class MechDataModel extends foundry.abstract.TypeDataModel {
       source.mech ??= {};
       source.mech.faction ??= "independent";
       source.schemaVersion = 5;
+    }
+    if ((source.schemaVersion ?? 0) < 6) {
+      source.sensors ??= {};
+      source.sensors.range ??= 30;
+      source.schemaVersion = 6;
     }
 
     return super.migrateData(source);

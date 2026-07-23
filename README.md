@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.14.1-alpha.0 sensor vision and battlefield walls
+
+- Generated battlefields enable native token vision and fog exploration with global illumination disabled.
+- Elevated and rubble terrain generates native sight-, light-, sound-, and movement-blocking walls.
+- BattleMech radar range is the token's 360-degree field of vision, configurable per unit from its record sheet.
+- The default sensor sweep is 30 hexes; one sensor critical halves vision and two sensor criticals disable it.
+- Existing Foundry wall collision remains authoritative for weapon line of sight.
+
 ## 0.14.0-alpha.0 Mech Bay Exchange
 
 - Restyles the player storefront as an in-world Mech Bay quartermaster terminal.
