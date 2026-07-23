@@ -2,6 +2,15 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.15.0-alpha.0 layered visual battlefields
+
+- Reuses the established old-map artwork as the first scalable visual preset.
+- Automatically creates a Foundry 14 Ground Level whose raster background supplies rivers, roads, cliffs, hills, valleys, trees, brush, and textured terrain.
+- Keeps native hexes, terrain Drawings, Regions, walls, fog, and sensor vision as independent functional layers above the artwork.
+- Adds separate scalable scenic Tiles for a fortified frontier base, air-control tower, and fusion reactor.
+- Adds Temperate Frontier and warm-tinted Desert Frontier environment selections to the visible generator dialog.
+- Reduces functional Drawing opacity when visual artwork is present so the map remains readable.
+
 ## 0.14.3-alpha.0 Foundry live-validation repair
 
 - Corrects the Hatchet equipment critical-effect value rejected by Foundry's strict item data model.

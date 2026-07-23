@@ -18,17 +18,17 @@ Primary implementation language: JavaScript ES modules (current); TypeScript rem
 
 CURRENT LIVE BUILD
 
-Release: 0.14.3-alpha.0
+Release: 0.15.0-alpha.0
 Repository: https://github.com/Indocus-420/battlemechbots
-Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.3-alpha.0/system.json
-Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.3-alpha.0/battletech-foundry-system-0.14.3-alpha.0.zip
+Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.15.0-alpha.0/system.json
+Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.15.0-alpha.0/battletech-foundry-system-0.15.0-alpha.0.zip
 
 This master document now ships inside the same repository and ZIP as the working
 Foundry VTT system. The repository is the canonical living project. Design,
 technical, roadmap, rules-reference, implementation, test, and release changes
 should be maintained together.
 
-IMPLEMENTATION SNAPSHOT (0.14.3-alpha.0)
+IMPLEMENTATION SNAPSHOT (0.15.0-alpha.0)
 
   COMPLETE       Foundry VTT 14.363+ system bootstrap and packaging
   COMPLETE       BattleMech, vehicle, weapon, equipment, and ammunition data
@@ -49,6 +49,11 @@ IMPLEMENTATION SNAPSHOT (0.14.3-alpha.0)
   COMPLETE       Foundry 14 live UI validation: GM-generated 50x50 Sensor
                  Sweep Test Range, visible generated walls, and separate
                  player-session unexplored fog-of-war verification
+  COMPLETE       Layered visual-map architecture: raster landscape on the
+                 Foundry Ground Level, scenic facility Tiles, and independent
+                 hex/Region/wall/fog/sensor gameplay layers
+  COMPLETE       Temperate Frontier visual preset with river, roads, cliffs,
+                 hills, valleys, trees, brush, base, tower, and reactor
   COMPLETE       Two-team encounter rosters supporting 1v1 through 4v4
   COMPLETE       GM-controlled individual M-Notes balances and audit ledger
   COMPLETE       Exact purchase deductions, insufficient-funds validation,

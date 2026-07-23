@@ -19,6 +19,8 @@ Status: functional data sheet and assignable critical-slot tables complete; grap
 
 Content milestone: 0.13.0 replaces the sample roster with 20 requested ready-to-play stock BattleMech variants in four class-specific compendiums. Every unit retains distinct original project-created token art and activation audio.
 
+Visual-map milestone: 0.15.0 adds scalable Foundry 14 Ground-Level background presets, scenic facility Tiles, and low-opacity functional overlays while retaining Regions, walls, fog, sensor vision, and seeded map sizes.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:

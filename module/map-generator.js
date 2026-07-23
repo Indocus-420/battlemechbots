@@ -8,6 +8,18 @@ export const GENERATED_TERRAINS = Object.freeze({
   waterDepth1: { label: "Water Depth 1", color: "#277da1", opacity: 0.6 },
   waterDepth2: { label: "Water Depth 2", color: "#155f86", opacity: 0.65 }
 });
+export const VISUAL_PRESETS = Object.freeze({
+  temperate: {
+    label: "Temperate Frontier",
+    background: "systems/battletech-foundry-system/assets/maps/temperate-frontier.png",
+    tint: "#ffffff"
+  },
+  desert: {
+    label: "Desert Frontier",
+    background: "systems/battletech-foundry-system/assets/maps/temperate-frontier.png",
+    tint: "#d2a46f"
+  }
+});
 
 export function normalizeMapSize(value) {
   const size = Number(value);
@@ -30,7 +42,7 @@ export function seededRandom(seed = "battlemech") {
   };
 }
 
-export function randomBattleTechMapPlan({ size = 25, seed = Date.now(), hexSize = 50 } = {}) {
+export function randomBattleTechMapPlan({ size = 25, seed = Date.now(), hexSize = 50, environment = "temperate" } = {}) {
   const hexes = normalizeMapSize(size);
   const grid = Math.max(32, Math.min(200, Math.round(Number(hexSize) || 50)));
   const random = seededRandom(seed);
@@ -55,8 +67,34 @@ export function randomBattleTechMapPlan({ size = 25, seed = Date.now(), hexSize 
     grid,
     width: hexes * grid,
     height: hexes * grid,
-    zones
+    zones,
+    environment: VISUAL_PRESETS[environment] ? environment : "temperate"
   };
+}
+
+export function scenicTileSources(plan) {
+  const structures = [
+    { name: "Frontier Base", src: "assets/scenery/frontier-base.svg", x: 0.67, y: 0.08, width: 0.19, height: 0.14 },
+    { name: "Air Control Tower", src: "assets/scenery/air-control-tower.svg", x: 0.09, y: 0.67, width: 0.09, height: 0.09 },
+    { name: "Fusion Reactor", src: "assets/scenery/fusion-reactor.svg", x: 0.76, y: 0.73, width: 0.11, height: 0.11 }
+  ];
+  return structures.map((structure, index) => ({
+    name: structure.name,
+    x: Math.round(plan.width * structure.x),
+    y: Math.round(plan.height * structure.y),
+    width: Math.round(plan.width * structure.width),
+    height: Math.round(plan.height * structure.height),
+    z: 100 + index,
+    overhead: false,
+    hidden: false,
+    texture: {
+      src: `systems/${SYSTEM_ID}/${structure.src}`,
+      scaleX: 1,
+      scaleY: 1,
+      tint: "#ffffff"
+    },
+    flags: { [SYSTEM_ID]: { generated: true, scenic: true, seed: plan.seed } }
+  }));
 }
 
 export function generatedWallSources(plan) {
@@ -123,7 +161,7 @@ function drawingSource(zone, plan) {
     y: zone.row * plan.grid,
     fillType: 1,
     fillColor: terrain.color,
-    fillAlpha: terrain.opacity,
+    fillAlpha: plan.visualBackground ? Math.min(0.18, terrain.opacity) : terrain.opacity,
     strokeWidth: 2,
     strokeColor: terrain.color,
     text: zone.elevation ? `${terrain.label} · L${zone.elevation}` : terrain.label,
@@ -144,6 +182,8 @@ function drawingSource(zone, plan) {
 export async function createRandomBattleTechScene(options = {}) {
   if (!globalThis.game?.user?.isGM) throw new Error("Only a Gamemaster can generate a BattleTech map.");
   const plan = randomBattleTechMapPlan(options);
+  const preset = VISUAL_PRESETS[plan.environment];
+  plan.visualBackground = true;
   const hexType = globalThis.CONST?.GRID_TYPES?.HEXODDR ?? 2;
   const scene = await globalThis.Scene.create({
     name: options.name || `Generated Battlefield ${plan.hexes}x${plan.hexes}`,
@@ -151,11 +191,20 @@ export async function createRandomBattleTechScene(options = {}) {
     height: plan.height,
     padding: 0,
     grid: { type: hexType, size: plan.grid, distance: 1, units: "hex" },
-    backgroundColor: "#9a924e",
+    backgroundColor: plan.environment === "desert" ? "#8f6e42" : "#667742",
+    initialLevel: "defaultLevel0000",
+    levels: [{
+      _id: "defaultLevel0000",
+      name: "Ground",
+      elevation: { bottom: 0, top: 20 },
+      background: { src: preset.background, tint: preset.tint }
+    }],
     tokenVision: true,
-    fogExploration: true,
-    globalLight: false,
-    darkness: 0,
+    fog: { mode: globalThis.CONST?.FOG_EXPLORATION_MODES?.INDIVIDUAL ?? 1 },
+    environment: {
+      darknessLevel: 0,
+      globalLight: { enabled: false }
+    },
     flags: {
       [SYSTEM_ID]: {
         generatedMap: true,
@@ -165,6 +214,7 @@ export async function createRandomBattleTechScene(options = {}) {
     }
   });
   await scene.createEmbeddedDocuments("Drawing", plan.zones.map(zone => drawingSource(zone, plan)));
+  await scene.createEmbeddedDocuments("Tile", scenicTileSources(plan));
   await scene.createEmbeddedDocuments("Wall", generatedWallSources(plan));
   try {
     await scene.createEmbeddedDocuments("Region", plan.zones.map(zone => regionSource(zone, plan)));
@@ -184,6 +234,7 @@ export async function promptRandomBattleTechMap() {
     content: `<div class="bmfs-map-generator">
       <p>Creates a seeded native hex Scene with selectable terrain Drawings and Regions. The generated documents work with Multiple Document Selection and Mass Edit.</p>
       <label>Map size <select name="size">${MAP_SIZES.map(size => `<option value="${size}">${size} × ${size} hexes</option>`).join("")}</select></label>
+      <label>Environment <select name="environment">${Object.entries(VISUAL_PRESETS).map(([key, preset]) => `<option value="${key}">${preset.label}</option>`).join("")}</select></label>
       <label>Hex pixel size <input name="hexSize" type="number" min="32" max="200" value="50"></label>
       <label>Seed <input name="seed" type="text" value="${Date.now()}"></label>
       <label>Scene name <input name="name" type="text" value="Generated Battlefield"></label>
@@ -198,6 +249,7 @@ export async function promptRandomBattleTechMap() {
     size: Number(value("size")),
     hexSize: Number(value("hexSize")),
     seed: value("seed"),
-    name: value("name")
+    name: value("name"),
+    environment: value("environment")
   });
 }
