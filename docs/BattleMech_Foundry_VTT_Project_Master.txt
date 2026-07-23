@@ -18,25 +18,26 @@ Primary implementation language: JavaScript ES modules (current); TypeScript rem
 
 CURRENT LIVE BUILD
 
-Release: 0.12.1-alpha.0
+Release: 0.13.0-alpha.0
 Repository: https://github.com/Indocus-420/battlemechbots
-Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.12.1-alpha.0/system.json
-Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.12.1-alpha.0/battletech-foundry-system-0.12.1-alpha.0.zip
+Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.13.0-alpha.0/system.json
+Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.13.0-alpha.0/battletech-foundry-system-0.13.0-alpha.0.zip
 
 This master document now ships inside the same repository and ZIP as the working
 Foundry VTT system. The repository is the canonical living project. Design,
 technical, roadmap, rules-reference, implementation, test, and release changes
 should be maintained together.
 
-IMPLEMENTATION SNAPSHOT (0.12.1-alpha.0)
+IMPLEMENTATION SNAPSHOT (0.13.0-alpha.0)
 
   COMPLETE       Foundry VTT 14.363+ system bootstrap and packaging
   COMPLETE       BattleMech, vehicle, weapon, equipment, and ammunition data
   COMPLETE       Core movement, direct fire, GATOR, damage, heat, criticals,
                  missiles, ammunition use, physical attacks, and turn sequence
   COMPLETE       Pilot/Lance command window and compact token action HUD
-  COMPLETE       20 BattleMechs, 6 vehicles, and original packaged media
-  COMPLETE       70-entry Mech Bay storefront
+  COMPLETE       20 requested stock BattleMech variants, 6 vehicles, and
+                 original project-created packaged media
+  COMPLETE       71-entry Mech Bay storefront, including Hatchet equipment
   COMPLETE       GM-controlled individual M-Notes balances and audit ledger
   COMPLETE       Exact purchase deductions, insufficient-funds validation,
                  and delivery of units/equipment

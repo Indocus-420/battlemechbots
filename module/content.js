@@ -154,6 +154,7 @@ export const CORE_ITEMS = Object.freeze([
   equipment("Cockpit", "cockpit", "head", 1),
   equipment("Heat Sink", "heatSink", "centerTorso", 1),
   equipment("Jump Jet", "jumpJet", "leftTorso", 1),
+  equipment("Hatchet", "hatchet", "rightArm", 3, "Physical weapon carried by the Hatchetman. Dedicated hatchet-attack automation is planned; use standard physical-attack adjudication until implemented."),
   equipment("Shoulder Actuator", "shoulder", "rightArm", 1),
   equipment("Upper Arm Actuator", "upperArm", "rightArm", 1),
   equipment("Lower Arm Actuator", "lowerArm", "rightArm", 1),
@@ -404,124 +405,156 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
 
 export const CORE_MECHS = Object.freeze([
   // Light BattleMechs
-  originalMech({ name: "Sparrowhawk", variant: "SPH-1A", tonnage: 20, role: "Light Scout", walk: 8, run: 12, jump: 8, sinks: 10, armorFactor: 0.68, equipment: [
-    loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5),
-    loadout("Jump Jet", "leftTorso", 1, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 2, "Jump Jet 2"),
-    loadout("Jump Jet", "rightTorso", 1, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 2, "Jump Jet 4"),
-    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6"),
-    loadout("Jump Jet", "leftLeg", 6, "Jump Jet 7"), loadout("Jump Jet", "rightLeg", 6, "Jump Jet 8")
+  originalMech({ name: "Jenner", variant: "JR7-D", tonnage: 35, role: "Fast Striker", walk: 7, run: 11, jump: 5, sinks: 10, armorFactor: 0.72, equipment: [
+    loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 6, "Medium Laser 2"),
+    loadout("Medium Laser", "leftArm", 5, "Medium Laser 3"), loadout("Medium Laser", "leftArm", 6, "Medium Laser 4"),
+    loadout("SRM 4", "centerTorso", 11), loadout("SRM 4 Ammunition", "rightTorso", 1),
+    loadout("Jump Jet", "leftTorso", 1, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 2, "Jump Jet 2"),
+    loadout("Jump Jet", "centerTorso", 12, "Jump Jet 3"),
+    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 4"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 5")
   ]}),
-  originalMech({ name: "Needleback", variant: "NDB-2R", tonnage: 25, role: "Light Recon", walk: 7, run: 11, jump: 7, sinks: 10, armorFactor: 0.72, equipment: [
-    loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5), loadout("Medium Laser", "centerTorso", 11),
-    loadout("Jump Jet", "leftTorso", 1, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 2, "Jump Jet 2"),
-    loadout("Jump Jet", "rightTorso", 1, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 2, "Jump Jet 4"),
-    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6"),
-    loadout("Jump Jet", "leftLeg", 6, "Jump Jet 7")
-  ]}),
-  originalMech({ name: "Ridge Runner", variant: "RGR-3S", tonnage: 30, role: "Light Striker", walk: 6, run: 9, jump: 6, sinks: 12, armorFactor: 0.76, equipment: [
-    loadout("Large Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5),
-    loadout("Jump Jet", "leftTorso", 1, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 2, "Jump Jet 2"),
-    loadout("Jump Jet", "rightTorso", 1, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 2, "Jump Jet 4"),
-    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6")
-  ]}),
-  originalMech({ name: "Wayfarer", variant: "WFR-3C", tonnage: 30, role: "Light Cavalry", walk: 6, run: 9, jump: 4, sinks: 10, armorFactor: 0.78, equipment: [
-    loadout("SRM 4", "rightArm", 5), loadout("SRM 4 Ammunition", "leftTorso", 1),
-    loadout("Medium Laser", "leftArm", 5), loadout("Medium Laser", "leftArm", 6, "Medium Laser 2"),
-    loadout("Jump Jet", "leftTorso", 2, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 1, "Jump Jet 2"),
-    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 3"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 4")
-  ]}),
-  originalMech({ name: "Bulwark Scout", variant: "BWS-3B", tonnage: 35, role: "Light Brawler", walk: 5, run: 8, jump: 0, sinks: 10, armorFactor: 0.82, equipment: [
-    loadout("Autocannon/5", "rightArm", 5), loadout("Autocannon/5 Ammunition", "rightTorso", 1),
-    loadout("Medium Laser", "leftArm", 5), loadout("Machine Gun", "leftArm", 6),
-    loadout("Machine Gun Ammunition", "leftTorso", 1)
-  ]}),
-
-  // Medium BattleMechs
-  originalMech({ name: "Emberguard", variant: "EMG-4F", tonnage: 40, role: "Medium Skirmisher", walk: 6, run: 9, jump: 6, sinks: 14, armorFactor: 0.8, equipment: [
-    loadout("Large Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5),
-    loadout("Medium Laser", "leftTorso", 1, "Medium Laser 2"), loadout("Medium Laser", "rightTorso", 1, "Medium Laser 3"),
-    loadout("Jump Jet", "leftTorso", 2, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 3, "Jump Jet 2"),
+  originalMech({ name: "Firestarter", variant: "FS9-H", tonnage: 35, role: "Anti-Infantry Skirmisher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.8, equipment: [
+    loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5, "Medium Laser 2"),
+    loadout("Machine Gun", "rightArm", 6), loadout("Machine Gun", "leftArm", 6, "Machine Gun 2"),
+    loadout("Machine Gun Ammunition", "leftTorso", 2),
+    loadout("Flamer", "rightArm", 7), loadout("Flamer", "leftArm", 7, "Flamer 2"),
+    loadout("Flamer", "leftTorso", 1, "Flamer 3"), loadout("Flamer", "rightTorso", 1, "Flamer 4"),
+    loadout("Jump Jet", "leftTorso", 3, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 4, "Jump Jet 2"),
     loadout("Jump Jet", "rightTorso", 2, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 3, "Jump Jet 4"),
     loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6")
   ]}),
-  originalMech({ name: "Borderer", variant: "BDR-4P", tonnage: 45, role: "Medium Sniper", walk: 5, run: 8, jump: 4, sinks: 14, armorFactor: 0.82, equipment: [
-    loadout("Particle Projection Cannon", "rightArm", 5), loadout("Medium Laser", "leftArm", 5),
-    loadout("Medium Laser", "leftArm", 6, "Medium Laser 2"),
-    loadout("Jump Jet", "leftTorso", 1, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 1, "Jump Jet 2"),
-    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 3"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 4")
+  originalMech({ name: "Javelin", variant: "JVN-10N", tonnage: 30, role: "Ambusher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.76, equipment: [
+    loadout("SRM 6", "leftTorso", 1), loadout("SRM 6 Ammunition", "leftTorso", 3),
+    loadout("SRM 6", "rightTorso", 1, "SRM 6 - Right"), loadout("SRM 6 Ammunition", "rightTorso", 3, "SRM 6 Ammunition - Right"),
+    loadout("Jump Jet", "leftTorso", 4, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 5, "Jump Jet 2"),
+    loadout("Jump Jet", "rightTorso", 4, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 5, "Jump Jet 4"),
+    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6")
   ]}),
-  originalMech({ name: "Rampart", variant: "RMP-5A", tonnage: 50, role: "Medium Line Fighter", walk: 4, run: 6, jump: 0, sinks: 10, armorFactor: 0.84, equipment: [
+  originalMech({ name: "Commando", variant: "COM-2D", tonnage: 25, role: "Missile Striker", walk: 6, run: 9, jump: 0, sinks: 10, armorFactor: 0.74, equipment: [
+    loadout("Medium Laser", "leftArm", 5),
+    loadout("SRM 6", "rightTorso", 1), loadout("SRM 6 Ammunition", "rightTorso", 3),
+    loadout("SRM 4", "leftArm", 6), loadout("SRM 4 Ammunition", "leftTorso", 1)
+  ]}),
+  originalMech({ name: "UrbanMech", variant: "UM-R60", tonnage: 30, role: "Urban Defender", walk: 2, run: 3, jump: 2, sinks: 11, armorFactor: 0.8, equipment: [
     loadout("Autocannon/10", "rightArm", 5), loadout("Autocannon/10 Ammunition", "rightTorso", 1),
-    loadout("Medium Laser", "leftArm", 5), loadout("Medium Laser", "leftArm", 6, "Medium Laser 2")
+    loadout("Small Laser", "leftArm", 5),
+    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 1"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 2")
   ]}),
-  originalMech({ name: "Horizon", variant: "HRZ-5L", tonnage: 50, role: "Medium Fire Support", walk: 4, run: 6, jump: 0, sinks: 10, armorFactor: 0.8, equipment: [
-    loadout("LRM 10", "rightArm", 5), loadout("LRM 10", "leftArm", 5, "LRM 10 - Left"),
-    loadout("LRM 10 Ammunition", "rightTorso", 1), loadout("LRM 10 Ammunition", "leftTorso", 1, "LRM 10 Ammunition - Left"),
-    loadout("Medium Laser", "centerTorso", 11)
+
+  // Medium BattleMechs
+  originalMech({ name: "Assassin", variant: "ASN-21", tonnage: 40, role: "Recon Hunter", walk: 7, run: 11, jump: 7, sinks: 10, armorFactor: 0.7, equipment: [
+    loadout("Medium Laser", "rightArm", 5),
+    loadout("LRM 5", "leftTorso", 1), loadout("LRM 5 Ammunition", "leftTorso", 2),
+    loadout("SRM 2", "rightTorso", 1), loadout("SRM 2 Ammunition", "rightTorso", 2),
+    loadout("Jump Jet", "leftTorso", 3, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 4, "Jump Jet 2"),
+    loadout("Jump Jet", "rightTorso", 3, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 4, "Jump Jet 4"),
+    loadout("Jump Jet", "centerTorso", 11, "Jump Jet 5"),
+    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 6"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 7")
   ]}),
-  originalMech({ name: "Vanguard", variant: "VGD-5S", tonnage: 55, role: "Medium Generalist", walk: 5, run: 8, jump: 4, sinks: 13, armorFactor: 0.85, equipment: [
-    loadout("Particle Projection Cannon", "rightArm", 5), loadout("SRM 6", "leftArm", 5),
-    loadout("SRM 6 Ammunition", "leftTorso", 1), loadout("Medium Laser", "centerTorso", 11),
-    loadout("Jump Jet", "leftTorso", 2, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 1, "Jump Jet 2"),
+  originalMech({ name: "Blackjack", variant: "BJ-1", tonnage: 45, role: "Fire Support", walk: 4, run: 6, jump: 4, sinks: 11, armorFactor: 0.8, equipment: [
+    loadout("Autocannon/2", "rightArm", 5), loadout("Autocannon/2", "leftArm", 5, "Autocannon/2 - Left"),
+    loadout("Autocannon/2 Ammunition", "rightTorso", 1), loadout("Autocannon/2 Ammunition", "leftTorso", 1, "Autocannon/2 Ammunition - Left"),
+    loadout("Medium Laser", "rightTorso", 2), loadout("Medium Laser", "rightTorso", 3, "Medium Laser 2"),
+    loadout("Medium Laser", "leftTorso", 2, "Medium Laser 3"), loadout("Medium Laser", "leftTorso", 3, "Medium Laser 4"),
+    loadout("Jump Jet", "leftTorso", 4, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 4, "Jump Jet 2"),
     loadout("Jump Jet", "leftLeg", 5, "Jump Jet 3"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 4")
+  ]}),
+  originalMech({ name: "Hatchetman", variant: "HCT-3F", tonnage: 45, role: "Close-Quarters Fighter", walk: 4, run: 6, jump: 4, sinks: 11, armorFactor: 0.84, equipment: [
+    loadout("Autocannon/10", "rightTorso", 1), loadout("Autocannon/10 Ammunition", "rightTorso", 8),
+    loadout("Medium Laser", "leftTorso", 1), loadout("Medium Laser", "rightTorso", 9, "Medium Laser 2"),
+    loadout("Hatchet", "rightArm", 5),
+    loadout("Jump Jet", "leftTorso", 2, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 10, "Jump Jet 2"),
+    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 3"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 4")
+  ]}),
+  originalMech({ name: "Phoenix Hawk", variant: "PXH-1", tonnage: 45, role: "Mobile Skirmisher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.78, equipment: [
+    loadout("Large Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 7),
+    loadout("Medium Laser", "leftArm", 5, "Medium Laser 2"),
+    loadout("Machine Gun", "leftArm", 6), loadout("Machine Gun", "leftArm", 7, "Machine Gun 2"),
+    loadout("Machine Gun Ammunition", "leftTorso", 1),
+    loadout("Jump Jet", "leftTorso", 2, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 3, "Jump Jet 2"),
+    loadout("Jump Jet", "rightTorso", 1, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 2, "Jump Jet 4"),
+    loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6")
+  ]}),
+  originalMech({ name: "Hunchback", variant: "HBK-4G", tonnage: 50, role: "Urban Brawler", walk: 4, run: 6, jump: 0, sinks: 13, armorFactor: 0.9, equipment: [
+    loadout("Autocannon/20", "rightTorso", 1),
+    loadout("Autocannon/20 Ammunition", "leftTorso", 1), loadout("Autocannon/20 Ammunition", "leftTorso", 2, "Autocannon/20 Ammunition 2"),
+    loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5, "Medium Laser 2"),
+    loadout("Small Laser", "head", 6)
   ]}),
 
   // Heavy BattleMechs
-  originalMech({ name: "Stormwarden", variant: "SWD-6P", tonnage: 60, role: "Heavy Energy Fighter", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.86, equipment: [
-    loadout("Particle Projection Cannon", "rightArm", 5), loadout("Large Laser", "leftArm", 5),
-    loadout("Medium Laser", "leftTorso", 1), loadout("Medium Laser", "rightTorso", 1, "Medium Laser 2")
-  ]}),
-  originalMech({ name: "Hammerfall", variant: "HMF-6A", tonnage: 65, role: "Heavy Line Fighter", walk: 4, run: 6, jump: 0, sinks: 12, armorFactor: 0.88, equipment: [
-    loadout("Autocannon/10", "rightArm", 5), loadout("Autocannon/10 Ammunition", "rightTorso", 1),
-    loadout("Large Laser", "leftArm", 5), loadout("Medium Laser", "leftTorso", 1),
-    loadout("Medium Laser", "rightTorso", 2, "Medium Laser 2")
-  ]}),
-  originalMech({ name: "Watchtower", variant: "WTR-7M", tonnage: 70, role: "Heavy Fire Support", walk: 4, run: 6, jump: 0, sinks: 12, armorFactor: 0.86, equipment: [
+  originalMech({ name: "Catapult", variant: "CPLT-C1", tonnage: 65, role: "Missile Fire Support", walk: 4, run: 6, jump: 4, sinks: 15, armorFactor: 0.86, equipment: [
     loadout("LRM 15", "rightArm", 5), loadout("LRM 15", "leftArm", 5, "LRM 15 - Left"),
-    loadout("LRM 15 Ammunition", "rightTorso", 1), loadout("LRM 15 Ammunition", "leftTorso", 1, "LRM 15 Ammunition - Left"),
-    loadout("Medium Laser", "rightTorso", 2), loadout("Medium Laser", "leftTorso", 2, "Medium Laser 2")
+    loadout("LRM 15 Ammunition", "rightTorso", 1), loadout("LRM 15 Ammunition", "rightTorso", 2, "LRM 15 Ammunition 2"),
+    loadout("LRM 15 Ammunition", "leftTorso", 1, "LRM 15 Ammunition - Left"), loadout("LRM 15 Ammunition", "leftTorso", 2, "LRM 15 Ammunition - Left 2"),
+    loadout("Medium Laser", "rightTorso", 3), loadout("Medium Laser", "rightTorso", 4, "Medium Laser 2"),
+    loadout("Medium Laser", "leftTorso", 3, "Medium Laser 3"), loadout("Medium Laser", "leftTorso", 4, "Medium Laser 4"),
+    loadout("Jump Jet", "leftTorso", 5, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 6, "Jump Jet 2"),
+    loadout("Jump Jet", "rightTorso", 5, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 6, "Jump Jet 4")
   ]}),
-  originalMech({ name: "Dreadrunner", variant: "DRR-7D", tonnage: 70, role: "Heavy Close Assault", walk: 4, run: 6, jump: 0, sinks: 12, armorFactor: 0.9, equipment: [
-    loadout("Autocannon/20", "rightTorso", 1), loadout("Autocannon/20 Ammunition", "leftTorso", 1),
+  originalMech({ name: "JagerMech", variant: "JM6-S", tonnage: 65, role: "Long-Range Fire Support", walk: 4, run: 6, jump: 0, sinks: 10, armorFactor: 0.68, equipment: [
+    loadout("Autocannon/5", "rightArm", 5), loadout("Autocannon/5", "leftArm", 5, "Autocannon/5 - Left"),
+    loadout("Autocannon/2", "rightTorso", 1), loadout("Autocannon/2", "leftTorso", 1, "Autocannon/2 - Left"),
+    loadout("Autocannon/5 Ammunition", "rightTorso", 2), loadout("Autocannon/5 Ammunition", "leftTorso", 2, "Autocannon/5 Ammunition - Left"),
+    loadout("Autocannon/2 Ammunition", "rightTorso", 3), loadout("Autocannon/2 Ammunition", "leftTorso", 3, "Autocannon/2 Ammunition - Left"),
+    loadout("Medium Laser", "rightTorso", 4), loadout("Medium Laser", "leftTorso", 4, "Medium Laser 2")
+  ]}),
+  originalMech({ name: "Archer", variant: "ARC-2R", tonnage: 70, role: "Heavy Fire Support", walk: 4, run: 6, jump: 0, sinks: 10, armorFactor: 0.88, equipment: [
+    loadout("LRM 20", "rightTorso", 1), loadout("LRM 20", "leftTorso", 1, "LRM 20 - Left"),
+    loadout("LRM 20 Ammunition", "rightTorso", 6), loadout("LRM 20 Ammunition", "rightTorso", 7, "LRM 20 Ammunition 2"),
+    loadout("LRM 20 Ammunition", "leftTorso", 6, "LRM 20 Ammunition - Left"), loadout("LRM 20 Ammunition", "leftTorso", 7, "LRM 20 Ammunition - Left 2"),
     loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 6, "Medium Laser 2"),
     loadout("Medium Laser", "leftArm", 5, "Medium Laser 3"), loadout("Medium Laser", "leftArm", 6, "Medium Laser 4")
   ]}),
-  originalMech({ name: "Bastion", variant: "BST-7E", tonnage: 75, role: "Heavy Assault", walk: 3, run: 5, jump: 0, sinks: 18, armorFactor: 0.92, equipment: [
+  originalMech({ name: "Thunderbolt", variant: "TDR-5S", tonnage: 65, role: "Heavy Line Fighter", walk: 4, run: 6, jump: 0, sinks: 15, armorFactor: 0.9, equipment: [
+    loadout("Large Laser", "rightArm", 5),
+    loadout("LRM 15", "leftTorso", 1), loadout("LRM 15 Ammunition", "leftTorso", 4),
+    loadout("SRM 2", "leftTorso", 5), loadout("SRM 2 Ammunition", "leftTorso", 6),
+    loadout("Medium Laser", "rightTorso", 1), loadout("Medium Laser", "rightTorso", 2, "Medium Laser 2"),
+    loadout("Medium Laser", "rightTorso", 3, "Medium Laser 3"),
+    loadout("Machine Gun", "leftArm", 5), loadout("Machine Gun", "leftArm", 6, "Machine Gun 2"),
+    loadout("Machine Gun Ammunition", "rightTorso", 4)
+  ]}),
+  originalMech({ name: "Marauder", variant: "MAD-3R", tonnage: 75, role: "Heavy Command Fighter", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.84, equipment: [
     loadout("Particle Projection Cannon", "rightArm", 5), loadout("Particle Projection Cannon", "leftArm", 5, "Particle Projection Cannon - Left"),
-    loadout("SRM 6", "rightTorso", 1), loadout("SRM 6 Ammunition", "rightTorso", 3),
-    loadout("Medium Laser", "leftTorso", 1)
+    loadout("Autocannon/5", "rightTorso", 1), loadout("Autocannon/5 Ammunition", "rightTorso", 5),
+    loadout("Medium Laser", "rightArm", 8), loadout("Medium Laser", "leftArm", 8, "Medium Laser - Left")
   ]}),
 
   // Assault BattleMechs
-  originalMech({ name: "Citadel", variant: "CTD-8C", tonnage: 80, role: "Assault Brawler", walk: 3, run: 5, jump: 0, sinks: 14, armorFactor: 0.92, equipment: [
-    loadout("Autocannon/20", "rightTorso", 1), loadout("Autocannon/20 Ammunition", "leftTorso", 1),
-    loadout("Large Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5),
-    loadout("Medium Laser", "leftArm", 6, "Medium Laser 2"), loadout("SRM 6", "leftTorso", 2),
-    loadout("SRM 6 Ammunition", "leftTorso", 4)
+  originalMech({ name: "Atlas", variant: "AS7-D", tonnage: 100, role: "Assault Command", walk: 3, run: 5, jump: 0, sinks: 20, armorFactor: 0.98, equipment: [
+    loadout("Autocannon/20", "rightTorso", 1),
+    loadout("Autocannon/20 Ammunition", "leftTorso", 1), loadout("Autocannon/20 Ammunition", "leftTorso", 2, "Autocannon/20 Ammunition 2"),
+    loadout("LRM 20", "leftTorso", 3), loadout("LRM 20 Ammunition", "leftTorso", 8), loadout("LRM 20 Ammunition", "leftTorso", 9, "LRM 20 Ammunition 2"),
+    loadout("SRM 6", "leftTorso", 10), loadout("SRM 6 Ammunition", "leftTorso", 12),
+    loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 6, "Medium Laser 2"),
+    loadout("Medium Laser", "leftArm", 5, "Medium Laser 3"), loadout("Medium Laser", "leftArm", 6, "Medium Laser 4")
   ]}),
-  originalMech({ name: "Monolith", variant: "MNL-8P", tonnage: 85, role: "Assault Fire Support", walk: 3, run: 5, jump: 0, sinks: 20, armorFactor: 0.92, equipment: [
-    loadout("Particle Projection Cannon", "rightArm", 5), loadout("Particle Projection Cannon", "leftArm", 5, "Particle Projection Cannon - Left"),
+  originalMech({ name: "Banshee", variant: "BNC-3E", tonnage: 95, role: "Assault Brawler", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.9, equipment: [
+    loadout("Particle Projection Cannon", "rightArm", 5),
+    loadout("Autocannon/5", "leftArm", 5), loadout("Autocannon/5 Ammunition", "leftTorso", 1),
+    loadout("Small Laser", "head", 6)
+  ]}),
+  originalMech({ name: "Stalker", variant: "STK-3F", tonnage: 85, role: "Assault Fire Support", walk: 3, run: 5, jump: 0, sinks: 20, armorFactor: 0.94, equipment: [
+    loadout("LRM 10", "leftTorso", 1), loadout("LRM 10 Ammunition", "leftTorso", 3),
+    loadout("LRM 10", "rightTorso", 1, "LRM 10 - Right"), loadout("LRM 10 Ammunition", "rightTorso", 3, "LRM 10 Ammunition - Right"),
+    loadout("SRM 6", "leftTorso", 4), loadout("SRM 6 Ammunition", "leftTorso", 6),
+    loadout("SRM 6", "rightTorso", 4, "SRM 6 - Right"), loadout("SRM 6 Ammunition", "rightTorso", 6, "SRM 6 Ammunition - Right"),
+    loadout("Large Laser", "rightArm", 5), loadout("Large Laser", "leftArm", 5, "Large Laser - Left"),
+    loadout("Medium Laser", "rightArm", 7), loadout("Medium Laser", "rightArm", 8, "Medium Laser 2"),
+    loadout("Medium Laser", "leftArm", 7, "Medium Laser 3"), loadout("Medium Laser", "leftArm", 8, "Medium Laser 4")
+  ]}),
+  originalMech({ name: "Awesome", variant: "AWS-8Q", tonnage: 80, role: "Energy Assault", walk: 3, run: 5, jump: 0, sinks: 28, armorFactor: 0.96, equipment: [
+    loadout("Particle Projection Cannon", "rightArm", 5),
+    loadout("Particle Projection Cannon", "leftArm", 5, "Particle Projection Cannon - Left"),
+    loadout("Particle Projection Cannon", "rightTorso", 1, "Particle Projection Cannon - Torso"),
+    loadout("Small Laser", "head", 6)
+  ]}),
+  originalMech({ name: "Zeus", variant: "ZEU-6S", tonnage: 80, role: "Mobile Assault", walk: 4, run: 6, jump: 0, sinks: 17, armorFactor: 0.88, equipment: [
+    loadout("Large Laser", "rightArm", 5),
+    loadout("Autocannon/5", "leftArm", 5), loadout("Autocannon/5 Ammunition", "leftTorso", 1),
     loadout("LRM 15", "rightTorso", 1), loadout("LRM 15 Ammunition", "rightTorso", 4),
-    loadout("Medium Laser", "leftTorso", 1), loadout("Medium Laser", "leftTorso", 2, "Medium Laser 2")
-  ]}),
-  originalMech({ name: "Siegebreaker", variant: "SBR-9A", tonnage: 90, role: "Assault Line Fighter", walk: 3, run: 5, jump: 0, sinks: 14, armorFactor: 0.94, equipment: [
-    loadout("Autocannon/10", "rightArm", 5), loadout("Autocannon/10", "leftArm", 5, "Autocannon/10 - Left"),
-    loadout("Autocannon/10 Ammunition", "rightTorso", 1), loadout("Autocannon/10 Ammunition", "leftTorso", 1, "Autocannon/10 Ammunition - Left"),
-    loadout("LRM 10", "leftTorso", 2), loadout("LRM 10 Ammunition", "leftTorso", 4),
-    loadout("Medium Laser", "centerTorso", 11), loadout("Medium Laser", "centerTorso", 12, "Medium Laser 2")
-  ]}),
-  originalMech({ name: "Colossus", variant: "CLS-9X", tonnage: 95, role: "Assault Breakthrough", walk: 3, run: 5, jump: 0, sinks: 18, armorFactor: 0.95, equipment: [
-    loadout("Autocannon/20", "rightTorso", 1), loadout("Autocannon/20 Ammunition", "leftTorso", 1),
-    loadout("Particle Projection Cannon", "rightArm", 5), loadout("SRM 6", "leftArm", 5),
-    loadout("SRM 6 Ammunition", "leftTorso", 2), loadout("Medium Laser", "leftArm", 7),
-    loadout("Medium Laser", "leftArm", 8, "Medium Laser 2"), loadout("Medium Laser", "centerTorso", 11, "Medium Laser 3")
-  ]}),
-  originalMech({ name: "Fortress", variant: "FTS-10F", tonnage: 100, role: "Assault Command", walk: 3, run: 5, jump: 0, sinks: 22, armorFactor: 0.96, equipment: [
-    loadout("Particle Projection Cannon", "rightArm", 5), loadout("Particle Projection Cannon", "leftArm", 5, "Particle Projection Cannon - Left"),
-    loadout("Autocannon/10", "rightTorso", 1), loadout("Autocannon/10 Ammunition", "rightTorso", 8),
-    loadout("LRM 15", "leftTorso", 1), loadout("LRM 15 Ammunition", "leftTorso", 4),
-    loadout("Medium Laser", "rightArm", 8), loadout("Medium Laser", "leftArm", 8, "Medium Laser 2"),
-    loadout("Medium Laser", "centerTorso", 11, "Medium Laser 3"), loadout("Medium Laser", "centerTorso", 12, "Medium Laser 4")
+    loadout("Medium Laser", "leftTorso", 2), loadout("Medium Laser", "leftTorso", 3, "Medium Laser 2")
   ]})
 ]);
 

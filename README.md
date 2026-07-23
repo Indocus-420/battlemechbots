@@ -2,6 +2,18 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.13.0-alpha.0 classic BattleMech roster
+
+- Replaces the sample BattleMech roster with 20 requested stock variants:
+  - Light: Jenner JR7-D, Firestarter FS9-H, Javelin JVN-10N, Commando COM-2D, and UrbanMech UM-R60.
+  - Medium: Assassin ASN-21, Blackjack BJ-1, Hatchetman HCT-3F, Phoenix Hawk PXH-1, and Hunchback HBK-4G.
+  - Heavy: Catapult CPLT-C1, JagerMech JM6-S, Archer ARC-2R, Thunderbolt TDR-5S, and Marauder MAD-3R.
+  - Assault: Atlas AS7-D, Banshee BNC-3E, Stalker STK-3F, Awesome AWS-8Q, and Zeus ZEU-6S.
+- Adds stock movement, heat sinks, weapons, ammunition, jump jets, roles, tonnage, and critical-slot layouts.
+- Adds direct Sarna reference links for every BattleMech storefront entry.
+- Adds Hatchet equipment to the catalog and Hatchetman loadout. Dedicated hatchet attack automation remains planned.
+- Replaces the prior unit media filenames and labels with the requested roster while retaining original project-created art and sound.
+
 ## 0.12.1-alpha.0 living project
 
 The working Foundry system, implementation roadmap, and long-term Game Design,
@@ -15,7 +27,7 @@ Technical Design, and Rules master document now ship as one maintained project.
 
 - Adds an authoritative M-Notes economy stored per Foundry user.
 - Adds GM controls to add or remove M-Notes with a required reason.
-- Adds a searchable storefront containing every supported system item, all 20 original BattleMechs, and all 6 original vehicles.
+- Adds a searchable storefront containing every supported system item, all 20 BattleMechs, and all 6 original vehicles.
 - Delivers purchased equipment to an owned BattleMech or vehicle and newly purchased units to the buyer's Mech Bay.
 - Deducts the exact listed price, rejects insufficient funds, and records a 250-entry transaction ledger.
 - Routes player purchases through a connected Gamemaster so clients cannot submit their own prices or balances.

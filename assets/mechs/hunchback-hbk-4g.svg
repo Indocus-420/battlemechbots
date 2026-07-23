@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Vanguard VGD-5S</title><desc id="desc">Original medium BattleMech token art.</desc>
+  <title id="title">Hunchback HBK-4G</title><desc id="desc">Original medium BattleMech token art.</desc>
   <defs>
     <radialGradient id="bg"><stop stop-color="hsl(31 35% 24%)"/><stop offset="1" stop-color="#071017"/></radialGradient>
     <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="hsl(31 72% 60%)"/><stop offset=".5" stop-color="hsl(59 58% 38%)"/><stop offset="1" stop-color="#17242d"/></linearGradient>
@@ -20,6 +20,6 @@
     <path d="M164 446 142 476 226 486 222 462ZM348 446l22 30-84 10 4-24Z" fill="#182733"/>
   </g>
   <path d="M66 402h380v62H66z" fill="#050a0d" opacity=".88"/>
-  <text x="256" y="431" fill="#f4f7f8" font-family="Arial,sans-serif" font-size="25" font-weight="700" text-anchor="middle">VANGUARD</text>
-  <text x="256" y="456" fill="hsl(31 80% 70%)" font-family="Arial,sans-serif" font-size="18" text-anchor="middle">VGD - 55T MEDIUM</text>
+  <text x="256" y="431" fill="#f4f7f8" font-family="Arial,sans-serif" font-size="25" font-weight="700" text-anchor="middle">HUNCHBACK</text>
+  <text x="256" y="456" fill="hsl(31 80% 70%)" font-family="Arial,sans-serif" font-size="18" text-anchor="middle">HBK-4G - 50T MEDIUM</text>
 </svg>

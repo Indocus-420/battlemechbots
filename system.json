@@ -2,10 +2,10 @@
   "id": "battletech-foundry-system",
   "title": "BattleMech Foundry System",
   "description": "BattleMech combat alpha for Foundry VTT 14.363 and newer with a Pilot and Lance command window, M-Notes storefront and transaction ledger, compact action HUD, targeting arcs, random hex maps, synchronized combat effects, GATOR combat, and class-separated content.",
-  "version": "0.12.1-alpha.0",
+  "version": "0.13.0-alpha.0",
   "url": "https://github.com/Indocus-420/battlemechbots",
-  "manifest": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.12.1-alpha.0/system.json",
-  "download": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.12.1-alpha.0/battletech-foundry-system-0.12.1-alpha.0.zip",
+  "manifest": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.13.0-alpha.0/system.json",
+  "download": "https://github.com/Indocus-420/battlemechbots/releases/download/v0.13.0-alpha.0/battletech-foundry-system-0.13.0-alpha.0.zip",
   "compatibility": {
     "minimum": "14.363",
     "verified": "14.364"

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { CORE_ITEMS, CORE_ITEMS_BY_GROUP, CORE_MECHS, CORE_MECHS_BY_CLASS, CORE_VEHICLES } from "../module/content.js";
+import { ammunitionTypeForWeapon } from "../module/missiles.js";
 
 test("core item catalog contains unique weapons, ammunition, and equipment", () => {
   assert.ok(CORE_ITEMS.length >= 40);
@@ -11,7 +12,7 @@ test("core item catalog contains unique weapons, ammunition, and equipment", () 
 
 test("core item catalog is separated into energy, ballistic, missile, and equipment groups", () => {
   assert.deepEqual(Object.fromEntries(Object.entries(CORE_ITEMS_BY_GROUP).map(([key, items]) => [key, items.length])), {
-    energy: 5, ballistic: 10, missile: 14, equipment: 15
+    energy: 5, ballistic: 10, missile: 14, equipment: 16
   });
   assert.equal(Object.values(CORE_ITEMS_BY_GROUP).flat().length, CORE_ITEMS.length);
   assert.ok(CORE_ITEMS.every(item => item.img.startsWith("systems/battletech-foundry-system/assets/items/")));
@@ -42,9 +43,15 @@ test("generic vehicle catalog is original, complete, and importable", () => {
   }
 });
 
-test("original BattleMech catalog contains five units in every weight class", () => {
+test("requested BattleMech catalog contains five units in every weight class", () => {
   assert.equal(CORE_MECHS.length, 20);
   assert.equal(new Set(CORE_MECHS.map(actor => actor.name)).size, 20);
+  assert.deepEqual(CORE_MECHS.map(actor => actor.system.mech.chassis), [
+    "Jenner", "Firestarter", "Javelin", "Commando", "UrbanMech",
+    "Assassin", "Blackjack", "Hatchetman", "Phoenix Hawk", "Hunchback",
+    "Catapult", "JagerMech", "Archer", "Thunderbolt", "Marauder",
+    "Atlas", "Banshee", "Stalker", "Awesome", "Zeus"
+  ]);
   const weightClass = tonnage => tonnage <= 35 ? "light" : tonnage <= 55 ? "medium" : tonnage <= 75 ? "heavy" : "assault";
   const counts = { light: 0, medium: 0, heavy: 0, assault: 0 };
   for (const actor of CORE_MECHS) counts[weightClass(actor.system.mech.tonnage)] += 1;
@@ -52,7 +59,7 @@ test("original BattleMech catalog contains five units in every weight class", ()
   assert.deepEqual(Object.fromEntries(Object.entries(CORE_MECHS_BY_CLASS).map(([key, actors]) => [key, actors.length])), counts);
 });
 
-test("every original BattleMech has unique packaged image, audio, and presentation metadata", () => {
+test("every BattleMech has unique packaged image, audio, and presentation metadata", () => {
   const images = new Set();
   const sounds = new Set();
   for (const actor of CORE_MECHS) {
@@ -86,7 +93,7 @@ test("every catalog BattleMech is immediately playable", () => {
     assert.equal(externalHeatSinks.length, Math.max(0, actor.system.heat.sinks - 10), `${actor.name}: external heat-sink count`);
     const ammunition = actor.items.filter(item => item.type === "ammo");
     for (const weapon of actor.items.filter(item => item.type === "weapon" && item.system.ammoPerShot > 0)) {
-      const ammoType = weapon.name.replace(/ - Left$/, "").replace("Autocannon/", "AC/");
+      const ammoType = ammunitionTypeForWeapon(weapon.name);
       assert.ok(ammunition.some(item => item.system.ammoType === ammoType), `${actor.name}: ammunition for ${weapon.name}`);
     }
     for (const location of locations) {

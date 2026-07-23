@@ -17,7 +17,7 @@ Status: complete.
 
 Status: functional data sheet and assignable critical-slot tables complete; graphical armor layout remains.
 
-Content milestone: 0.9.0 presents the 20 original ready-to-play BattleMechs in four class-specific compendiums and gives every unit distinct original token art and activation audio.
+Content milestone: 0.13.0 replaces the sample roster with 20 requested ready-to-play stock BattleMech variants in four class-specific compendiums. Every unit retains distinct original project-created token art and activation audio.
 
 ## Phase 2 - Combat
 
@@ -54,7 +54,7 @@ Combat rules include GATOR calculations, hex and terrain movement, elevation, Wa
 - Flamers: fire stream.
 - Prefer built-in canvas rendering, with optional animation-module integration when available.
 
-Status: built-in Foundry VTT 14 projectile, impact, and procedural weapon-audio foundation implemented in 0.5.1. Version 0.9.0 adds unique packaged activation portraits and sounds for all 20 original BattleMechs. Version 0.10.0 adds vehicle portraits/audio, item icons, and optional JB2A/Sequencer weapon effects with automatic built-in fallback; weapon-specific refinement and network-synchronized built-in audio remain.
+Status: built-in Foundry VTT 14 projectile, impact, and procedural weapon-audio foundation implemented in 0.5.1. Version 0.13.0 packages uniquely labeled portraits and activation sounds for the requested 20-unit roster. Version 0.10.0 adds vehicle portraits/audio, item icons, and optional JB2A/Sequencer weapon effects with automatic built-in fallback; weapon-specific refinement and network-synchronized built-in audio remain.
 
 ## Interface and optional-module milestone
 
@@ -77,7 +77,7 @@ Version 0.10.0 adds a native BattleTech token action HUD, D6-only quick rolls, D
 - Contracts and finances.
 
 Status: first economy increment complete in 0.12.0. The live storefront includes
-70 supported listings, GM-controlled M-Notes adjustments, exact-price purchase
+71 supported listings, GM-controlled M-Notes adjustments, exact-price purchase
 deductions, insufficient-funds protection, unit/equipment delivery, and a
 250-entry transaction ledger. Shared company accounts, mission payouts, repairs,
 salvage, contracts, and pilot progression remain planned.

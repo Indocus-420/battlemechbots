@@ -70,7 +70,7 @@ globalThis.game = {
   release: { version: "14.363", generation: 14 },
   system: {
     id: "battletech-foundry-system",
-    version: "0.12.1-alpha.0",
+    version: "0.13.0-alpha.0",
     documentTypes: { Actor: { mech: {}, vehicle: {} }, Item: { weapon: {}, equipment: {}, ammo: {} } }
   },
   user: { id: "player", isGM: false },
@@ -82,7 +82,7 @@ globalThis.game = {
   packs: new Map(),
   settings: {
     register: (namespace, key, data) => settings.set(`${namespace}.${key}`, data),
-    get: () => "0.12.1-alpha.0"
+    get: () => "0.13.0-alpha.0"
   }
 };
 globalThis.ui = { notifications: { info: () => {}, error: () => {}, warn: () => {} } };
@@ -108,7 +108,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.12.1-alpha.0");
+  assert.equal(game.bmfs.version, "0.13.0-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.playWeaponEffect, "function");
@@ -529,13 +529,13 @@ test("turn state follows the active encounter instead of a differently viewed en
 test("core compendium installer separates five mechs into each weight-class pack", async () => {
   game.user.isGM = true;
   const result = await game.bmfs.installCoreCompendiums();
-  assert.equal(result.items, 44);
+  assert.equal(result.items, 45);
   assert.equal(result.vehicles, 6);
   assert.equal(result.mechs, 20);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-core-items").length, 5);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-ballistic-items").length, 10);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-missile-items").length, 14);
-  assert.equal(createdCompendiumDocuments.get("world.bmfs-equipment-items").length, 15);
+  assert.equal(createdCompendiumDocuments.get("world.bmfs-equipment-items").length, 16);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-core-vehicles").length, 6);
   for (const collection of ["world.bmfs-core-mechs", "world.bmfs-medium-mechs", "world.bmfs-heavy-mechs", "world.bmfs-assault-mechs"]) {
     assert.equal(createdCompendiumDocuments.get(collection).length, 5);

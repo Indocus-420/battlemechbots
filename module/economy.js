@@ -43,6 +43,7 @@ const ITEM_PRICES = Object.freeze({
   "Cockpit": 200000,
   "Heat Sink": 2000,
   "Jump Jet": 20000,
+  "Hatchet": 100000,
   "Shoulder Actuator": 50000,
   "Upper Arm Actuator": 30000,
   "Lower Arm Actuator": 25000,
@@ -100,6 +101,18 @@ function unitPrice(unit, vehicle = false) {
   return Math.max(500000, Math.round(((tonnage * (vehicle ? 35000 : 70000)) + equipmentValue) / 1000) * 1000);
 }
 
+const MECH_SOURCE_PAGES = Object.freeze({
+  Blackjack: "Blackjack_(BattleMech)",
+  Banshee: "Banshee_(BattleMech)",
+  Firestarter: "Firestarter_(BattleMech)"
+});
+
+function mechSourceUrl(unit) {
+  const chassis = String(unit.system?.mech?.chassis ?? unit.name).trim();
+  const page = MECH_SOURCE_PAGES[chassis] ?? chassis.replace(/\s+/g, "_");
+  return `https://www.sarna.net/wiki/${page}`;
+}
+
 function unitEntry(unit, vehicle = false) {
   const tonnage = numeric(vehicle ? unit.system?.vehicle?.tonnage : unit.system?.mech?.tonnage);
   const kind = vehicle ? "vehicle" : "mech";
@@ -113,7 +126,7 @@ function unitEntry(unit, vehicle = false) {
     description: `${tonnage}-ton ${vehicle ? unit.system?.vehicle?.role ?? "support vehicle" : `${mechWeightClass(tonnage)} BattleMech`}.`,
     sourceUrl: vehicle
       ? "https://www.sarna.net/wiki/Combat_Vehicle"
-      : "https://www.sarna.net/wiki/BattleMech",
+      : mechSourceUrl(unit),
     document: unit
   });
 }

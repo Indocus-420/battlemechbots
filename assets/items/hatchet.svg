@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img"><title>Hatchet</title>
+  <defs><radialGradient id="bg"><stop stop-color="hsl(8 35% 24%)"/><stop offset="1" stop-color="#071017"/></radialGradient><linearGradient id="steel"><stop stop-color="#edf5f8"/><stop offset=".55" stop-color="#8199a6"/><stop offset="1" stop-color="#314550"/></linearGradient></defs>
+  <rect width="512" height="512" rx="62" fill="url(#bg)"/>
+  <g transform="rotate(-37 256 248)" stroke="#d9e6ed" stroke-width="8" stroke-linejoin="round">
+    <rect x="233" y="150" width="46" height="272" rx="18" fill="#8d552f"/>
+    <path d="M162 74h188l-24 128-70 32-70-32z" fill="url(#steel)"/>
+    <path d="M162 74 92 132l94 70z" fill="#dce9ee"/>
+  </g>
+  <path d="M38 404h436v72H38z" fill="#05090c" opacity=".9"/>
+  <text x="256" y="435" fill="#fff" font-family="Arial,sans-serif" font-size="22" font-weight="700" text-anchor="middle">HATCHET</text>
+  <text x="256" y="462" fill="hsl(8 85% 72%)" font-family="Arial,sans-serif" font-size="18" text-anchor="middle">PHYSICAL EQUIPMENT</text>
+</svg>

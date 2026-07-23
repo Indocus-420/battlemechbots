@@ -102,7 +102,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.12.1-alpha.0";
+const SYSTEM_VERSION = "0.13.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -3012,12 +3012,12 @@ Hooks.once("init", () => {
   });
   game.settings.register(SYSTEM_ID, "mechActivationEffects", {
     name: "Enable BattleMech activation visual effects",
-    hint: "Shows each original BattleMech's unique portrait pulse when its phase selection is recorded.",
+    hint: "Shows each BattleMech's unique portrait pulse when its phase selection is recorded.",
     scope: "client", config: true, type: Boolean, default: true
   });
   game.settings.register(SYSTEM_ID, "mechActivationAudio", {
     name: "Enable BattleMech activation audio",
-    hint: "Plays each original BattleMech's packaged activation sound when its phase selection is recorded.",
+    hint: "Plays each BattleMech's packaged activation sound when its phase selection is recorded.",
     scope: "client", config: true, type: Boolean, default: true
   });
   game.settings.register(SYSTEM_ID, "jb2aEffects", {
