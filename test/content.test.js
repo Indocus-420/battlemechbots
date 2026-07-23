@@ -10,6 +10,17 @@ test("core item catalog contains unique weapons, ammunition, and equipment", () 
   assert.deepEqual([...new Set(CORE_ITEMS.map(item => item.type))].sort(), ["ammo", "equipment", "weapon"]);
 });
 
+test("every equipment critical effect is accepted by the Foundry data model", () => {
+  const accepted = new Set([
+    "general", "engine", "gyro", "sensors", "lifeSupport", "cockpit",
+    "heatSink", "jumpJet", "hip", "upperLeg", "lowerLeg", "foot",
+    "shoulder", "upperArm", "lowerArm", "hand"
+  ]);
+  for (const item of CORE_ITEMS.filter(item => item.type === "equipment")) {
+    assert.ok(accepted.has(item.system.criticalEffect), `${item.name} has invalid critical effect ${item.system.criticalEffect}`);
+  }
+});
+
 test("core item catalog is separated into energy, ballistic, missile, and equipment groups", () => {
   assert.deepEqual(Object.fromEntries(Object.entries(CORE_ITEMS_BY_GROUP).map(([key, items]) => [key, items.length])), {
     energy: 5, ballistic: 10, missile: 14, equipment: 16

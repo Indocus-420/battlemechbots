@@ -2,7 +2,7 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT = ROOT.parent.parent / "outputs" / "battletech-foundry-system-0.14.2-alpha.0.zip"
+OUTPUT = ROOT.parent.parent / "outputs" / "battletech-foundry-system-0.14.3-alpha.0.zip"
 FILES = ["ASSET_SOURCES.md", "README.md", "ROADMAP.md", "system.json"]
 DIRECTORIES = ["assets", "docs", "lang", "module", "scripts", "styles", "templates"]
 

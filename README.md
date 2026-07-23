@@ -2,6 +2,12 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.14.3-alpha.0 Foundry live-validation repair
+
+- Corrects the Hatchet equipment critical-effect value rejected by Foundry's strict item data model.
+- Adds a catalog regression test preventing unsupported equipment critical-effect values.
+- Retains the activated Sensor Sweep Test Range and the 0.14.2 player-tested map controls.
+
 ## 0.14.2-alpha.0 player-tested map controls
 
 - Exposes the random map generator directly in Foundry 14's Region Controls.

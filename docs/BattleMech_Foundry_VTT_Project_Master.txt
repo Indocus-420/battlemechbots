@@ -18,17 +18,17 @@ Primary implementation language: JavaScript ES modules (current); TypeScript rem
 
 CURRENT LIVE BUILD
 
-Release: 0.14.2-alpha.0
+Release: 0.14.3-alpha.0
 Repository: https://github.com/Indocus-420/battlemechbots
-Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.2-alpha.0/system.json
-Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.2-alpha.0/battletech-foundry-system-0.14.2-alpha.0.zip
+Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.3-alpha.0/system.json
+Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.14.3-alpha.0/battletech-foundry-system-0.14.3-alpha.0.zip
 
 This master document now ships inside the same repository and ZIP as the working
 Foundry VTT system. The repository is the canonical living project. Design,
 technical, roadmap, rules-reference, implementation, test, and release changes
 should be maintained together.
 
-IMPLEMENTATION SNAPSHOT (0.14.2-alpha.0)
+IMPLEMENTATION SNAPSHOT (0.14.3-alpha.0)
 
   COMPLETE       Foundry VTT 14.363+ system bootstrap and packaging
   COMPLETE       BattleMech, vehicle, weapon, equipment, and ammunition data

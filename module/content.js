@@ -154,7 +154,7 @@ export const CORE_ITEMS = Object.freeze([
   equipment("Cockpit", "cockpit", "head", 1),
   equipment("Heat Sink", "heatSink", "centerTorso", 1),
   equipment("Jump Jet", "jumpJet", "leftTorso", 1),
-  equipment("Hatchet", "hatchet", "rightArm", 3, "Physical weapon carried by the Hatchetman. Dedicated hatchet-attack automation is planned; use standard physical-attack adjudication until implemented."),
+  equipment("Hatchet", "general", "rightArm", 3, "Physical weapon carried by the Hatchetman. Dedicated hatchet-attack automation is planned; use standard physical-attack adjudication until implemented."),
   equipment("Shoulder Actuator", "shoulder", "rightArm", 1),
   equipment("Upper Arm Actuator", "upperArm", "rightArm", 1),
   equipment("Lower Arm Actuator", "lowerArm", "rightArm", 1),
