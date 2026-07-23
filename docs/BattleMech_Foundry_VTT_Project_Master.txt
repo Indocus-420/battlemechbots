@@ -1,0 +1,1378 @@
+BATTLEMECH FOUNDRY VTT SYSTEM
+PROJECT MASTER DOCUMENT
+
+Version: 0.3
+Document status: Living project specification
+Last updated: 2026-07-22
+Intended use: Re-upload this file in a future Codex or ChatGPT conversation to continue planning and development.
+
+======================================================================
+DOCUMENT CONTROL
+======================================================================
+
+Project name: BattleMech Foundry VTT System
+Working title: BattleMech Foundry
+Target platform: Foundry Virtual Tabletop
+Initial target: Foundry VTT Version 14
+Primary implementation language: JavaScript ES modules (current); TypeScript remains a future migration option
+
+CURRENT LIVE BUILD
+
+Release: 0.15.0-alpha.0
+Repository: https://github.com/Indocus-420/battlemechbots
+Manifest: https://github.com/Indocus-420/battlemechbots/releases/download/v0.15.0-alpha.0/system.json
+Package: https://github.com/Indocus-420/battlemechbots/releases/download/v0.15.0-alpha.0/battletech-foundry-system-0.15.0-alpha.0.zip
+
+This master document now ships inside the same repository and ZIP as the working
+Foundry VTT system. The repository is the canonical living project. Design,
+technical, roadmap, rules-reference, implementation, test, and release changes
+should be maintained together.
+
+IMPLEMENTATION SNAPSHOT (0.15.0-alpha.0)
+
+  COMPLETE       Foundry VTT 14.363+ system bootstrap and packaging
+  COMPLETE       BattleMech, vehicle, weapon, equipment, and ammunition data
+  COMPLETE       Core movement, direct fire, GATOR, damage, heat, criticals,
+                 missiles, ammunition use, physical attacks, and turn sequence
+  COMPLETE       Pilot/Lance command window and compact token action HUD
+  COMPLETE       20 requested stock BattleMech variants, 6 vehicles, and
+                 original project-created packaged media
+  COMPLETE       374-entry Mech Bay Exchange: 20 playable BattleMechs,
+                 6 vehicles, automated core inventory, and Sarna's current
+                 256-weapon / 64-equipment category index
+  COMPLETE       Seeded random mission maps at 25x25, 50x50, 75x75,
+                 100x100, and 125x125
+  COMPLETE       Generated native terrain walls, token vision, fog exploration,
+                 and per-BattleMech radar/sensor sight range
+  COMPLETE       Sensor damage reduces vision: one hit halves radar range;
+                 two hits disable unit vision
+  COMPLETE       Foundry 14 live UI validation: GM-generated 50x50 Sensor
+                 Sweep Test Range, visible generated walls, and separate
+                 player-session unexplored fog-of-war verification
+  COMPLETE       Layered visual-map architecture: raster landscape on the
+                 Foundry Ground Level, scenic facility Tiles, and independent
+                 hex/Region/wall/fog/sensor gameplay layers
+  COMPLETE       Temperate Frontier visual preset with river, roads, cliffs,
+                 hills, valleys, trees, brush, base, tower, and reactor
+  COMPLETE       Two-team encounter rosters supporting 1v1 through 4v4
+  COMPLETE       GM-controlled individual M-Notes balances and audit ledger
+  COMPLETE       Exact purchase deductions, insufficient-funds validation,
+                 and delivery of units/equipment
+  PARTIAL        Campaign economy; shared accounts, mission payouts, repairs,
+                 salvage, contracts, and selling remain planned
+  PARTIAL        MechLab/construction validation remains planned
+  PARTIAL        303 Sarna-only shop entries are reference inventory; combat
+                 statistics and era legality require official-rules validation
+
+Release validation is defined by the repository's automated test suite and
+package inspection. Update this snapshot whenever a release changes feature
+status.
+
+IMPORTANT LEGAL AND RULES NOTE
+
+BattleTech names, rules, and setting material belong to their respective rights
+holders. This project document is an implementation plan, not a substitute for
+official rulebooks. Rules must be verified against legally owned official source
+material before release. Sarna and MechWiki are useful lore/index references but
+are not authoritative rules sources.
+
+Status labels used in this document:
+
+  APPROVED       A current project decision.
+  PROPOSED       A recommended design awaiting owner approval.
+  VERIFY         Must be checked against the selected official rules edition.
+  OPTIONAL       A rule or feature controlled by a setting.
+  FUTURE         Outside the initial release scope.
+  DEFERRED       Intentionally postponed.
+
+Requirement identifiers are stable. Do not renumber existing identifiers when
+adding new entries. Add new identifiers at the end of the relevant series.
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+PART I   PROJECT FOUNDATION AND GAME DESIGN DOCUMENT
+  1. Project Overview
+  2. Product Vision and Design Principles
+  3. Scope, Users, and Platforms
+  4. User Interface and HUD
+  5. Combat Systems
+  6. BattleMech Construction and Validation
+  7. Pilot and BattleMech Actor Systems
+  8. Economy, Mech Bay, and Mission Resolution
+  9. Settings, Permissions, Accessibility, and Data Safety
+
+PART II  TECHNICAL DESIGN DOCUMENT
+  10. Technical Goals and Architecture
+  11. Project Structure and Module Responsibilities
+  12. Core Data Models
+  13. Services, APIs, Hooks, and Module Interactions
+  14. Persistence, Migration, Security, and Compatibility
+  15. Coding, Testing, Packaging, and Documentation Standards
+
+PART III DEVELOPER ROADMAP
+  16. Delivery Strategy and Definition of Done
+  17. Milestones and Phased Implementation Plan
+  18. Epics and GitHub Issue Hierarchy
+  19. Dependencies, Risks, and Release Gates
+
+PART IV  BATTLETECH RULES IMPLEMENTATION REFERENCE
+  20. Rules Governance and Source Hierarchy
+  21. Rule-to-Implementation Mapping
+  22. Optional Rules and House Rules
+  23. Rules Validation Checklist
+
+PART V   LIVING PROJECT RECORD
+  24. Future Ideas Backlog
+  25. Open Decisions and Questions
+  26. Developer Notes
+  27. Version History and Change Log
+  28. Future Conversation Handoff Template
+
+======================================================================
+PART I - PROJECT FOUNDATION AND GAME DESIGN DOCUMENT
+======================================================================
+
+1. PROJECT OVERVIEW
+----------------------------------------------------------------------
+
+1.1 Vision
+
+Develop a comprehensive BattleTech game system for Foundry VTT that recreates
+tabletop BattleTech play while using virtual-tabletop automation to reduce
+repetitive work. The system should remain understandable to new players,
+powerful for experienced players, and modular enough to support future campaign
+and unit expansions.
+
+1.2 Initial Product Goals
+
+  GDD-001  Preserve player and Game Master control while automating arithmetic.
+  GDD-002  Show calculations and modifiers instead of hiding them.
+  GDD-003  Support configurable official, optional, and campaign house rules.
+  GDD-004  Keep pilots separate from the BattleMechs they operate.
+  GDD-005  Provide responsive combat information without panel overlap.
+  GDD-006  Support long-term campaign play through money, repair, and refit tools.
+  GDD-007  Keep features modular so later unit types can be added safely.
+
+1.3 Primary Reference Categories
+
+  A. Official BattleTech rulebooks selected by the project owner.
+  B. Foundry VTT Version 14 documentation and API references.
+  C. Sarna.net for lore, terminology, factions, and source discovery.
+  D. MechWiki for secondary lore and equipment reference.
+  E. Rideable module documentation for mounted-token integration.
+
+Exact book titles, editions, errata dates, and page references must be entered
+in the rules reference before rules-dependent features are marked release-ready.
+
+2. PRODUCT VISION AND DESIGN PRINCIPLES
+----------------------------------------------------------------------
+
+2.1 Design Principles
+
+  DP-001  Rules transparent: show the components of rolls and totals.
+  DP-002  Automation reversible: authorized users can correct mistakes.
+  DP-003  Source traceable: every implemented rule has a source or house-rule tag.
+  DP-004  Data safe: transactions and combat changes are logged when practical.
+  DP-005  UI resilient: variable equipment lists must not overlap other panels.
+  DP-006  Accessible: do not communicate state by color alone.
+  DP-007  Extensible: avoid hard-coding Great Houses, weapons, or technology eras.
+  DP-008  Performant: recalculate derived data only when dependencies change.
+  DP-009  Compatible: isolate optional module integrations behind adapters.
+
+2.2 Automation Levels (PROPOSED)
+
+  Manual:     The system displays information; users make all changes.
+  Assisted:   The system previews changes and asks for confirmation.
+  Automatic:  The system applies valid changes and records an audit entry.
+
+Each major subsystem should declare which levels it supports.
+
+3. SCOPE, USERS, AND PLATFORMS
+----------------------------------------------------------------------
+
+3.1 Initial Users
+
+  Game Master: full configuration, combat, economy, and correction authority.
+  Assistant GM: delegated campaign and combat management.
+  Trusted player: expanded token and sheet controls as permitted.
+  Unit owner: controls owned pilots and BattleMechs.
+  Observer: read-only access to permitted information.
+
+3.2 Initial Release Scope
+
+  - Foundry VTT Version 14 system foundation.
+  - BattleMech and Pilot actors.
+  - Responsive HUD and sheets.
+  - Ammunition, heat, weapon groups, and GATOR assistance.
+  - Construction-weight validation for explicitly supported equipment.
+  - Rideable integration when the module is installed.
+  - M-Notes, mission rewards, and a basic Mech Bay/storefront.
+
+3.3 Explicitly Future Scope
+
+Vehicles, infantry, battle armor, ProtoMechs, aerospace units, VTOLs,
+DropShips, WarShips, strategic maps, manufacturing, and complete career mode.
+
+4. USER INTERFACE AND HUD
+----------------------------------------------------------------------
+
+4.1 HUD Themes
+
+  UI-001  Use the current HUD palette as the default for independent mercenaries,
+          unaffiliated pilots, neutral units, and units without a faction.
+  UI-002  Add data-driven themes for House Davion, House Kurita, House Liao,
+          House Marik, and House Steiner.
+  UI-003  Automatically select a theme from the unit or company faction.
+  UI-004  Allow a user or GM override without changing the underlying faction.
+  UI-005  Theme records include colors, contrast-safe text, accents, and optional
+          heraldry assets whose licensing is suitable for distribution.
+  UI-006  Confirm faction palettes through approved references before release.
+
+House associations:
+
+  House Davion  - Federated Suns
+  House Kurita  - Draconis Combine
+  House Liao    - Capellan Confederation
+  House Marik   - Free Worlds League
+  House Steiner - Lyran Commonwealth / Lyran Alliance, depending on era
+
+4.2 Responsive HUD
+
+  UI-010  The HUD is resizable, scrollable, and optionally dockable.
+  UI-011  Piloting information must never overlap the ammunition display.
+  UI-012  Panels wrap, collapse, or scroll at constrained sizes.
+  UI-013  Remember window size, position, docking, and collapsed panels per user.
+  UI-014  Handle different BattleMech equipment loads without fixed-height assumptions.
+  UI-015  Provide a reset-layout command.
+  UI-016  Support keyboard navigation and visible focus indicators.
+
+4.3 HUD Information
+
+  - Pilot identity and relevant skills
+  - BattleMech identity, chassis, and variant
+  - Armor and internal structure condition
+  - Current heat and heat capacity indicators
+  - Movement and initiative state
+  - Ammunition by compatible bin
+  - Weapon groups and Alpha Strike
+  - Current GATOR step and combined modifier
+  - Current target and range band
+  - Pilot condition and active effects
+  - Validation warnings that affect deployment or firing
+
+4.4 GATOR Presentation
+
+  UI-020  Show Gunnery, Attacker Movement, Target Movement, Other Modifiers,
+          and Range as visible steps.
+  UI-021  Show current, completed, and remaining steps.
+  UI-022  Show active unit, current step modifier, and combined modifier.
+  UI-023  Display the tracker in the HUD and Combat Tracker.
+  UI-024  Show a configurable phase-change notification.
+  UI-025  GM controls: next, previous, skip, reset, and manual override.
+
+Note: GATOR is primarily a calculation mnemonic/workflow. Whether it is treated
+as a combat sub-phase is a project UI decision and must not silently alter the
+official turn sequence. See RULE-GATOR-001.
+
+5. COMBAT SYSTEMS
+----------------------------------------------------------------------
+
+5.1 Weapon Groups
+
+  CBT-001  Every BattleMech sheet supports WG1, WG2, WG3, and Alpha Strike.
+  CBT-002  A weapon may be assigned to one or more groups.
+  CBT-003  The HUD reads group membership from the BattleMech actor.
+  CBT-004  Each group previews weapons, damage potential, heat, ammunition use,
+           availability, and supported range information.
+  CBT-005  Firing a group rolls attacks, adds heat, consumes ammunition, updates
+           actor/HUD state, and writes a combat-log entry.
+  CBT-006  The preview distinguishes potential damage from expected or resolved damage.
+  CBT-007  Alpha Strike contains the weapons explicitly assigned to that group;
+           whether it defaults to all weapons is configurable.
+  CBT-008  The system rejects or warns about impossible fire before mutation.
+
+5.2 Ammunition Display and Consumption
+
+Display format: CURRENT / MAXIMUM, with a compatible ammunition type and bin.
+
+Examples from the current project requirements:
+
+  SRM-4:          20 / 20; one four-missile volley results in 16 / 20.
+  AC/10:          10 / 10; one attack results in 9 / 10.
+  Gauss Rifle:     8 / 8; one attack results in 7 / 8.
+  Machine Gun:  1000 / 1000; current project rule consumes 200 rounds per
+                machine gun fired per turn.
+
+  CBT-010  Track ammunition by bin and ammunition type.
+  CBT-011  Support multiple weapons drawing from compatible bins.
+  CBT-012  Prevent attacks when the selected bins cannot satisfy required use.
+  CBT-013  Preview exact bin deductions before firing.
+  CBT-014  Update current ammunition without changing maximum capacity.
+  CBT-015  Record weapon, quantity, bin, before value, and after value.
+  CBT-016  Support empty bins, destroyed bins, CASE status, and critical effects.
+
+The missile-count and machine-gun rules above are APPROVED project requirements
+but may differ from a selected tabletop ruleset's usual ammunition accounting.
+They must be implemented as clearly labeled campaign/house-rule modes unless
+verified as the intended official rule interpretation. See Part IV.
+
+5.3 Heat
+
+  CBT-020  Preview heat for each weapon group before firing.
+  CBT-021  Apply heat once for each weapon actually fired.
+  CBT-022  Resolve heat effects from a versioned rules profile.
+  CBT-023  Allow authorized correction with an audit note.
+  CBT-024  Distinguish generated heat, dissipation capacity, and current heat.
+
+5.4 Movement Outside Normal Restrictions
+
+  CBT-030  Provide an OPTIONAL GM setting that allows authorized movement while
+           paused, outside the unit's turn, or outside the current workflow step.
+  CBT-031  Permission choices: GM, Assistant GM, Trusted, Owner, or Everyone.
+  CBT-032  Record out-of-sequence movement when logging is enabled.
+  CBT-033  Clearly mark this as an override; do not silently bypass Foundry controls.
+
+6. BATTLEMECH CONSTRUCTION AND VALIDATION
+----------------------------------------------------------------------
+
+6.1 Included Mass and Configuration Inputs
+
+  CON-001  Chassis and internal structure
+  CON-002  Engine, gyro, and cockpit
+  CON-003  Armor and armor technology
+  CON-004  Weapons and ammunition
+  CON-005  Heat sinks
+  CON-006  Jump jets
+  CON-007  CASE and coolant-flushing equipment
+  CON-008  Electronics and miscellaneous installed components
+  CON-009  Technology base, era, availability, slots, and compatibility where supported
+
+Initial construction technologies include standard armor, Ferro-Fibrous armor,
+standard internal structure, and Endo Steel. Exact names, weights, slots, and
+technology restrictions must come from verified rules data.
+
+6.2 Validation Output
+
+  CON-010  Display maximum chassis tonnage.
+  CON-011  Display current installed tonnage with defined rounding behavior.
+  CON-012  Display remaining tonnage.
+  CON-013  Flag overweight, incompatible, unavailable, and incomplete builds.
+  CON-014  Separate warnings from deployment-blocking errors.
+  CON-015  Explain each validation result and identify affected components.
+  CON-016  Do not mark a build deployment-ready while blocking errors remain.
+
+7. PILOT AND BATTLEMECH ACTOR SYSTEMS
+----------------------------------------------------------------------
+
+7.1 Separation
+
+  ACT-001  Pilots and BattleMechs are separate Foundry Actors.
+  ACT-002  Pilots retain skills, injuries, experience, biography, equipment, and history.
+  ACT-003  A pilot can enter, exit, and transfer between BattleMechs.
+  ACT-004  Pilot data is referenced, not duplicated into the BattleMech.
+  ACT-005  The BattleMech HUD uses the mounted pilot's applicable statistics.
+  ACT-006  Define behavior for no pilot, multiple candidates, deleted pilot, and broken link.
+
+7.2 Rideable Integration
+
+  ACT-010  Use an optional adapter for the Rideable module.
+  ACT-011  When mounted, pilot and BattleMech occupy the same token location.
+  ACT-012  Render the BattleMech above the pilot and hide the pilot visually.
+  ACT-013  Movement of the BattleMech moves the mounted pilot.
+  ACT-014  Exiting restores visibility and independent control.
+  ACT-015  The core system remains usable when Rideable is absent or disabled.
+
+8. ECONOMY, MECH BAY, AND MISSION RESOLUTION
+----------------------------------------------------------------------
+
+8.1 M-Notes
+
+  ECO-001  M-Notes are the campaign's primary project currency.
+  ECO-002  Support individual balances and a shared company balance.
+  ECO-003  Successful missions pay 100 percent of the assigned reward by default.
+  ECO-004  Failed missions and defeats pay 25 percent by default.
+  ECO-005  The GM may set rewards, bonuses, penalties, distribution, and overrides.
+  ECO-006  Every balance mutation creates a transaction record.
+  ECO-007  Corrections use reversing entries rather than deleting history.
+  ECO-008  Currency uses integer minor units or another exact representation,
+           never binary floating-point arithmetic.
+
+8.2 Mech Bay and Storefront
+
+  BAY-001  View, buy, sell, repair, rearm, and refit BattleMechs.
+  BAY-002  Buy weapons, ammunition, armor, heat sinks, jump jets, CASE, and equipment.
+  BAY-003  Replace destroyed equipment and refill compatible ammunition.
+  BAY-004  Configure weapon groups.
+  BAY-005  Preview cost, tonnage, compatibility, and resulting validation before confirmation.
+  BAY-006  Show chassis, variant, condition, armor, structure, heat capacity,
+           equipment, repair/refit cost, completion estimate, and available M-Notes.
+  BAY-007  Record purchases, sales, repairs, refits, and ammunition transactions.
+
+8.3 Mission Resolution
+
+  MIS-001  Outcomes: Victory, Partial Victory, Draw, Failed Mission, and Defeat.
+  MIS-002  Show mission name, result, base reward, payout percentage, bonuses,
+           penalties, repair costs, ammunition costs, final payout, distribution,
+           and updated balances.
+  MIS-003  The GM can override the default percentage and must see the final preview.
+  MIS-004  Applying a resolution is idempotent or protected against duplicate payout.
+  MIS-005  Reopening a completed resolution does not silently pay it again.
+
+9. SETTINGS, PERMISSIONS, ACCESSIBILITY, AND DATA SAFETY
+----------------------------------------------------------------------
+
+  SYS-001  World settings select rules profile, era, optional rules, and automation level.
+  SYS-002  Client settings store visual theme, layout, and notification preferences.
+  SYS-003  Server-authoritative/GM-authoritative changes validate permissions.
+  SYS-004  Never trust client-submitted costs, balances, or combat mutations without validation.
+  SYS-005  Color themes meet practical contrast requirements and use icons/text as well as color.
+  SYS-006  Destructive actions require confirmation and offer recovery where feasible.
+  SYS-007  Export/import project data with schema-version checks.
+
+======================================================================
+PART II - TECHNICAL DESIGN DOCUMENT
+======================================================================
+
+10. TECHNICAL GOALS AND ARCHITECTURE
+----------------------------------------------------------------------
+
+10.1 Technology Baseline
+
+  - TypeScript with strict compiler settings
+  - Vite-based build pipeline
+  - ESLint and Prettier
+  - Foundry VTT Version 14 APIs
+  - Automated tests and distributable ZIP packaging
+  - GitHub issues, pull requests, and continuous integration
+
+10.2 Architectural Style
+
+Use layered, feature-oriented architecture:
+
+  Presentation layer
+    Actor sheets, HUD, Combat Tracker extensions, dialogs, notifications.
+
+  Application layer
+    Commands/use cases such as FireWeaponGroup, MountPilot, ResolveMission,
+    PurchaseItem, ValidateMech, and AdvanceGatorStep.
+
+  Domain layer
+    Pure calculations and rules: mass, ammunition, heat, permissions,
+    construction validation, transaction calculations, and rules profiles.
+
+  Infrastructure layer
+    Foundry documents, settings, sockets, hooks, migrations, compendia,
+    module adapters, serialization, logging, and packaging.
+
+Dependency rule: domain code must not import Foundry UI or document classes.
+Infrastructure adapts Foundry data into domain inputs and persists domain outputs.
+
+11. PROJECT STRUCTURE AND MODULE RESPONSIBILITIES
+----------------------------------------------------------------------
+
+Proposed source layout:
+
+  src/
+    actors/
+      mech/
+      pilot/
+    items/
+      weapon/
+      ammunition/
+      equipment/
+    combat/
+      attacks/
+      gator/
+      heat/
+      movement/
+      weapon-groups/
+    construction/
+    economy/
+    mech-bay/
+    missions/
+    hud/
+    ui/
+    rules/
+      profiles/
+      validators/
+    integrations/
+      rideable/
+    migrations/
+    settings/
+    api/
+    utilities/
+  templates/
+  styles/
+  packs/
+  static/
+  tests/
+
+Responsibilities:
+
+  actors       Actor schemas, sheets, derived data, pilot/mech relationships.
+  items        Weapon, ammo-bin, armor, and equipment records.
+  combat       Attack workflow, group firing, GATOR assistance, heat, movement.
+  construction Mass/slot/compatibility validation and deployment readiness.
+  economy      Accounts, transactions, prices, reward calculations.
+  mech-bay     Store catalog, repair/refit workflows, purchase previews.
+  missions     Mission definitions, results, payouts, and duplicate protection.
+  rules        Versioned data and pure rule calculations.
+  integrations Optional third-party module adapters.
+  api          Stable, documented public surface for macros and modules.
+
+12. CORE DATA MODELS
+----------------------------------------------------------------------
+
+All records include schemaVersion where they may persist independently.
+Identifiers should be stable UUIDs, not display names.
+
+12.1 MechActorSystem
+
+  identity: chassis, variant, customName, factionId, technologyBase, era
+  capacity: ratedTonnage, currentMass, remainingMass
+  movement: walking, running, jumping, movementState
+  defense: armorByLocation, structureByLocation, armorType, structureType
+  thermal: currentHeat, sinkCapacity, heatEffects
+  equipmentRefs: ordered embedded-item identifiers
+  weaponGroups: WG1, WG2, WG3, ALPHA membership and display order
+  mountedPilotRef: pilot Actor UUID or null
+  readiness: validation status and summarized diagnostics
+
+12.2 PilotActorSystem
+
+  identity: name, callsign, affiliation
+  skills: gunnery, piloting, other configured skills
+  condition: wounds, consciousness, active effects
+  progression: experience, advancement, career history
+  inventory: personal equipment references
+  mountedMechRef: mech Actor UUID or null
+
+12.3 WeaponItemSystem
+
+  rulesKey, displayName, category, technologyBase, eraAvailability
+  mass, criticalSlots, heat, damageProfile, rangeProfile
+  ammoTypeKey or null, ammoPerAttack, attacksPerUse
+  operationalState, location, groupMembership
+
+12.4 AmmoBinItemSystem
+
+  ammoTypeKey, currentUnits, maximumUnits, unitMeaning
+  mass, location, caseProtected, operationalState
+
+The unitMeaning field is essential because the project may support both
+tabletop shot-based accounting and missile/round-count house-rule accounting.
+
+12.5 EquipmentItemSystem
+
+  rulesKey, category, mass, criticalSlots, location, quantity
+  technologyBase, eraAvailability, effects, operationalState
+
+12.6 RulesProfile
+
+  id, name, version, sourceSet, errataDate
+  ammoAccountingMode, machineGunConsumptionMode
+  constructionOptions, combatOptions, optionalRules
+  roundingRules, validationPolicy
+
+12.7 GatorWorkflowState
+
+  combatId, combatantId, attackId
+  currentStep, stepValues, manualOverrides, combinedModifier
+  startedBy, updatedBy, timestamps, status
+
+12.8 EconomyAccount and Transaction
+
+  Account: id, ownerType, ownerRef, currencyKey, balanceMinorUnits
+  Transaction: id, accountId, type, amountMinorUnits, reason, relatedDocumentRef,
+               createdBy, createdAt, reversalOf, metadata
+
+12.9 MissionResolution
+
+  missionId, name, outcome, baseReward, payoutRate, bonuses, penalties,
+  repairExpenses, ammunitionExpenses, finalPayout, distribution,
+  transactionRefs, status, resolvedBy, resolvedAt
+
+13. SERVICES, APIS, HOOKS, AND MODULE INTERACTIONS
+----------------------------------------------------------------------
+
+13.1 Domain/Application Services
+
+  MechValidationService
+    Calculates mass and produces structured diagnostics.
+
+  AmmoService
+    Finds compatible bins, previews consumption, applies atomic deductions.
+
+  WeaponGroupService
+    Calculates group availability, heat, ammunition, ranges, and fire plan.
+
+  AttackService
+    Validates and resolves attacks through the active rules profile.
+
+  HeatService
+    Applies generation, dissipation, thresholds, and effects.
+
+  PilotMountService
+    Maintains bidirectional pilot/mech links and calls the Rideable adapter.
+
+  GatorService
+    Owns the assisted calculation workflow and manual overrides.
+
+  EconomyService
+    Applies exact, permission-checked, auditable transactions.
+
+  MissionResolutionService
+    Previews and commits a payout once.
+
+13.2 Public API (PROPOSED)
+
+Expose a namespaced, versioned API such as game.battlemechFoundry.api.v1:
+
+  validateMech(mechUuid)
+  getWeaponGroupPreview(mechUuid, groupId, context)
+  fireWeaponGroup(mechUuid, groupId, targetUuids, options)
+  mountPilot(pilotUuid, mechUuid, options)
+  dismountPilot(pilotUuid, options)
+  getGatorState(combatantUuid)
+  advanceGator(combatantUuid, options)
+  previewTransaction(request)
+  applyTransaction(request)
+  previewMissionResolution(missionUuid, request)
+  resolveMission(missionUuid, request)
+
+Mutating functions return structured results and error codes. They validate
+permissions and current document versions before writing.
+
+13.3 Foundry Hooks and Interactions
+
+  init            Register settings, sheets, schemas, and API namespace.
+  setup           Register optional integrations and configuration UI.
+  ready           Run compatibility checks and safe pending migrations.
+  updateActor     Refresh derived HUD data when relevant actor paths change.
+  updateItem      Revalidate owning mech and refresh relevant previews.
+  updateCombat    Refresh GATOR and combat-tracker presentation.
+  canvasReady     Reconcile mounted-token presentation if needed.
+
+Use narrow change-path checks to avoid full recalculation on unrelated updates.
+
+13.4 Module Interaction Flow
+
+Weapon group fire:
+
+  HUD -> WeaponGroupService preview -> AttackService validation
+      -> AmmoService allocation + HeatService calculation
+      -> atomic/guarded Foundry document updates
+      -> chat/combat log -> HUD refresh
+
+Pilot mounting:
+
+  Sheet/HUD -> PilotMountService -> permission/link validation
+            -> RideableAdapter when available -> actor reference update
+            -> token layer/visibility reconciliation -> HUD refresh
+
+Mech Bay purchase:
+
+  Store UI -> catalog and construction preview -> EconomyService validation
+           -> transaction + item changes -> validation -> receipt/log
+
+13.5 Rideable Adapter Contract
+
+  isAvailable()
+  mount(riderToken, mountToken)
+  dismount(riderToken)
+  synchronizePosition(riderToken, mountToken)
+  ensureLayering(riderToken, mountToken)
+
+Failure of the adapter must return a useful error and must not leave actor links
+half-updated. Integration-version support belongs in a compatibility matrix.
+
+14. PERSISTENCE, MIGRATION, SECURITY, AND COMPATIBILITY
+----------------------------------------------------------------------
+
+14.1 Persistence
+
+Use Foundry Actors and embedded Items for core game state, world settings for
+world rules, client settings for personal layout, and flags only for data that
+cannot live cleanly in the system schema. Avoid duplicating authoritative data.
+
+14.2 Migration
+
+  - Increment schemaVersion for persistent shape changes.
+  - Migrations are ordered, repeat-safe, and backed up/exportable.
+  - Provide dry-run diagnostics for destructive or ambiguous migrations.
+  - Never silently discard unknown equipment or transaction history.
+  - Test migrations from every supported prior release.
+
+14.3 Concurrency and Atomicity
+
+Foundry document writes may not provide database transactions across documents.
+Commands must use precondition checks, operation identifiers, and compensating
+records where needed. Mission payout and purchasing require duplicate-operation
+protection. Combat commands compare expected/current versions before applying.
+
+14.4 Security and Permissions
+
+  - Treat all client requests as untrusted.
+  - Recalculate prices, ammo use, and rewards in the authoritative handler.
+  - Check ownership and role for every mutation.
+  - Validate UUID type and document scope.
+  - Sanitize user-authored HTML and chat content.
+  - Avoid secrets in settings, logs, or source bundles.
+
+14.5 Compatibility
+
+Maintain a tested matrix for:
+
+  - Foundry VTT core version
+  - Browser families supported by Foundry
+  - Rideable module versions
+  - Other declared optional integrations
+  - Data schema and rules-profile versions
+
+15. CODING, TESTING, PACKAGING, AND DOCUMENTATION STANDARDS
+----------------------------------------------------------------------
+
+15.1 Coding Standards
+
+  CODE-001  TypeScript strict mode; avoid any unless justified in code review.
+  CODE-002  Pure functions for rule arithmetic whenever practical.
+  CODE-003  Explicit units in names/types: tons, heat, shots, missiles, rounds.
+  CODE-004  No floating-point currency.
+  CODE-005  No magic equipment values in UI code; use versioned rule data.
+  CODE-006  Structured error/result types for user-facing commands.
+  CODE-007  Internationalization keys for visible interface text.
+  CODE-008  Comments explain intent and rule provenance, not obvious syntax.
+
+15.2 Testing Strategy
+
+  Unit tests:
+    mass, ammunition allocation, heat, range, payout, permissions, migrations.
+
+  Integration tests:
+    actor/item updates, weapon-group firing, mounting, store purchase, mission payout.
+
+  UI tests:
+    resizing, scrolling, keyboard flow, HUD updates, notifications, duplicate clicks.
+
+  Rules fixtures:
+    verified examples with source edition/page, inputs, outputs, and rounding.
+
+  Manual Foundry tests:
+    GM/player roles, pause behavior, multi-client synchronization, module absent/present.
+
+15.3 Definition of Done for a Feature
+
+  - Acceptance criteria met.
+  - Rule provenance or project-rule designation recorded.
+  - Automated tests added at appropriate layers.
+  - Permissions and multi-client behavior checked.
+  - UI checked at supported sizes and zoom levels.
+  - Accessibility basics checked.
+  - Migration added if stored data changed.
+  - Documentation and change log updated.
+  - No unresolved release-blocking defects.
+
+15.4 Packaging and CI
+
+CI should install dependencies reproducibly, lint, type-check, test, build,
+validate manifests, and create a deterministic installable ZIP. Releases include
+checksums, supported Foundry versions, migration notes, known limitations, and a
+human-readable change log.
+
+======================================================================
+PART III - DEVELOPER ROADMAP
+======================================================================
+
+16. DELIVERY STRATEGY AND DEFINITION OF DONE
+----------------------------------------------------------------------
+
+Build vertical slices that can be tested in Foundry. Avoid completing UI without
+the supporting domain logic or completing domain logic without a usable test UI.
+Each milestone ends with a demonstrable release candidate.
+
+Priority scale:
+
+  P0  Release blocker or data-loss/security risk
+  P1  Required for the milestone
+  P2  Valuable but deferrable
+  P3  Backlog enhancement
+
+GitHub hierarchy:
+
+  Milestone -> Epic issue -> Feature/Task issues -> Subtasks/checklist -> PRs
+
+Labels (PROPOSED): area:hud, area:combat, area:actors, area:construction,
+area:economy, area:rules, type:epic, type:feature, type:bug, type:docs,
+priority:P0-P3, status:blocked, rules:verify, optional-rule.
+
+17. MILESTONES AND PHASED IMPLEMENTATION PLAN
+----------------------------------------------------------------------
+
+M0 - Foundation and Rules Baseline
+
+Goal: reproducible project foundation and explicit rules target.
+
+  - Confirm repository/build pipeline and Foundry V14 manifest.
+  - Select official rules editions and errata baseline.
+  - Define schemas, rules-profile format, migrations, and test harness.
+  - Establish coding, CI, packaging, and issue templates.
+
+Exit gate: clean build/test/package; sample actors load; source register approved.
+
+M1 - Responsive HUD
+
+  - Fix Piloting/ammunition overlap.
+  - Implement resizing, scrolling, persistence, and reset.
+  - Add default and five Great House themes.
+  - Add ammunition current/maximum display.
+  - Add GATOR tracker presentation and controls.
+
+Exit gate: no overlap across supported sizes; keyboard and multi-client checks pass.
+
+M2 - Combat Vertical Slice
+
+  - Implement WG1/WG2/WG3/Alpha assignment and preview.
+  - Implement heat and configurable ammunition accounting.
+  - Fire groups, update documents, and create combat logs.
+  - Add insufficient-ammo and invalid-fire protections.
+
+Exit gate: a supported BattleMech can complete a tested attack workflow end to end.
+
+M3 - Separate Pilots and Mounting
+
+  - Finalize Pilot Actor and BattleMech Actor relationship.
+  - Pull pilot statistics into attack/HUD workflows.
+  - Add Rideable adapter, layering, visibility, entry, exit, and transfer.
+  - Test behavior without Rideable installed.
+
+Exit gate: pilot transfer changes statistics without duplicating pilot data.
+
+M4 - Construction Validation
+
+  - Data-drive mass, slots, compatibility, tech base, and era.
+  - Support initial armor/structure and listed equipment categories.
+  - Show structured warnings/errors and deployment readiness.
+
+Exit gate: verified reference designs/fixtures produce expected totals and diagnostics.
+
+M5 - Campaign Economy and Mech Bay
+
+  - Implement accounts, exact currency, transactions, and reversals.
+  - Implement mission resolution and duplicate-payout protection.
+  - Implement storefront, repair, rearm, refit, and preview validation.
+
+Exit gate: mission payout through purchase/refit is auditable and consistent.
+
+M6 - Stabilization and Initial Public Release
+
+  - Migration and compatibility testing.
+  - Performance, accessibility, localization, and documentation pass.
+  - Rules validation checklist completion for supported features.
+  - Release packaging, install/upgrade tests, and known-limitations report.
+
+18. EPICS AND GITHUB ISSUE HIERARCHY
+----------------------------------------------------------------------
+
+Use these IDs in issue titles so this text document and GitHub remain aligned.
+
+EPIC-000 Foundation and Build
+  ISSUE-0001 Initialize strict TypeScript/Vite project.
+  ISSUE-0002 Add lint, format, test, and package workflows.
+  ISSUE-0003 Define Foundry V14 manifest and compatibility checks.
+  ISSUE-0004 Add schema-version and migration framework.
+  ISSUE-0005 Create rules source register and profile format.
+
+EPIC-100 HUD and Themes
+  ISSUE-1001 Reproduce and test Piloting/ammunition overlap.
+  ISSUE-1002 Implement responsive panel layout and scrolling.
+  ISSUE-1003 Persist and reset HUD geometry per user.
+  ISSUE-1004 Implement data-driven faction themes.
+  ISSUE-1005 Verify Great House palettes and accessible contrast.
+  ISSUE-1006 Add ammunition display component.
+  ISSUE-1007 Add HUD GATOR component.
+
+EPIC-200 Combat and Weapon Groups
+  ISSUE-2001 Model weapon-group membership.
+  ISSUE-2002 Build group editor on BattleMech sheet.
+  ISSUE-2003 Build group preview service/UI.
+  ISSUE-2004 Implement bin-compatible ammunition allocation.
+  ISSUE-2005 Implement heat preview and application.
+  ISSUE-2006 Implement guarded group-fire command.
+  ISSUE-2007 Add chat/combat audit output.
+  ISSUE-2008 Add official and project ammo-accounting profiles.
+
+EPIC-300 GATOR Workflow
+  ISSUE-3001 Define GATOR state and its relationship to combat turns.
+  ISSUE-3002 Implement modifier aggregation and manual overrides.
+  ISSUE-3003 Add Combat Tracker integration.
+  ISSUE-3004 Add notifications and GM controls.
+  ISSUE-3005 Add persistence/recovery and multi-client tests.
+
+EPIC-400 Pilot and Rideable Integration
+  ISSUE-4001 Define Pilot Actor schema and sheet.
+  ISSUE-4002 Define pilot/mech link invariants.
+  ISSUE-4003 Implement mount, dismount, and transfer commands.
+  ISSUE-4004 Implement optional Rideable adapter.
+  ISSUE-4005 Implement layering, visibility, and movement synchronization.
+  ISSUE-4006 Handle missing module, deleted actor, and broken-link recovery.
+
+EPIC-500 Construction Rules
+  ISSUE-5001 Define equipment and technology rule-data schema.
+  ISSUE-5002 Implement mass calculation and rounding.
+  ISSUE-5003 Implement slot/location and compatibility validation.
+  ISSUE-5004 Add standard/Ferro-Fibrous armor support.
+  ISSUE-5005 Add standard/Endo Steel structure support.
+  ISSUE-5006 Add heat sinks, jump jets, CASE, coolant, and electronics.
+  ISSUE-5007 Build readiness diagnostics UI.
+  ISSUE-5008 Add verified reference-design fixtures.
+
+EPIC-600 Economy and Missions
+  ISSUE-6001 Define account and immutable transaction models.
+  ISSUE-6002 Implement permissions, exact arithmetic, and reversals.
+  ISSUE-6003 Build mission resolution preview.
+  ISSUE-6004 Implement idempotent payout and distribution.
+  ISSUE-6005 Add transaction history and filters.
+
+EPIC-700 Mech Bay and Store
+  ISSUE-7001 Define catalog, price, availability, and inventory models.
+  ISSUE-7002 Build BattleMech inventory/condition view.
+  ISSUE-7003 Implement purchase and sale previews.
+  ISSUE-7004 Implement repair, refill, and equipment replacement.
+  ISSUE-7005 Implement refit plus construction validation.
+  ISSUE-7006 Add completion-time model and transaction receipts.
+
+EPIC-800 Release Quality
+  ISSUE-8001 Complete accessibility audit.
+  ISSUE-8002 Complete permissions and security review.
+  ISSUE-8003 Complete performance and multi-client tests.
+  ISSUE-8004 Test fresh install and supported upgrades.
+  ISSUE-8005 Complete user, GM, API, and contributor documentation.
+  ISSUE-8006 Build release ZIP and publish compatibility matrix.
+
+19. DEPENDENCIES, RISKS, AND RELEASE GATES
+----------------------------------------------------------------------
+
+Major dependencies:
+
+  DEP-001  Confirmed Foundry V14 APIs and manifest requirements.
+  DEP-002  Selected BattleTech rules editions and legally usable reference data.
+  DEP-003  Rideable integration API/version behavior.
+  DEP-004  Approved visual assets and faction palette decisions.
+
+Major risks and mitigations:
+
+  RISK-001 Rules ambiguity or mixed editions.
+           Mitigation: versioned rules profiles and source register.
+
+  RISK-002 Project ammo rules conflict with official accounting.
+           Mitigation: explicit modes, UI labels, and verified fixtures.
+
+  RISK-003 Foundry or module API changes.
+           Mitigation: adapters, compatibility tests, narrow supported matrix.
+
+  RISK-004 Cross-document partial updates.
+           Mitigation: guarded commands, operation IDs, compensating records.
+
+  RISK-005 Feature scope growth.
+           Mitigation: milestone gates and FUTURE backlog separation.
+
+  RISK-006 Unauthorized economy/combat mutations.
+           Mitigation: authoritative recalculation and permission checks.
+
+======================================================================
+PART IV - BATTLETECH RULES IMPLEMENTATION REFERENCE
+======================================================================
+
+20. RULES GOVERNANCE AND SOURCE HIERARCHY
+----------------------------------------------------------------------
+
+20.1 Source Priority
+
+  1. Selected official rulebook and edition.
+  2. Applicable official errata for that edition and cutoff date.
+  3. Official supplemental book when the feature enables it.
+  4. Explicit project interpretation approved by the project owner.
+  5. Optional campaign/house rule.
+  6. Sarna or MechWiki only for discovery/lore cross-checking, not final authority.
+
+20.2 Required Source Register Fields
+
+  Source ID
+  Full title
+  Edition/printing
+  Publication identifier if applicable
+  Errata version/date
+  Rules profile(s) using it
+  Notes about precedence or conflicts
+
+20.3 Rule Record Fields
+
+  Rule ID
+  Feature
+  Status: UNVERIFIED / VERIFIED / PROJECT RULE / OPTIONAL / DEFERRED
+  Source ID, chapter, page, and errata reference
+  Plain-language interpretation
+  Inputs, outputs, units, rounding, and edge cases
+  Implementation module/function
+  Automated fixture IDs
+  Approver and approval date
+
+Do not copy lengthy copyrighted rulebook text. Record concise implementation
+summaries, citations, examples derived for testing, and the project's interpretation.
+
+21. RULE-TO-IMPLEMENTATION MAPPING
+----------------------------------------------------------------------
+
+RULE-TURN-001 - Turn and phase sequence
+  Status: VERIFY
+  Implementation: combat state machine and Combat Tracker integration.
+  Validate: supported turn phases, initiative, activation, reset, and edge cases.
+
+RULE-GATOR-001 - GATOR attack modifier calculation
+  Status: VERIFY + PROJECT UI WORKFLOW
+  Implementation: GatorService and HUD/Combat Tracker components.
+  Mapping: Gunnery + attacker movement + target movement + other + range.
+  Caution: UI steps must not be presented as official phases unless source confirms it.
+  Validate: sign conventions, modifier stacking, minimum range, special effects,
+            immobile/prone states, and manual overrides.
+
+RULE-WEAPON-001 - Weapon attack resolution
+  Status: VERIFY
+  Implementation: AttackService.
+  Validate: target number, dice procedure, impossible shots, hit resolution,
+            weapon state, targets, and combat log explanation.
+
+RULE-GROUP-001 - Weapon groups
+  Status: PROJECT UI FEATURE
+  Implementation: WeaponGroupService and BattleMech sheet.
+  Interpretation: groups organize legal individual attacks; grouping must not
+                  change the underlying rules unless an optional rule says so.
+
+RULE-AMMO-001 - Standard ammunition accounting
+  Status: VERIFY
+  Implementation: RulesProfile + AmmoService.
+  Validate: unit represented by each ammunition record, shots per ton, compatible
+            ammunition types, multi-weapon fire, bin choice, dumping, and criticals.
+
+RULE-AMMO-002 - Missile-count accounting
+  Status: APPROVED PROJECT RULE; expose as OPTIONAL/profile mode
+  Implementation: ammoAccountingMode = perProjectile.
+  Example: SRM-4 20/20 becomes 16/20 after one full four-missile volley.
+  Validate: partial fire, cluster results, streak/advanced systems, and whether
+            consumption is based on launched missiles rather than missiles that hit.
+
+RULE-AMMO-003 - Ballistic and Gauss one-to-one accounting
+  Status: APPROVED PROJECT REQUIREMENT; VERIFY weapon-by-weapon.
+  Implementation: weapon rule data defines ammoPerAttack.
+  Examples: AC/10 and Gauss Rifle consume one configured ammunition unit per attack.
+
+RULE-AMMO-004 - Machine gun 200-round consumption
+  Status: APPROVED PROJECT HOUSE RULE
+  Implementation: machineGunConsumptionMode = rounds200PerWeaponPerTurn.
+  Example: two machine guns fired consume 400 rounds under this mode.
+  Validate: repeat fire in one turn, variants, insufficient rounds, and damage effects.
+
+RULE-HEAT-001 - Weapon heat generation
+  Status: VERIFY
+  Implementation: HeatService and weapon rule data.
+  Validate: heat timing, multiple weapons, special equipment, and shutdown effects.
+
+RULE-HEAT-002 - Heat dissipation and effects
+  Status: VERIFY
+  Implementation: HeatService at the correct turn boundary.
+  Validate: sink types, environmental effects, thresholds, penalties, shutdown,
+            ammunition explosion checks, and coolant-flushing equipment.
+
+RULE-MOVE-001 - Movement modes and modifiers
+  Status: VERIFY
+  Implementation: movement domain and GATOR integration.
+  Validate: walk/run/jump, distance brackets, terrain, facing, elevation, prone,
+            immobile, minimum movement modifier, and special movement systems.
+
+RULE-MOVE-002 - Out-of-turn/paused movement
+  Status: OPTIONAL PROJECT OVERRIDE
+  Implementation: permission-controlled movement override and audit log.
+  Note: this is a VTT convenience, not an implied tabletop rule.
+
+RULE-MASS-001 - Chassis tonnage and installed mass
+  Status: VERIFY
+  Implementation: MechValidationService.
+  Validate: all component formulas, fractional values, rounding, maximum tonnage,
+            and technology-dependent changes.
+
+RULE-ARMOR-001 - Standard and Ferro-Fibrous armor
+  Status: VERIFY
+  Implementation: armor rule data and construction validator.
+  Validate: mass/points, slots, location maximums, tech base, era, and variants.
+
+RULE-STRUCT-001 - Standard and Endo Steel internal structure
+  Status: VERIFY
+  Implementation: structure rule data and construction validator.
+  Validate: mass, slots, location restrictions, tech base, era, and variants.
+
+RULE-EQUIP-001 - Equipment legality and placement
+  Status: VERIFY
+  Implementation: equipment rule data and validators.
+  Validate: mass, critical slots, legal locations, quantities, conflicts, tech base,
+            availability, CASE, jump jets, sinks, electronics, and coolant systems.
+
+RULE-DAMAGE-001 - Armor/internal damage and critical hits
+  Status: VERIFY; later combat scope
+  Implementation: future DamageService.
+  Validate: hit locations, transfer, critical checks, destruction, ammo explosions,
+            CASE interaction, and pilot consequences.
+
+RULE-PILOT-001 - Gunnery and Piloting skills
+  Status: VERIFY
+  Implementation: Pilot Actor plus Attack/Movement services.
+  Validate: defaults, modifiers, wounds, consciousness, ejection, and skill checks.
+
+RULE-ECO-001 - M-Notes and mission payouts
+  Status: PROJECT CAMPAIGN RULE
+  Implementation: EconomyService and MissionResolutionService.
+  Defaults: success 100 percent; failure/defeat 25 percent; GM override allowed.
+
+22. OPTIONAL RULES AND HOUSE RULES
+----------------------------------------------------------------------
+
+Every optional rule setting includes:
+
+  - Stable key and human-readable name.
+  - Default value and scope (world, campaign, encounter, actor, or attack).
+  - Source citation or PROJECT HOUSE RULE label.
+  - Compatibility/conflict list.
+  - Migration behavior when the setting changes.
+  - Clear display in calculations and logs.
+
+Initial option registry:
+
+  OPT-001 ammoAccountingMode
+          Values: officialProfile, perProjectile.
+
+  OPT-002 machineGunConsumptionMode
+          Values: officialProfile, rounds200PerWeaponPerTurn.
+
+  OPT-003 allowMovementWhilePaused
+          Values: false/true plus minimum permission role.
+
+  OPT-004 allowMovementOutsideTurn
+          Values: false/true plus minimum permission role.
+
+  OPT-005 gatorWorkflowMode
+          Values: displayOnly, assisted, enforcedProjectWorkflow.
+
+  OPT-006 failedMissionPayoutRate
+          Default project value: 25 percent; GM configurable.
+
+  OPT-007 automationLevel
+          Values: manual, assisted, automatic.
+
+23. RULES VALIDATION CHECKLIST
+----------------------------------------------------------------------
+
+Before a rule-dependent feature is release-ready, confirm:
+
+  [ ] Official source title, edition, printing, and page are recorded.
+  [ ] Relevant errata and cutoff date are recorded.
+  [ ] Conflicts with other supported books/profiles are resolved.
+  [ ] Inputs and outputs have explicit units.
+  [ ] Timing within the turn sequence is defined.
+  [ ] Rounding, minimums, maximums, and tie behavior are defined.
+  [ ] Edge cases and illegal states are documented.
+  [ ] Optional and house rules are visibly distinguished.
+  [ ] At least one normal, boundary, and invalid test fixture exists.
+  [ ] UI preview matches the committed state change.
+  [ ] Chat/combat log explains the calculation.
+  [ ] GM correction behavior is defined and audited.
+  [ ] Multi-client and permission behavior is tested.
+  [ ] A knowledgeable reviewer has approved the interpretation.
+
+Rules fixture template:
+
+  Fixture ID:
+  Rule ID:
+  Source citation:
+  Rules profile:
+  Initial state:
+  Action:
+  Expected rolls/calculation:
+  Expected state changes:
+  Expected log output:
+  Edge condition:
+  Review status:
+
+======================================================================
+PART V - LIVING PROJECT RECORD
+======================================================================
+
+24. FUTURE IDEAS BACKLOG
+----------------------------------------------------------------------
+
+Campaign and strategy:
+
+  FUT-001 Dynamic mercenary contracts
+  FUT-002 Career mode and reputation
+  FUT-003 Employer relations
+  FUT-004 Inner Sphere map and planetary travel
+  FUT-005 Company management and financial reports
+  FUT-006 Salvage and recovery
+  FUT-007 Repair queues, facilities, manufacturing, and component wear
+
+Combat:
+
+  FUT-100 Critical and floating critical hits
+  FUT-101 Advanced heat and environmental rules
+  FUT-102 Pilot injuries, ejection, and consciousness
+  FUT-103 Ammunition explosions
+  FUT-104 ECM/ECCM and C3 networks
+  FUT-105 Advanced initiative
+  FUT-106 AI-controlled lances
+
+Unit types:
+
+  FUT-200 Combat vehicles
+  FUT-201 Infantry and battle armor
+  FUT-202 ProtoMechs
+  FUT-203 Aerospace fighters and VTOLs
+  FUT-204 DropShips and WarShips
+
+Technology:
+
+  FUT-300 Clan technology
+  FUT-301 Experimental technology and Lostech
+  FUT-302 Star League equipment
+  FUT-303 IndustrialMechs
+
+User experience:
+
+  FUT-400 Damage and heat visualization
+  FUT-401 Animated weapon fire
+  FUT-402 Custom mercenary themes
+  FUT-403 Advanced accessibility options
+  FUT-404 Advanced combat log and statistics dashboard
+
+Backlog items require an approved epic before implementation. Adding an idea here
+does not commit it to a release.
+
+25. OPEN DECISIONS AND QUESTIONS
+----------------------------------------------------------------------
+
+  DEC-001 Which official BattleTech rules edition(s), printing(s), and errata date
+          are the initial authoritative baseline?
+
+  DEC-002 Is the target a complete Foundry game system, a module layered over
+          another system, or a staged path from module to system?
+
+  DEC-003 Should per-projectile missile accounting be the world default or an
+          opt-in campaign rule?
+
+  DEC-004 Should the 200-round machine-gun rule apply once per weapon activation,
+          once per attack, or at most once per turn?
+
+  DEC-005 Does Alpha Strike default to all operational weapons or only explicit
+          group membership?
+
+  DEC-006 How should Partial Victory and Draw payouts be calculated by default?
+
+  DEC-007 Which eras and technology bases are supported in the first release?
+
+  DEC-008 Which Rideable versions are supported, and what is the fallback UX?
+
+  DEC-009 What are the approved exact faction palettes and heraldry assets?
+
+  DEC-010 What licensing/distribution model will the project use, and which game
+          data/assets may legally ship with it?
+
+26. DEVELOPER NOTES
+----------------------------------------------------------------------
+
+Purpose: append concise, dated notes here during ongoing work. Move durable
+decisions into the relevant requirement/rule section and record the move in the
+change log. Do not use this section as the only record of a release decision.
+
+Note template:
+
+  Date:
+  Author:
+  Related IDs:
+  Context:
+  Decision or observation:
+  Follow-up:
+  Status:
+
+Current notes:
+
+  2026-07-15
+  Related IDs: UI-001 through UI-006
+  The current neutral/mercenary HUD palette remains the basic default. Great
+  House palettes are required for Davion, Kurita, Liao, Marik, and Steiner.
+
+  2026-07-15
+  Related IDs: CBT-010 through CBT-016, RULE-AMMO-002 through RULE-AMMO-004
+  Project examples use missile-count tracking, one-to-one AC/Gauss accounting,
+  and 200 machine-gun rounds per fired weapon. These are preserved, but explicit
+  rules profiles are required to prevent confusion with official accounting.
+
+  2026-07-15
+  Related IDs: UI-010 through UI-015
+  Original reported UI defect: Piloting overlaps the ammunition window. The HUD
+  must become expandable/responsive because information varies by BattleMech.
+
+27. VERSION HISTORY AND CHANGE LOG
+----------------------------------------------------------------------
+
+Version 0.1 - Project Foundation
+
+  - Converted development notes into a Game Design Document.
+  - Defined HUD, combat, pilot, construction, economy, Mech Bay, and future scope.
+  - Established Foundry V14, TypeScript, Vite, linting, formatting, and packaging goals.
+
+Version 0.2 - Project Master Document - 2026-07-15
+
+  - Combined the GDD with a Technical Design Document.
+  - Added layered architecture, module boundaries, schemas, services, public API,
+    hooks, migrations, security, compatibility, testing, and packaging standards.
+  - Added a milestone-based Developer Roadmap and GitHub issue hierarchy.
+  - Added a BattleTech rules governance and rule-to-implementation reference.
+  - Classified missile and machine-gun consumption as explicit project modes
+    pending/alongside official rules verification.
+  - Added document control, stable identifiers, table of contents, backlog,
+    open decisions, developer notes, change log, and handoff template.
+
+Change log entry template:
+
+  Date:
+  Version:
+  Changed IDs/sections:
+  Added:
+  Changed:
+  Removed/deprecated:
+  Reason:
+  Approved by:
+
+28. FUTURE CONVERSATION HANDOFF TEMPLATE
+----------------------------------------------------------------------
+
+When re-uploading this file, include a request similar to:
+
+  "This is the current BattleMech Foundry VTT Project Master Document. Treat it
+  as the source of current project decisions, but do not treat unverified rules
+  as authoritative. Continue from Version [VERSION]. Please [DESCRIBE TASK].
+  Preserve stable IDs, add changes to the change log and Developer Notes, flag
+  conflicts, and return an updated downloadable plain-text master document."
+
+Before ending a development session, update:
+
+  [ ] Document version and last-updated date
+  [ ] Relevant requirements and statuses
+  [ ] Open decisions
+  [ ] Developer Notes
+  [ ] Version history/change log
+  [ ] Roadmap/issue status if it changed
+  [ ] Rules sources and validation status if rules work changed
+
+======================================================================
+END OF BATTLEMECH FOUNDRY VTT PROJECT MASTER DOCUMENT
+======================================================================
