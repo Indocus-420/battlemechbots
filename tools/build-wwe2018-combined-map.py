@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from copy import deepcopy
 from pathlib import Path
 
@@ -12,16 +13,11 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 MAP_DIR = ROOT / "assets" / "maps" / "wwe2018"
 SYSTEM_ID = "battletech-foundry-system"
-MAPS = (
-    ("battletech", "BattleTech", 0, 0),
-    ("large-lakes", "Large Lakes", 3167, 0),
-    ("scattered-woods", "Scattered Woods", 0, 3888),
-    ("dig-site", "Dig Site", 3167, 3888),
-)
 SOURCE_WIDTH = 4014
 SOURCE_HEIGHT = 4878
-HEX_COLUMN_STEP = 241.785
-HEX_ROW_STEP = 279.39
+SOURCE_GRID_SIZE = 322.38
+HEX_COLUMN_STEP = SOURCE_GRID_SIZE * 0.75
+HEX_ROW_STEP = SOURCE_GRID_SIZE * math.sqrt(3) / 2
 RAW_OFFSET_X = 16 * HEX_COLUMN_STEP
 RAW_OFFSET_Y = 17 * HEX_ROW_STEP
 RAW_HEIGHT = RAW_OFFSET_Y + SOURCE_HEIGHT
@@ -29,6 +25,14 @@ TARGET_HEIGHT = 7882
 SCALE = TARGET_HEIGHT / RAW_HEIGHT
 MAP_HEIGHT = round(SOURCE_HEIGHT * SCALE)
 MAP_WIDTH = round(SOURCE_WIDTH * SCALE)
+OFFSET_X = round(RAW_OFFSET_X * SCALE)
+OFFSET_Y = round(RAW_OFFSET_Y * SCALE)
+MAPS = (
+    ("battletech", "BattleTech", 0, 0),
+    ("large-lakes", "Large Lakes", OFFSET_X, 0),
+    ("scattered-woods", "Scattered Woods", 0, OFFSET_Y),
+    ("dig-site", "Dig Site", OFFSET_X, OFFSET_Y),
+)
 SOURCE_MARGIN_LEFT = 34
 SOURCE_MARGIN_TOP = 34
 SOURCE_MARGIN_RIGHT = 35
@@ -37,8 +41,8 @@ TRIM_LEFT = round(SOURCE_MARGIN_LEFT * SCALE)
 TRIM_TOP = round(SOURCE_MARGIN_TOP * SCALE)
 TRIM_RIGHT = round(SOURCE_MARGIN_RIGHT * SCALE)
 TRIM_BOTTOM = round(SOURCE_MARGIN_BOTTOM * SCALE)
-CANVAS_WIDTH = 3167 + MAP_WIDTH - TRIM_LEFT - TRIM_RIGHT
-CANVAS_HEIGHT = 3888 + MAP_HEIGHT - TRIM_TOP - TRIM_BOTTOM
+CANVAS_WIDTH = OFFSET_X + MAP_WIDTH - TRIM_LEFT - TRIM_RIGHT
+CANVAS_HEIGHT = OFFSET_Y + MAP_HEIGHT - TRIM_TOP - TRIM_BOTTOM
 SLUG = "worldwide-event-2018-combined"
 
 
@@ -138,7 +142,7 @@ def main() -> None:
             "shiftY": round(36 * SCALE, 2) - TRIM_TOP,
             "grid": {
                 "type": 4,
-                "size": round(322.38 * SCALE, 2),
+                "size": round(SOURCE_GRID_SIZE * SCALE, 2),
                 "distance": 1,
                 "units": "hex",
                 "alpha": 0,
@@ -174,7 +178,7 @@ def main() -> None:
                     "mapPack": "wwe2018",
                     "mapSlug": SLUG,
                     "combinedMap": True,
-                    "layoutRevision": 2,
+                    "layoutRevision": 3,
                     "terrainHexesByMap": terrain_hexes,
                 }
             },

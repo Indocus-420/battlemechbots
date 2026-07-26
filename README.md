@@ -2,6 +2,12 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.22.0-alpha.0 exact Foundry hex registration
+
+- Uses exact flat-top hex geometry for both the combined artwork and Foundry scene grid.
+- Removes the accumulated vertical phase error at the horizontal map join.
+- Realigns the Regions and walls to the corrected grid registration.
+
 ## 0.21.0-alpha.0 corrected WWE 2018 hex alignment
 
 - Aligns all four map sheets to one continuous, uniformly sized hex lattice.
