@@ -16,15 +16,34 @@ const base = {
 };
 
 test("punch and kick damage use Classic tonnage formulas", () => {
-  assert.equal(physicalAttackDamage("punch", 65), 7);
-  assert.equal(physicalAttackDamage("kick", 65), 13);
-  assert.equal(physicalAttackDamage("punch", 65, 2), 3);
-  assert.equal(physicalAttackDamage("kick", 65, 4), 3);
+  assert.equal(physicalAttackDamage("punch", 65).damage, 7);
+  assert.equal(physicalAttackDamage("kick", 65).damage, 13);
+  assert.equal(physicalAttackDamage("punch", 65, 2).damage, 3);
+  assert.equal(physicalAttackDamage("kick", 65, 4).damage, 3);
 });
 
 test("underwater physical attacks inflict half damage rounded down", () => {
-  assert.equal(physicalAttackDamage("punch", 65, 1, { underwater: true }), 3);
-  assert.equal(physicalAttackDamage("kick", 65, 1, { underwater: true }), 6);
+  assert.equal(physicalAttackDamage("punch", 65, 1, { underwater: true }).damage, 3);
+  assert.equal(physicalAttackDamage("kick", 65, 1, { underwater: true }).damage, 6);
+});
+
+test("hatchets, clubs, charges, and DFA use their physical damage profiles", () => {
+  assert.equal(physicalAttackDamage("hatchet", 45).damage, 9);
+  assert.equal(physicalAttackDamage("club", 65).damage, 13);
+  assert.deepEqual(physicalAttackDamage("charge", 65, 1, { hexesMoved: 4, targetTonnage: 45 }), { damage: 28, selfDamage: 5 });
+  assert.deepEqual(physicalAttackDamage("dfa", 65, 1, { targetTonnage: 45 }), { damage: 21, selfDamage: 13 });
+  assert.equal(physicalAttackDamage("push", 65).damage, 0);
+});
+
+test("special physical attacks enforce equipment and movement requirements", () => {
+  assert.match(calculatePhysicalAttack({ ...base, type: "hatchet", limb: "rightArm" }).reason, /Hatchet/);
+  assert.equal(calculatePhysicalAttack({ ...base, type: "hatchet", limb: "rightArm", hasMeleeWeapon: true }).canAttack, true);
+  assert.match(calculatePhysicalAttack({ ...base, type: "club", limb: "rightArm" }).reason, /club/);
+  assert.equal(calculatePhysicalAttack({ ...base, type: "push", limb: "bothArms" }).displacement, true);
+  assert.match(calculatePhysicalAttack({ ...base, type: "charge", limb: "body", hexesMoved: 0, targetTonnage: 45 }).reason, /movement/);
+  assert.equal(calculatePhysicalAttack({ ...base, type: "charge", limb: "body", hexesMoved: 4, targetTonnage: 45 }).damage, 28);
+  assert.match(calculatePhysicalAttack({ ...base, type: "dfa", limb: "bothLegs", movementMode: "walk", targetTonnage: 45 }).reason, /Jumping/);
+  assert.equal(calculatePhysicalAttack({ ...base, type: "dfa", limb: "bothLegs", movementMode: "jump", targetTonnage: 45 }).damage, 21);
 });
 
 test("physical target numbers exclude heat and sensors but include movement and terrain", () => {
@@ -124,4 +143,3 @@ test("physical hit-location tables reproduce punch and kick results", () => {
   assert.equal(physicalHitLocation("kick", 5, "front").location, "leftLeg");
   assert.equal(physicalHitLocation("normal", 7, "rear").location, "centerTorso");
 });
-

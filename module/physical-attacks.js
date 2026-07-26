@@ -2,7 +2,12 @@ import { hitLocation } from "./damage.js";
 
 export const PHYSICAL_ATTACK_TYPES = Object.freeze({
   punch: Object.freeze({ label: "Punch", modifier: 0 }),
-  kick: Object.freeze({ label: "Kick", modifier: -2 })
+  kick: Object.freeze({ label: "Kick", modifier: -2 }),
+  hatchet: Object.freeze({ label: "Hatchet", modifier: -1 }),
+  club: Object.freeze({ label: "Club", modifier: -1 }),
+  push: Object.freeze({ label: "Push", modifier: -1 }),
+  charge: Object.freeze({ label: "Charge", modifier: 0 }),
+  dfa: Object.freeze({ label: "Death From Above", modifier: 0 })
 });
 
 const PUNCH_LOCATION_TABLE = Object.freeze({
@@ -45,6 +50,9 @@ function attackDirection(direction) {
 }
 
 function physicalTable(type, { targetProne, elevationDifference }) {
+  if (["push", "charge"].includes(type)) return elevationDifference === 0 && !targetProne ? "normal" : null;
+  if (type === "dfa") return !targetProne ? "punch" : "normal";
+  if (["hatchet", "club"].includes(type)) type = "punch";
   if (targetProne) {
     if (type === "kick" && elevationDifference === 0) return "normal";
     if (type === "punch" && elevationDifference === 1) return "normal";
@@ -57,7 +65,7 @@ function physicalTable(type, { targetProne, elevationDifference }) {
 }
 
 function actuatorProfile(type, state = {}) {
-  if (type === "punch") {
+  if (["punch", "hatchet", "club"].includes(type)) {
     if (state.shoulder) return { usable: false, reason: "The punching arm has a destroyed shoulder actuator." };
     if (state.fired) return { usable: false, reason: "A weapon mounted in the punching arm fired this turn." };
     const upper = state.upperArm ? 1 : 0;
@@ -65,9 +73,17 @@ function actuatorProfile(type, state = {}) {
     return {
       usable: true,
       modifier: (upper * 2) + (lower * 2) + (state.hand ? 1 : 0),
-      damageDivisor: 2 ** (upper + lower)
+      damageDivisor: type === "punch" ? 2 ** (upper + lower) : 1
     };
   }
+
+  if (type === "push") {
+    if (state.shoulder || state.otherShoulder) return { usable: false, reason: "A push requires both shoulder actuators." };
+    if (state.fired || state.otherFired) return { usable: false, reason: "A push cannot use an arm that fired a weapon this turn." };
+    return { usable: true, modifier: 0, damageDivisor: 1 };
+  }
+
+  if (["charge", "dfa"].includes(type)) return { usable: true, modifier: 0, damageDivisor: 1 };
 
   if (state.hip) return { usable: false, reason: "A destroyed hip actuator prevents kicking." };
   if (state.fired) return { usable: false, reason: "A weapon mounted in the kicking leg fired this turn." };
@@ -80,13 +96,26 @@ function actuatorProfile(type, state = {}) {
   };
 }
 
-export function physicalAttackDamage(type, tonnage, actuatorDamageDivisor = 1, { underwater = false } = {}) {
+export function physicalAttackDamage(type, tonnage, actuatorDamageDivisor = 1, {
+  underwater = false,
+  hexesMoved = 0,
+  targetTonnage = 0
+} = {}) {
   if (!PHYSICAL_ATTACK_TYPES[type]) throw new RangeError(`Unknown physical attack type: ${type}`);
   const weight = integer(tonnage, "BattleMech tonnage", { min: 1 });
   const divisor = integer(actuatorDamageDivisor, "Actuator damage divisor", { min: 1 });
-  const base = type === "punch" ? Math.ceil(weight / 10) : Math.ceil(weight / 5);
+  const base = type === "punch" ? Math.ceil(weight / 10)
+    : ["kick", "hatchet", "club"].includes(type) ? Math.ceil(weight / 5)
+    : type === "charge" ? Math.ceil(weight / 10) * Math.max(1, integer(hexesMoved, "Charge hexes", { min: 0 }))
+    : type === "dfa" ? Math.ceil(weight / 10) * 3
+    : 0;
   const actuatorAdjusted = Math.max(1, Math.floor(base / divisor));
-  return underwater ? Math.floor(actuatorAdjusted / 2) : actuatorAdjusted;
+  const damage = type === "push" ? 0 : actuatorAdjusted;
+  const adjusted = underwater ? Math.floor(damage / 2) : damage;
+  const selfDamage = type === "charge" ? Math.ceil(integer(targetTonnage, "Target tonnage", { min: 1 }) / 10)
+    : type === "dfa" ? Math.ceil(weight / 5)
+    : 0;
+  return { damage: adjusted, selfDamage: underwater ? Math.floor(selfDamage / 2) : selfDamage };
 }
 
 export function calculatePhysicalAttack({
@@ -104,7 +133,12 @@ export function calculatePhysicalAttack({
   elevationDifference = 0,
   arc = "front",
   limbState = {},
-  underwater = false
+  underwater = false,
+  hexesMoved = 0,
+  targetTonnage = 0,
+  movementMode = "stand",
+  hasMeleeWeapon = false,
+  hasClub = false
 }) {
   const profile = PHYSICAL_ATTACK_TYPES[type];
   if (!profile) throw new RangeError(`Unknown physical attack type: ${type}`);
@@ -119,12 +153,20 @@ export function calculatePhysicalAttack({
 
   let reason = null;
   if (attackerProne) reason = "A prone BattleMech cannot make physical attacks.";
-  else if (hexes !== 1) reason = "Punch and kick attacks require an adjacent target.";
+  else if (hexes !== 1) reason = "Physical attacks require an adjacent target.";
   else if (Math.abs(levelDifference) > 1) reason = "Physical attacks require attacker and target elevations within one level.";
   else if (type === "kick" && direction !== "front") reason = "Kick targets must be in the BattleMech's forward arc.";
   else if (type === "punch" && direction === "rear") reason = "Punch targets must be in a forward or side arc.";
   else if (type === "punch" && direction === "left" && limb !== "leftArm") reason = "Only the left arm may punch into the left side arc.";
   else if (type === "punch" && direction === "right" && limb !== "rightArm") reason = "Only the right arm may punch into the right side arc.";
+  else if (["hatchet", "club"].includes(type) && direction === "rear") reason = `${profile.label} targets must be in a forward or side arc.`;
+  else if (["hatchet", "club"].includes(type) && !["leftArm", "rightArm"].includes(limb)) reason = `${profile.label} attacks require an arm.`;
+  else if (type === "hatchet" && !hasMeleeWeapon) reason = "No operational Hatchet is installed in that arm.";
+  else if (type === "club" && !hasClub) reason = "No usable club is being carried.";
+  else if (type === "push" && direction !== "front") reason = "Push targets must be in the forward arc.";
+  else if (["charge", "dfa"].includes(type) && direction !== "front") reason = `${profile.label} targets must be in the forward arc.`;
+  else if (type === "charge" && integer(hexesMoved, "Charge hexes", { min: 0 }) < 1) reason = "A charge requires at least one hex of movement.";
+  else if (type === "dfa" && movementMode !== "jump") reason = "Death From Above requires Jumping movement.";
 
   const table = physicalTable(type, { targetProne, elevationDifference: levelDifference });
   if (!reason && !table) reason = "That physical attack is not legal for the target's elevation and prone state.";
@@ -135,7 +177,11 @@ export function calculatePhysicalAttack({
   const targetStatus = targetImmobile ? -4 : (targetProne ? -2 : 0);
   const actuatorModifier = actuator.modifier ?? 0;
   const targetNumber = base + profile.modifier + attackerMove + targetMove + targetStatus + terrain + actuatorModifier;
-  const damage = physicalAttackDamage(type, weight, actuator.damageDivisor ?? 1, { underwater });
+  const damageProfile = physicalAttackDamage(type, weight, actuator.damageDivisor ?? 1, {
+    underwater,
+    hexesMoved,
+    targetTonnage
+  });
 
   return {
     type,
@@ -146,7 +192,11 @@ export function calculatePhysicalAttack({
     targetNumber,
     automaticHit: targetNumber <= 2,
     automaticFailure: targetNumber > 12,
-    damage,
+    damage: damageProfile.damage,
+    selfDamage: damageProfile.selfDamage,
+    displacement: ["push", "charge", "dfa"].includes(type),
+    targetPilotingCheck: ["push", "charge", "dfa"].includes(type),
+    attackerPilotingCheck: ["kick", "charge", "dfa"].includes(type),
     locationTable: table,
     components: {
       piloting: base,
@@ -174,4 +224,3 @@ export function physicalHitLocation(table, roll, direction = "front") {
     throughArmorCritical: false
   };
 }
-

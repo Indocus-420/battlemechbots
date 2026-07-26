@@ -104,7 +104,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.17.0-alpha.0";
+const SYSTEM_VERSION = "0.18.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -996,12 +996,35 @@ function calculateTokenPhysicalAttacks(actor, type, target, requestedLimb = null
     else if (attackArc === "left") limbs = ["leftArm"];
     else if (attackArc === "right") limbs = ["rightArm"];
     else limbs = ["leftArm", "rightArm"];
+  } else if (["hatchet", "club"].includes(type)) {
+    const carried = actor.items.filter(item => item.type === "equipment"
+      && !item.system.destroyed
+      && item.name.toLowerCase().includes(type === "hatchet" ? "hatchet" : "club"));
+    limbs = requestedLimb ? [requestedLimb] : carried.map(item => item.system.location);
+    if (!limbs.length) limbs = [requestedLimb ?? "rightArm"];
+  } else if (type === "push") {
+    limbs = ["bothArms"];
+  } else if (type === "charge") {
+    limbs = ["body"];
+  } else if (type === "dfa") {
+    limbs = ["bothLegs"];
   } else {
     limbs = [requestedLimb];
   }
 
-  return limbs.filter(Boolean).map(limb => ({
-    ...calculatePhysicalAttack({
+  return limbs.filter(Boolean).map(limb => {
+    const limbState = limb === "bothArms"
+      ? {
+          ...physicalLimbState(actor, "leftArm"),
+          otherShoulder: physicalLimbState(actor, "rightArm").shoulder,
+          otherFired: physicalLimbState(actor, "rightArm").fired
+        }
+      : ["body", "bothLegs"].includes(limb) ? {} : physicalLimbState(actor, limb);
+    const equipment = actor.items.filter(item => item.type === "equipment"
+      && !item.system.destroyed
+      && item.system.location === limb);
+    return {
+      ...calculatePhysicalAttack({
       type,
       limb,
       piloting: actor.system.pilot.piloting,
@@ -1015,13 +1038,19 @@ function calculateTokenPhysicalAttacks(actor, type, target, requestedLimb = null
       distance,
       elevationDifference,
       arc: attackArc,
-      limbState: physicalLimbState(actor, limb),
-      underwater: terrain.attackerWaterDepth >= 2 && terrain.targetWaterDepth >= 2
+      limbState,
+      underwater: terrain.attackerWaterDepth >= 2 && terrain.targetWaterDepth >= 2,
+      hexesMoved: actor.system.movement.hexesMoved,
+      targetTonnage: target.actor.system.mech.tonnage,
+      movementMode: actor.system.movement.mode,
+      hasMeleeWeapon: equipment.some(item => item.name.toLowerCase().includes("hatchet")),
+      hasClub: type === "club" || equipment.some(item => item.name.toLowerCase().includes("club"))
     }),
     attackArc,
     direction: impactDirection,
     terrain
-  }));
+    };
+  });
 }
 
 async function resolvePhysicalHit(attackerActor, target, attack) {
@@ -1064,6 +1093,35 @@ async function resolvePhysicalHit(attackerActor, target, attack) {
     destroyedLocations: result.destroyedLocations.map(locationLabel),
     criticalSummary
   };
+}
+
+async function displacePhysicalTarget(source, target) {
+  const grid = canvas.grid;
+  const sourceCenter = tokenCenter(source);
+  const targetCenter = tokenCenter(target);
+  const targetOffset = grid.getOffset(targetCenter);
+  const adjacent = grid.getAdjacentOffsets(targetOffset);
+  if (!adjacent.length) return null;
+  adjacent.sort((left, right) => {
+    const leftCenter = grid.getCenterPoint(left);
+    const rightCenter = grid.getCenterPoint(right);
+    const leftDistance = Math.hypot(leftCenter.x - sourceCenter.x, leftCenter.y - sourceCenter.y);
+    const rightDistance = Math.hypot(rightCenter.x - sourceCenter.x, rightCenter.y - sourceCenter.y);
+    return rightDistance - leftDistance;
+  });
+  const destination = adjacent[0];
+  const occupied = collateralTokenAtOffset(destination, {
+    exclude: [source.id ?? source.document?.id, target.id ?? target.document?.id]
+  });
+  if (occupied) return { moved: false, reason: `${occupied.actor.name} blocks the displacement hex.` };
+  const document = target.document ?? target;
+  const center = grid.getCenterPoint(destination);
+  const size = Number(canvas.scene.grid.size) || 100;
+  await document.update({
+    x: center.x - ((Number(document.width) || 1) * size / 2),
+    y: center.y - ((Number(document.height) || 1) * size / 2)
+  });
+  return { moved: true, offset: destination };
 }
 
 function selectMostDestructiveAmmo(actor) {
@@ -2434,9 +2492,20 @@ async function performPhysicalAttack(actor, type, limb, target, attackerToken = 
   for (const attack of legal) {
     const roll = await new Roll("2d6").evaluate();
     const hit = attack.automaticHit || (!attack.automaticFailure && roll.total >= attack.targetNumber);
-    const damage = hit ? await resolvePhysicalHit(actor, target, attack) : null;
+    const sourceToken = attackerToken ?? activeSceneToken(actor);
+    const damage = hit && attack.damage > 0 ? await resolvePhysicalHit(actor, target, attack) : null;
+    const selfDamage = hit && attack.selfDamage > 0
+      ? await resolvePhysicalHit(actor, sourceToken, {
+          ...attack,
+          damage: attack.selfDamage,
+          direction: "front",
+          locationTable: attack.type === "dfa" ? "kick" : "normal"
+        })
+      : null;
+    const displacement = hit && attack.displacement
+      ? await displacePhysicalTarget(sourceToken, target)
+      : null;
     if (game.settings.get(SYSTEM_ID, "weaponEffects")) {
-      const sourceToken = attackerToken ?? activeSceneToken(actor);
       void broadcastCombatEffect({
         kind: "melee",
         originTokenId: sourceToken?.id ?? sourceToken?.document?.id,
@@ -2450,7 +2519,11 @@ async function performPhysicalAttack(actor, type, limb, target, attackerToken = 
       ? hit
         ? `${target.actor.name} makes an automatic Piloting Skill Roll after this kick.`
         : `${actor.name} makes an automatic Piloting Skill Roll after this missed kick.`
-      : "No automatic Piloting Skill Roll is caused by this punch.";
+      : attack.targetPilotingCheck && hit
+        ? `${target.actor.name} makes an automatic Piloting Skill Roll after this ${attack.label.toLowerCase()}.`
+        : attack.attackerPilotingCheck && hit
+          ? `${actor.name} makes an automatic Piloting Skill Roll after this ${attack.label.toLowerCase()}.`
+          : `No automatic Piloting Skill Roll is caused by this ${attack.label.toLowerCase()}.`;
 
     await postBattleTechRoll(roll, {
       speaker: ChatMessage.getSpeaker({ actor }),
@@ -2461,6 +2534,8 @@ async function performPhysicalAttack(actor, type, limb, target, attackerToken = 
         ${damage ? `<p>${escape(damage.locationLabel)} (${damage.direction}, ${escape(attack.locationTable)} roll ${damage.locationRoll}): ${damage.damage} damage; ${damage.armorDamage} armor, ${damage.structureDamage} internal.</p>` : ""}
         ${damage?.destroyedLocations.length ? `<p>Destroyed: ${escape(damage.destroyedLocations.join(", "))}.</p>` : ""}
         ${damage?.criticalSummary ? `<p>${escape(damage.criticalSummary)}</p>` : ""}
+        ${selfDamage ? `<p>Attacker damage: ${escape(selfDamage.locationLabel)}; ${selfDamage.damage} damage (${selfDamage.armorDamage} armor, ${selfDamage.structureDamage} internal).</p>` : ""}
+        ${displacement ? `<p>Displacement: ${displacement.moved ? `target moved to hex [${displacement.offset.i}, ${displacement.offset.j}]` : escape(displacement.reason)}.</p>` : ""}
         <p>${escape(pilotingCheck)}</p>
       </section>`
     }, `${locationLabel(attack.limb)} ${attack.label}`);
@@ -2470,6 +2545,11 @@ async function performPhysicalAttack(actor, type, limb, target, attackerToken = 
       await resolvePilotingSkillRoll(checkActor, checkToken, {
         reason: hit ? "kicked" : "missed kick"
       });
+    } else if (hit && attack.targetPilotingCheck) {
+      await resolvePilotingSkillRoll(target.actor, target, { reason: attack.label.toLowerCase() });
+    }
+    if (hit && attack.attackerPilotingCheck && attack.type !== "kick") {
+      await resolvePilotingSkillRoll(actor, sourceToken, { reason: attack.label.toLowerCase() });
     }
     results.push({
       type: attack.type,
@@ -2609,7 +2689,7 @@ function refreshTokenActionHud(preferredToken = null) {
   const categoryDefinitions = [
     ["weapons", "crosshairs", "Weapons", `<details open><summary>Energy</summary>${weaponMenu("energy")}</details><details><summary>Ballistic</summary>${weaponMenu("ballistic")}</details><details><summary>Missile</summary>${weaponMenu("missile")}</details><details><summary>Equipment</summary><button type="button" data-action="sheet">Open equipment list</button></details>`],
     ["groups", "layer-group", "Fire Groups", fireGroupMarkup],
-    ["physical", "hand-fist", "Physical", model.actorType === "mech" ? `<button type="button" data-action="punch">Punches</button><button type="button" data-action="kick-left">Left Kick</button><button type="button" data-action="kick-right">Right Kick</button>` : `<span class="bmfs-hud-menu-empty">No BattleMech physical attacks</span>`],
+    ["physical", "hand-fist", "Physical", model.actorType === "mech" ? `<button type="button" data-action="punch">Punches</button><button type="button" data-action="kick-left">Left Kick</button><button type="button" data-action="kick-right">Right Kick</button><button type="button" data-action="hatchet">Hatchet</button><button type="button" data-action="club">Club</button><button type="button" data-action="push">Push</button><button type="button" data-action="charge">Charge</button><button type="button" data-action="dfa">Death From Above</button>` : `<span class="bmfs-hud-menu-empty">No BattleMech physical attacks</span>`],
     ["movement", "person-walking", "Movement", model.actorType === "mech" ? `<button type="button" data-action="movement" data-mode="stand">Stand</button><button type="button" data-action="movement" data-mode="walk">Walk</button><button type="button" data-action="movement" data-mode="run">Run</button><button type="button" data-action="movement" data-mode="jump">Jump</button>` : `<span class="bmfs-hud-menu-empty">${escape(model.movement)}</span>`],
     ["systems", "microchip", "Systems", `<button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
     ["pilot", "user-astronaut", "Pilot", `<button type="button" data-action="gunnery">Gunnery Check</button><button type="button" data-action="piloting">Piloting Check</button><button type="button" data-action="player-console">Pilot & Lance Window</button>`],
@@ -2687,6 +2767,9 @@ function refreshTokenActionHud(preferredToken = null) {
       if (action === "punch") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "punch", physicalLimb: "" } });
       if (action === "kick-left") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "kick", physicalLimb: "leftLeg" } });
       if (action === "kick-right") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "kick", physicalLimb: "rightLeg" } });
+      if (["hatchet", "club", "push", "charge", "dfa"].includes(action)) {
+        return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: action, physicalLimb: "" } });
+      }
     };
     void run().then(() => {
       if (["weapon", "fire-group"].includes(action)) refreshTokenActionHud(token);

@@ -2,6 +2,15 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.18.0-alpha.0 complete physical-attack families
+
+- Adds Hatchet/melee weapon, improvised club, push, charge, and Death From Above controls to the BattleMech sheet and token HUD.
+- Extends physical previews with equipment, movement-mode, arc, range, elevation, actuator, damage, and self-damage legality.
+- Pushes, charges, and DFA displace the target one open hex directly away from the attacker.
+- Charges and DFA apply target damage plus attacker feedback damage using separate hit-location resolution.
+- Automatically resolves required attacker and target Piloting Skill Rolls, falls, grouped fall damage, facing changes, and pilot injuries.
+- Retains punch and kick behavior, including limb restrictions and missed-kick Piloting Skill Rolls.
+
 ## 0.17.0-alpha.0 MechLab validation
 
 - Adds a visible MechLab construction-status panel to every BattleMech sheet.

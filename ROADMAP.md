@@ -43,7 +43,7 @@ Combat rules include GATOR calculations, hex and terrain movement, elevation, Wa
 - 2.3 Weapon attacks and GATOR - complete for direct-fire weapons.
 - 2.4 Heat, hit locations, damage transfer, critical slots, and core component effects - complete and live-verified in 0.5.2.
 - 2.5 Initiative and complete turn sequencing - complete and live-verified in 0.6.1, including active-versus-viewed encounter handling, loser-first alternation, phase gating, and next-round initiative rerolls.
-- 2.6 Physical attacks - first increment complete in 0.7.0: adjacent punch and kick declarations, attack arcs, elevation and prone restrictions, attacker/target/terrain modifiers, actuator damage, limb weapon-fire restrictions, physical hit-location tables, damage transfer, and critical resolution. Automated Piloting Skill Rolls caused by kicks remain in 2.7.
+- 2.6 Physical attacks - complete attack-family milestone in 0.18.0: punches, kicks, Hatchet/melee weapons, GM-adjudicated clubs, pushes, charges, and Death From Above; attack arcs, elevation and prone restrictions, movement/equipment legality, attacker/target/terrain modifiers, actuator damage, displacement, attacker feedback damage, hit locations, critical resolution, and automatic Piloting Skill Rolls.
 - 2.7 Missile clusters, ammunition consumption, kick Piloting Skill Rolls, End Phase, and remaining combat edge cases - missiles, ammunition, kick PSRs, falls, facing changes, and pilot injury checks implemented in 0.8.0. Version 0.9.0 clears transient movement/action state at End Phase and applies the damaged-life-support underwater pilot hit. Unconscious-pilot recovery, torso/arm reset, and voluntary shutdown/restart remain pending record-sheet state and UI support.
 
 ## Phase 3 - Visuals
