@@ -21,6 +21,8 @@ Content milestone: 0.13.0 replaces the sample roster with 20 requested ready-to-
 
 Visual-map milestone: 0.15.0 adds scalable Foundry 14 Ground-Level background presets, scenic facility Tiles, and low-opacity functional overlays while retaining Regions, walls, fog, sensor vision, and seeded map sizes.
 
+Battlefield Studio milestone: 0.16.0 generates a unique SVG landscape and its Regions, elevations, roads, facilities, walls, fog, and sensor-vision configuration from one deterministic plan. Optional hosted generative-image enhancement remains gated on a securely configured server-side image service.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:

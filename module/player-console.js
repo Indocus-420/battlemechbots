@@ -177,12 +177,44 @@ function transactionList(values) {
   }).join("")}</ol>`;
 }
 
+export function storeEntryDetails(entry) {
+  const system = entry?.document?.system ?? {};
+  const range = system.range ?? {};
+  const tonnage = numeric(system.mech?.tonnage ?? system.vehicle?.tonnage);
+  const facts = [];
+  if (tonnage) facts.push(["Tonnage", `${tonnage} tons`]);
+  if (entry.kind === "mech") facts.push(["Class", entry.group]);
+  if (entry.kind === "vehicle") facts.push(["Role", system.vehicle?.role || "Support"]);
+  if (entry.kind === "item") {
+    if (numeric(system.damage)) facts.push(["Damage", numeric(system.damage)]);
+    if (numeric(system.heat)) facts.push(["Heat", numeric(system.heat)]);
+    if (numeric(system.slots)) facts.push(["Critical slots", numeric(system.slots)]);
+    if (numeric(system.tons ?? system.tonnage)) facts.push(["Weight", `${numeric(system.tons ?? system.tonnage)} tons`]);
+    if (numeric(range.short) || numeric(range.medium) || numeric(range.long)) facts.push(["Range", `${numeric(range.short)}/${numeric(range.medium)}/${numeric(range.long)}`]);
+  }
+  facts.push(["Availability", entry.referenceOnly ? "Reference stock · GM validation" : "Bay certified"]);
+  return facts;
+}
+
 function storeCard(entry, balance, hasDeliveryActor) {
   const canAfford = balance >= entry.price;
   const canDeliver = entry.kind !== "item" || hasDeliveryActor;
-  return `<article class="bmfs-store-card" data-store-group="${escape(entry.group)}" data-store-search="${escape(`${entry.name} ${entry.group} ${entry.kind}`.toLowerCase())}">
+  return `<article class="bmfs-store-card" data-store-group="${escape(entry.group)}" data-store-search="${escape(`${entry.name} ${entry.group} ${entry.kind} ${entry.description}`.toLowerCase())}">
     <img src="${escape(entry.image)}" alt=""><div><span class="bmfs-stock-badge ${entry.referenceOnly ? "is-reference" : ""}">${entry.referenceOnly ? "REFERENCE STOCK" : entry.kind === "mech" ? "CHASSIS" : "BAY CERTIFIED"}</span><strong>${escape(entry.name)}</strong><small>${escape(entry.description)}</small><a href="${escape(entry.sourceUrl)}" target="_blank" rel="noopener">Sarna technical reference</a></div>
-    <aside><b>${entry.price.toLocaleString()} M</b><button type="button" data-console-action="purchase" data-entry-id="${escape(entry.id)}" ${canAfford && canDeliver ? "" : "disabled"}>${canAfford ? (canDeliver ? "Buy" : "Select unit") : "Insufficient"}</button></aside>
+    <aside><b>${entry.price.toLocaleString()} M</b><button type="button" data-console-action="inspect" data-entry-id="${escape(entry.id)}">Inspect</button><button type="button" data-console-action="purchase" data-entry-id="${escape(entry.id)}" ${canAfford && canDeliver ? "" : "disabled"}>${canAfford ? (canDeliver ? "Buy" : "Select unit") : "Insufficient"}</button></aside>
+  </article>`;
+}
+
+function storeDetail(entry, balance, hasDeliveryActor, selected = false) {
+  const canAfford = balance >= entry.price;
+  const canDeliver = entry.kind !== "item" || hasDeliveryActor;
+  return `<article class="bmfs-store-detail" data-store-detail="${escape(entry.id)}" ${selected ? "" : "hidden"}>
+    <div class="bmfs-store-detail-hero"><img src="${escape(entry.image)}" alt=""><span>${escape(entry.group)}</span></div>
+    <p class="bmfs-store-eyebrow">${entry.kind === "mech" ? "BATTLEMECH CHASSIS" : entry.kind === "vehicle" ? "COMBAT VEHICLE" : "MECH BAY COMPONENT"}</p>
+    <h2>${escape(entry.name)}</h2><p>${escape(entry.description)}</p>
+    <dl>${storeEntryDetails(entry).map(([label, value]) => `<dt>${escape(label)}</dt><dd>${escape(value)}</dd>`).join("")}</dl>
+    <a href="${escape(entry.sourceUrl)}" target="_blank" rel="noopener">Open Sarna technical reference</a>
+    <footer><strong>${entry.price.toLocaleString()} M</strong><button type="button" data-console-action="purchase" data-entry-id="${escape(entry.id)}" ${canAfford && canDeliver ? "" : "disabled"}>${canAfford ? (canDeliver ? "Authorize purchase" : "Select delivery unit") : "Insufficient M-Notes"}</button></footer>
   </article>`;
 }
 
@@ -204,6 +236,7 @@ export function renderPlayerConsole() {
   element.style.top = `${state.top}px`;
   element.style.width = `${state.width}px`;
   element.style.height = `${state.height}px`;
+  element.classList.toggle("is-mechbay", state.tab === "bay");
   element.innerHTML = `<header class="bmfs-console-handle"><div><span>BATTLEMECH PILOT COMMAND</span><strong>${escape(model.userName)}</strong></div><button type="button" data-console-action="close" title="Close"><i class="fa-solid fa-xmark"></i></button></header>
     <nav role="tablist">${[
       ["overview", "Overview", "user-astronaut"], ["lance", "Lance", "people-group"], ["mission", "Mission", "bullseye"], ["bay", "Mech Bay", "warehouse"]
@@ -233,12 +266,16 @@ export function renderPlayerConsole() {
           <label>Reason<input type="text" name="reason" value="GM adjustment" maxlength="120" required></label>
           <button type="submit" data-console-action="adjust-mnotes">Apply</button>
         </form></details>` : ""}
-        <details data-section="store" ${state.collapsed?.store ? "" : "open"}><summary>Equipment Storefront · ${model.store.catalog.length} listings</summary>
+        <details class="bmfs-storefront" data-section="store" ${state.collapsed?.store ? "" : "open"}><summary>Exchange Inventory · ${model.store.catalog.length} listings</summary>
           <div class="bmfs-store-toolbar"><input type="search" data-store-search placeholder="Search storefront">
             <select data-store-group><option value="">All categories</option>${[...new Set(model.store.catalog.map(entry => entry.group))].map(group => `<option value="${escape(group)}">${escape(group[0].toUpperCase() + group.slice(1))}</option>`).join("")}</select>
             <label>Deliver equipment to<select data-store-delivery><option value="">Select owned unit</option>${model.store.deliveryActors.map(actor => `<option value="${escape(actor.id)}">${escape(actor.name)}</option>`).join("")}</select></label>
           </div>
-          <div class="bmfs-store-list">${model.store.catalog.map(entry => storeCard(entry, model.pilot.mNotes, model.store.deliveryActors.length > 0)).join("")}</div>
+          <div class="bmfs-store-layout"><aside class="bmfs-store-departments">
+            <button type="button" data-store-department="" class="is-active">All stock</button>
+            ${[...new Set(model.store.catalog.map(entry => entry.group))].map(group => `<button type="button" data-store-department="${escape(group)}">${escape(group[0].toUpperCase() + group.slice(1))}</button>`).join("")}
+          </aside><div class="bmfs-store-list">${model.store.catalog.map(entry => storeCard(entry, model.pilot.mNotes, model.store.deliveryActors.length > 0)).join("")}</div>
+          <aside class="bmfs-store-inspector">${model.store.catalog.map((entry, index) => storeDetail(entry, model.pilot.mNotes, model.store.deliveryActors.length > 0, index === 0)).join("")}</aside></div>
         </details>
         <details data-section="owned" ${state.collapsed?.owned ? "" : "open"}><summary>Owned Chassis and Repair / Refit</summary><div class="bmfs-lance-grid">${model.bay.map((unit, index) => unitCard(unit, index + 1, "Unit")).join("")}</div></details>
         <div class="bmfs-inventory-grid"><details data-section="weapons" open><summary>Weapons (${model.inventory.weapons.length})</summary>${list(model.inventory.weapons)}</details><details data-section="ammo" open><summary>Ammunition (${model.inventory.ammunition.length})</summary>${list(model.inventory.ammunition)}</details><details data-section="equipment" open><summary>Equipment (${model.inventory.equipment.length})</summary>${list(model.inventory.equipment)}</details><details data-section="salvage" open><summary>Parts and Salvage</summary>${list(model.inventory.salvage)}</details></div>
@@ -256,6 +293,7 @@ export function renderPlayerConsole() {
     if (tab) {
       for (const button of element.querySelectorAll('[role="tab"]')) button.setAttribute("aria-selected", String(button === tab));
       for (const panel of element.querySelectorAll('[role="tabpanel"]')) panel.hidden = panel.dataset.panel !== tab.dataset.tab;
+      element.classList.toggle("is-mechbay", tab.dataset.tab === "bay");
       saveState(element);
       return;
     }
@@ -265,6 +303,10 @@ export function renderPlayerConsole() {
       element.remove();
     }
     if (action === "sheet") globalThis.game?.actors?.get?.(event.target.closest("[data-actor-id]")?.dataset.actorId)?.sheet?.render?.({ force: true });
+    if (action === "inspect") {
+      const entryId = event.target.closest("[data-entry-id]")?.dataset.entryId;
+      for (const detail of element.querySelectorAll("[data-store-detail]")) detail.hidden = detail.dataset.storeDetail !== entryId;
+    }
     if (action === "purchase") {
       const button = event.target.closest("[data-entry-id]");
       button.disabled = true;
@@ -299,6 +341,12 @@ export function renderPlayerConsole() {
   };
   element.querySelector("[data-store-search]")?.addEventListener("input", filterStore);
   element.querySelector("select[data-store-group]")?.addEventListener("change", filterStore);
+  for (const department of element.querySelectorAll("[data-store-department]")) department.addEventListener("click", () => {
+    const select = element.querySelector("select[data-store-group]");
+    if (select) select.value = department.dataset.storeDepartment;
+    for (const button of element.querySelectorAll("[data-store-department]")) button.classList.toggle("is-active", button === department);
+    filterStore();
+  });
   element.addEventListener("toggle", () => saveState(element), true);
   const handle = element.querySelector(".bmfs-console-handle");
   handle.addEventListener("pointerdown", event => {

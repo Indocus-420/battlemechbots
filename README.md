@@ -2,6 +2,15 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.16.0-alpha.0 Battlefield Studio
+
+- Replaces the reused background preset with an original, seed-driven SVG battlefield rendered from the same plan as the Foundry Scene data.
+- Adds prompt, orientation, environment, size, hex-scale, seed, and Scene-name controls to the hotbar generator.
+- Keeps visible water, woods, rubble, rough ground, elevations, roads, facilities, Regions, walls, fog, and sensor vision spatially aligned.
+- Creates and uploads a unique map image for each build instead of placing gameplay data over an unrelated image.
+- Expands the Mech Bay storefront into a full-screen, department-based quartermaster terminal.
+- Live-validated generation through the GM hotbar and unexplored fog through a separate player login.
+
 ## 0.15.0-alpha.0 layered visual battlefields
 
 - Reuses the established old-map artwork as the first scalable visual preset.

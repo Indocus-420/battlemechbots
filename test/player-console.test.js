@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { playerConsoleModel, unitCondition, unitReadiness } from "../module/player-console.js";
+import { playerConsoleModel, storeEntryDetails, unitCondition, unitReadiness } from "../module/player-console.js";
 
 function actor(id, type = "mech") {
   return {
@@ -46,4 +46,20 @@ test("unit readiness and condition report damage and ammunition", () => {
   mech.items.push({ type: "ammo", system: { shots: 0, maxShots: 10, destroyed: false } });
   assert.equal(unitReadiness(mech).label, "Rearm");
   assert.equal(unitCondition(mech).ammoMaximum, 10);
+});
+
+test("store inspector exposes BattleTech purchasing facts", () => {
+  const details = storeEntryDetails({
+    kind: "item",
+    group: "weapons",
+    referenceOnly: false,
+    document: { system: { damage: 5, heat: 3, slots: 1, range: { short: 3, medium: 6, long: 9 } } }
+  });
+  assert.deepEqual(details.slice(0, 4), [
+    ["Damage", 5],
+    ["Heat", 3],
+    ["Critical slots", 1],
+    ["Range", "3/6/9"]
+  ]);
+  assert.deepEqual(details.at(-1), ["Availability", "Bay certified"]);
 });
