@@ -6,7 +6,7 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,17 +14,31 @@ MAP_DIR = ROOT / "assets" / "maps" / "wwe2018"
 SYSTEM_ID = "battletech-foundry-system"
 MAPS = (
     ("battletech", "BattleTech", 0, 0),
-    ("large-lakes", "Large Lakes", 3569, 0),
-    ("scattered-woods", "Scattered Woods", 0, 4122),
-    ("dig-site", "Dig Site", 3569, 4122),
+    ("large-lakes", "Large Lakes", 3167, 0),
+    ("scattered-woods", "Scattered Woods", 0, 3888),
+    ("dig-site", "Dig Site", 3167, 3888),
 )
 SOURCE_WIDTH = 4014
 SOURCE_HEIGHT = 4878
-MAP_HEIGHT = 4000
-SCALE = MAP_HEIGHT / SOURCE_HEIGHT
+HEX_COLUMN_STEP = 241.785
+HEX_ROW_STEP = 279.39
+RAW_OFFSET_X = 16 * HEX_COLUMN_STEP
+RAW_OFFSET_Y = 17 * HEX_ROW_STEP
+RAW_HEIGHT = RAW_OFFSET_Y + SOURCE_HEIGHT
+TARGET_HEIGHT = 7882
+SCALE = TARGET_HEIGHT / RAW_HEIGHT
+MAP_HEIGHT = round(SOURCE_HEIGHT * SCALE)
 MAP_WIDTH = round(SOURCE_WIDTH * SCALE)
-CANVAS_WIDTH = 3569 + MAP_WIDTH
-CANVAS_HEIGHT = 4122 + MAP_HEIGHT
+SOURCE_MARGIN_LEFT = 34
+SOURCE_MARGIN_TOP = 34
+SOURCE_MARGIN_RIGHT = 35
+SOURCE_MARGIN_BOTTOM = 35
+TRIM_LEFT = round(SOURCE_MARGIN_LEFT * SCALE)
+TRIM_TOP = round(SOURCE_MARGIN_TOP * SCALE)
+TRIM_RIGHT = round(SOURCE_MARGIN_RIGHT * SCALE)
+TRIM_BOTTOM = round(SOURCE_MARGIN_BOTTOM * SCALE)
+CANVAS_WIDTH = 3167 + MAP_WIDTH - TRIM_LEFT - TRIM_RIGHT
+CANVAS_HEIGHT = 3888 + MAP_HEIGHT - TRIM_TOP - TRIM_BOTTOM
 SLUG = "worldwide-event-2018-combined"
 
 
@@ -60,8 +74,7 @@ def translated_wall(wall: dict, offset_x: int, offset_y: int, map_slug: str) -> 
 
 
 def main() -> None:
-    canvas = Image.new("RGB", (CANVAS_WIDTH, CANVAS_HEIGHT), "#30352f")
-    draw = ImageDraw.Draw(canvas)
+    canvas = Image.new("RGB", (CANVAS_WIDTH, CANVAS_HEIGHT), "#8e822d")
     regions = []
     walls = []
     terrain_hexes = {}
@@ -70,21 +83,21 @@ def main() -> None:
     for map_slug, map_name, offset_x, offset_y in MAPS:
         source_image = Image.open(MAP_DIR / f"{map_slug}.webp").convert("RGB")
         resized = source_image.resize((MAP_WIDTH, MAP_HEIGHT), Image.Resampling.LANCZOS)
-        canvas.paste(resized, (offset_x, offset_y))
-        draw.rectangle(
-            (offset_x, offset_y, offset_x + MAP_WIDTH - 1, offset_y + MAP_HEIGHT - 1),
-            outline="#b88b28",
-            width=8,
+        content = resized.crop(
+            (TRIM_LEFT, TRIM_TOP, MAP_WIDTH - TRIM_RIGHT, MAP_HEIGHT - TRIM_BOTTOM)
         )
+        canvas.paste(content, (offset_x, offset_y))
 
         definition = json.loads(
             (MAP_DIR / f"{map_slug}.scene.json").read_text(encoding="utf-8")
         )
+        geometry_offset_x = offset_x - TRIM_LEFT
+        geometry_offset_y = offset_y - TRIM_TOP
         for region in definition["regions"]:
             translated = deepcopy(region)
             translated["name"] = f"{map_name} · {region['name']}"
             translated["shapes"] = [
-                translated_shape(shape, offset_x, offset_y)
+                translated_shape(shape, geometry_offset_x, geometry_offset_y)
                 for shape in region["shapes"]
             ]
             translated.setdefault("flags", {}).setdefault(SYSTEM_ID, {})[
@@ -92,7 +105,7 @@ def main() -> None:
             ] = map_slug
             regions.append(translated)
         walls.extend(
-            translated_wall(wall, offset_x, offset_y, map_slug)
+            translated_wall(wall, geometry_offset_x, geometry_offset_y, map_slug)
             for wall in definition["walls"]
         )
         terrain_hexes[map_slug] = definition["scene"]["flags"][SYSTEM_ID][
@@ -114,14 +127,15 @@ def main() -> None:
                 ["BattleTech", "Large Lakes"],
                 ["Scattered Woods", "Dig Site"],
             ],
+            "layoutMethod": "Partial edge hexes overlap on whole grid intervals.",
         },
         "scene": {
             "name": "WWE 2018 - Combined Terrain Set",
             "width": CANVAS_WIDTH,
             "height": CANVAS_HEIGHT,
             "padding": 0,
-            "shiftX": round(151 * SCALE, 2),
-            "shiftY": round(36 * SCALE, 2),
+            "shiftX": round(151 * SCALE, 2) - TRIM_LEFT,
+            "shiftY": round(36 * SCALE, 2) - TRIM_TOP,
             "grid": {
                 "type": 4,
                 "size": round(322.38 * SCALE, 2),
@@ -131,7 +145,7 @@ def main() -> None:
                 "color": "#000000",
                 "thickness": 1,
             },
-            "backgroundColor": "#30352f",
+            "backgroundColor": "#8e822d",
             "initialLevel": "ground0000000001",
             "levels": [
                 {
@@ -160,6 +174,7 @@ def main() -> None:
                     "mapPack": "wwe2018",
                     "mapSlug": SLUG,
                     "combinedMap": True,
+                    "layoutRevision": 2,
                     "terrainHexesByMap": terrain_hexes,
                 }
             },

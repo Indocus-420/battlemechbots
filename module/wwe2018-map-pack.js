@@ -47,9 +47,12 @@ export async function installWwe2018MapPack({
   for (const map of WWE2018_MAPS) {
     const existing = existingMapScene(map.slug);
     const definition = await loadWwe2018SceneData(map.slug, { fetchImpl });
+    const expectedRevision = definition.scene.flags?.[SYSTEM_ID]?.layoutRevision ?? 1;
+    const installedRevision = existing?.getFlag?.(SYSTEM_ID, "layoutRevision") ?? 1;
     const complete = existing
       && existing.regions?.size === definition.regions.length
-      && existing.walls?.size === definition.walls.length;
+      && existing.walls?.size === definition.walls.length
+      && installedRevision === expectedRevision;
     if (complete && !replace) {
       skipped.push(existing);
       continue;

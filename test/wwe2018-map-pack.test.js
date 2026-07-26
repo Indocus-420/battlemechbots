@@ -86,11 +86,14 @@ test("combined terrain set preserves all four map datasets below the texture lim
     )
   );
   assert.equal(definition.scene.flags["battletech-foundry-system"].combinedMap, true);
+  assert.equal(definition.scene.flags["battletech-foundry-system"].layoutRevision, 2);
   assert.deepEqual(Object.keys(definition.summary.sourceMaps), [
     "battletech", "large-lakes", "scattered-woods", "dig-site"
   ]);
   assert.equal(definition.summary.regionShapes, 511);
   assert.equal(definition.summary.walls, 598);
+  assert.equal(definition.scene.width, 6396);
+  assert.equal(definition.scene.height, 7825);
   assert.ok(definition.scene.width < 8192);
   assert.ok(definition.scene.height < 8192);
 });

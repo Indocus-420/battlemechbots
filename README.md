@@ -2,6 +2,12 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.21.0-alpha.0 corrected WWE 2018 hex alignment
+
+- Aligns all four map sheets to one continuous, uniformly sized hex lattice.
+- Removes the source-page borders at the internal seams without redrawing or replacing any terrain.
+- Repositions all 511 terrain Region shapes and 598 walls to match the corrected artwork.
+
 ## 0.20.0-alpha.0 combined WWE 2018 battlefield
 
 - Combines the four cleaned WWE 2018 maps into one playable 2×2 battlefield matching the published map-pack layout.

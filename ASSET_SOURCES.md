@@ -31,4 +31,6 @@ Before any candidate is bundled, preserve its downloaded license/metadata alongs
   labeling remain intact.
 - `worldwide-event-2018-combined.webp` is a deterministic 2×2 composition of
   those four cleaned images, scaled for Foundry's common 8192-pixel texture
-  limit. It contains no generated or replacement terrain.
+  limit. Partial edge hexes are overlapped on whole grid intervals and the
+  source-page margins are cropped, producing one uniform lattice without
+  generated or replacement terrain.
