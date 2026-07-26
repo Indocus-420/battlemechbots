@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.17.0-alpha.0 MechLab validation
+
+- Adds a visible MechLab construction-status panel to every BattleMech sheet.
+- Calculates armor mass, verified weapon/equipment/ammunition payload, remaining chassis allowance, and critical-slot usage.
+- Blocks deployment readiness for invalid tonnage, out-of-range or overlapping critical slots, missing compatible ammunition, and insufficient assigned jump jets.
+- Reports unknown construction masses as warnings so unsupported or legacy items remain visible without being silently accepted.
+- Live-validated on the legacy hunch back actor through the normal Foundry GM interface.
+
 ## 0.16.0-alpha.0 Battlefield Studio
 
 - Replaces the reused background preset with an original, seed-driven SVG battlefield rendered from the same plan as the Foundry Scene data.

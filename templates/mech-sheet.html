@@ -25,6 +25,28 @@
     </div>
   </header>
 
+  <section class="panel bmfs-mechlab {{#if construction.ready}}is-ready{{else}}is-blocked{{/if}}">
+    <div class="bmfs-mechlab-heading">
+      <div>
+        <span>MECHLAB CONSTRUCTION CHECK</span>
+        <h2>{{construction.status}}</h2>
+      </div>
+      <strong>{{construction.trackedMass}} / {{construction.tonnage}} tons tracked</strong>
+    </div>
+    <div class="bmfs-mechlab-metrics">
+      <span><b>{{construction.armorPoints}}</b> armor points · {{construction.armorMass}} t</span>
+      <span><b>{{construction.equipmentMass}}</b> t weapons/equipment/ammo</span>
+      <span><b>{{construction.untrackedMass}}</b> t chassis/engine/structure allowance</span>
+      <span><b>{{construction.slotsUsed}}</b> / {{construction.slotsAvailable}} critical slots assigned</span>
+    </div>
+    {{#each construction.diagnostics as |diagnostic|}}
+      <p class="bmfs-mechlab-diagnostic is-{{diagnostic.severity}}"><b>{{diagnostic.code}}</b> {{diagnostic.message}}</p>
+    {{else}}
+      <p class="bmfs-mechlab-diagnostic is-pass">No blocking construction errors detected.</p>
+    {{/each}}
+    <p class="hint">Tracked mass covers armor, verified weapons, ammunition bins, external heat sinks, jump jets, and supported equipment. The remaining allowance represents chassis, engine, gyro, internal structure, cockpit systems, and other integral components until the full engine/structure tables are added.</p>
+  </section>
+
   <section class="panel">
     <h2>Pilot</h2>
     <div class="grid grid-4">

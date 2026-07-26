@@ -73,6 +73,8 @@ Version 0.10.0 adds a native BattleTech token action HUD, D6-only quick rolls, D
 - Critical-slot allocation.
 - Automatic construction-rule validation.
 
+Status: first validation increment complete in 0.17.0. BattleMech sheets now show tracked armor and payload mass, remaining chassis allowance, critical-slot usage, ammunition and jump-jet checks, structured warnings/errors, and deployment readiness. Full engine-rating, internal-structure, armor-technology, and era/tech-base tables remain.
+
 ## Phase 5 - Campaign
 
 - Mercenary company management.

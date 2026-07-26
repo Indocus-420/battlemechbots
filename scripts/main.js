@@ -94,6 +94,7 @@ import {
   itemSlotNumbers,
   weaponCriticalModifier
 } from "../module/criticals.js";
+import { analyzeMechConstruction } from "../module/construction.js";
 import {
   combatTeamRoster,
   COMBAT_TEAMS,
@@ -103,7 +104,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.16.0-alpha.0";
+const SYSTEM_VERSION = "0.17.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -187,6 +188,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       movement,
       this.actor.system.heat.current
     );
+    const construction = analyzeMechConstruction(this.actor);
     return {
       ...context,
       actor: this.actor,
@@ -208,6 +210,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       criticalAssignmentWarnings: this.actor.items
         .filter(item => itemSlotNumbers(item).length !== Number(item.system.slots ?? 1))
         .map(item => `${item.name}: ${item.system.location} start ${item.system.slotStart}, count ${item.system.slots}`),
+      construction,
       tokenizerAvailable: tokenizerIntegrationState().active && tokenizerIntegrationState().canUpload,
       bmfsVersion: SYSTEM_VERSION
     };
