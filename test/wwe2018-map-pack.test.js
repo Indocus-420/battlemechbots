@@ -20,9 +20,9 @@ test("WWE 2018 map definitions contain images, native Regions, walls, fog, and v
     assert.ok(definition.regions.length >= 7);
     assert.ok(definition.regions.every(region => region.shapes.length > 0));
     assert.ok(definition.walls.length > 0);
-    assert.ok(definition.walls.every(wall => [0, 1].includes(wall.sight)));
-    assert.ok(definition.walls.every(wall => [0, 1].includes(wall.light)));
-    assert.ok(definition.walls.every(wall => [0, 1].includes(wall.sound)));
+    assert.ok(definition.walls.every(wall => [0, 10, 20].includes(wall.sight)));
+    assert.ok(definition.walls.every(wall => [0, 10, 20].includes(wall.light)));
+    assert.ok(definition.walls.every(wall => [0, 10, 20].includes(wall.sound)));
   }
 });
 
@@ -37,7 +37,7 @@ test("map definition loader validates the response", async () => {
   assert.throws(() => wwe2018ScenePath("missing"), /Unknown WWE 2018 map/);
 });
 
-test("Gamemaster installer creates four scenes with embedded Regions and walls", async () => {
+test("Gamemaster installer creates five scenes with embedded Regions and walls", async () => {
   const originals = {
     game: globalThis.game,
     Scene: globalThis.Scene,
@@ -68,12 +68,29 @@ test("Gamemaster installer creates four scenes with embedded Regions and walls",
         return { ok: true, json: async () => data };
       }
     });
-    assert.equal(result.installed.length, 4);
-    assert.equal(created.length, 4);
+    assert.equal(result.installed.length, 5);
+    assert.equal(created.length, 5);
     assert.deepEqual(created[0].embedded.map(entry => entry.type), ["Region", "Wall"]);
   } finally {
     globalThis.game = originals.game;
     globalThis.Scene = originals.Scene;
     globalThis.ui = originals.ui;
   }
+});
+
+test("combined terrain set preserves all four map datasets below the texture limit", async () => {
+  const definition = JSON.parse(
+    await readFile(
+      new URL("../assets/maps/wwe2018/worldwide-event-2018-combined.scene.json", import.meta.url),
+      "utf8"
+    )
+  );
+  assert.equal(definition.scene.flags["battletech-foundry-system"].combinedMap, true);
+  assert.deepEqual(Object.keys(definition.summary.sourceMaps), [
+    "battletech", "large-lakes", "scattered-woods", "dig-site"
+  ]);
+  assert.equal(definition.summary.regionShapes, 511);
+  assert.equal(definition.summary.walls, 598);
+  assert.ok(definition.scene.width < 8192);
+  assert.ok(definition.scene.height < 8192);
 });

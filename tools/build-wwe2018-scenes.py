@@ -218,7 +218,8 @@ def boundary_walls(
             edge_uses[key].append((level, building))
 
     walls = []
-    normal = 1
+    normal = 20
+    limited = 10
     for edge, uses in edge_uses.items():
         building_boundary = any(building for _, building in uses) and not all(
             building for _, building in uses
@@ -231,9 +232,9 @@ def boundary_walls(
             {
                 "c": [*edge[0], *edge[1]],
                 "move": normal if building_boundary else 0,
-                "sight": normal,
-                "light": normal,
-                "sound": normal,
+                "sight": normal if building_boundary else limited,
+                "light": normal if building_boundary else limited,
+                "sound": normal if building_boundary else limited,
                 "door": 0,
                 "dir": 0,
                 "flags": {

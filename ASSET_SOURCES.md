@@ -29,3 +29,6 @@ Before any candidate is bundled, preserve its downloaded license/metadata alongs
 - Transformation: the four full-size map pages were extracted and their
   four-digit hex-coordinate overlays were removed. Terrain and copyright
   labeling remain intact.
+- `worldwide-event-2018-combined.webp` is a deterministic 2×2 composition of
+  those four cleaned images, scaled for Foundry's common 8192-pixel texture
+  limit. It contains no generated or replacement terrain.

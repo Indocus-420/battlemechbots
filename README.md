@@ -2,6 +2,13 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.20.0-alpha.0 combined WWE 2018 battlefield
+
+- Combines the four cleaned WWE 2018 maps into one playable 2×2 battlefield matching the published map-pack layout.
+- Preserves BattleTech and Large Lakes on the top row, with Scattered Woods and Dig Site below.
+- Merges and offsets all terrain Regions, elevations, depressions, building walls, and cliff walls into the combined scene.
+- Keeps the combined texture below 8192 pixels on each axis for reliable Foundry rendering.
+
 ## 0.19.0-alpha.0 WWE 2018 terrain map pack
 
 - Installs four user-provided Worldwide Event 2018 maps: BattleTech, Large Lakes, Scattered Woods, and Dig Site.

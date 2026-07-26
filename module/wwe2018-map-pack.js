@@ -4,7 +4,8 @@ export const WWE2018_MAPS = Object.freeze([
   Object.freeze({ slug: "battletech", name: "BattleTech" }),
   Object.freeze({ slug: "large-lakes", name: "Large Lakes" }),
   Object.freeze({ slug: "scattered-woods", name: "Scattered Woods" }),
-  Object.freeze({ slug: "dig-site", name: "Dig Site" })
+  Object.freeze({ slug: "dig-site", name: "Dig Site" }),
+  Object.freeze({ slug: "worldwide-event-2018-combined", name: "Combined Terrain Set" })
 ]);
 
 export function wwe2018ScenePath(slug) {
