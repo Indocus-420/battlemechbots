@@ -1,11 +1,14 @@
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
+import json
 
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT = ROOT.parent.parent / "outputs" / "battletech-foundry-system-0.18.0-alpha.0.zip"
+VERSION = json.loads((ROOT / "system.json").read_text(encoding="utf-8"))["version"]
+OUTPUT = ROOT.parent.parent / "outputs" / f"battletech-foundry-system-{VERSION}.zip"
 FILES = ["ASSET_SOURCES.md", "README.md", "ROADMAP.md", "system.json"]
 DIRECTORIES = ["assets", "docs", "lang", "module", "scripts", "styles", "templates"]
 
+OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 with ZipFile(OUTPUT, "w", ZIP_DEFLATED, compresslevel=9) as archive:
     for name in FILES:
         archive.write(ROOT / name, name)

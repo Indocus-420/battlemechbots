@@ -20,3 +20,12 @@ Version 0.10.0-alpha.0 bundles only original, code-authored media: SVG projectil
 - OpenGameArt's 63 Digital Sound Effects pack is marked CC0: https://opengameart.org/content/63-digital-sound-effects-lasers-phasers-space-etc
 
 Before any candidate is bundled, preserve its downloaded license/metadata alongside the file and record the exact source URL, author, filename, and any requested credit here.
+# WWE 2018 terrain map pack
+
+- `assets/maps/wwe2018/*.webp` are transformations of the user-provided
+  `E-CAT35MT010_BattleTech_MapPack_WWE2018_Terrain_Set.pdf`.
+- Source title: *BattleTech: MapPacks Worldwide Event 2018*.
+- Copyright notice retained on each map: © 2018 The Topps Company, Inc. All Rights Reserved.
+- Transformation: the four full-size map pages were extracted and their
+  four-digit hex-coordinate overlays were removed. Terrain and copyright
+  labeling remain intact.

@@ -30,6 +30,7 @@ import {
 } from "../module/turn-sequence.js";
 import { meleeEffectProfile, mechPresentationProfile, movementEffectProfile, playMechActivationEffect, playMeleeEffect, playMovementEffect, playWeaponEffect, weaponEffectProfile } from "../module/effects.js";
 import { createRandomBattleTechScene, promptRandomBattleTechMap, randomBattleTechMapPlan } from "../module/map-generator.js";
+import { installWwe2018MapPack, WWE2018_MAPS } from "../module/wwe2018-map-pack.js";
 import { synchronizeActorTokenVision, tokenVisionUpdate } from "../module/vision.js";
 import { playerConsoleModel, renderPlayerConsole, unitCondition, unitReadiness } from "../module/player-console.js";
 import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, requestStorePurchase, STORE_CATALOG } from "../module/economy.js";
@@ -104,7 +105,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.18.0-alpha.0";
+const SYSTEM_VERSION = "0.19.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -3087,6 +3088,12 @@ Hooks.once("init", () => {
     type: String,
     default: ""
   });
+  game.settings.register(SYSTEM_ID, "wwe2018MapPackVersion", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: ""
+  });
   game.settings.register(SYSTEM_ID, "weaponEffects", {
     name: "Enable BattleMech weapon visual effects",
     hint: "Uses Foundry VTT 14's built-in VFX framework for weapon projectiles and impacts.",
@@ -3265,6 +3272,8 @@ Hooks.once("ready", () => {
     promptRandomBattleTechMap,
     createRandomBattleTechScene,
     randomBattleTechMapPlan,
+    installWwe2018MapPack,
+    wwe2018Maps: WWE2018_MAPS,
     targetingArc,
     aerospaceFiringArcForBearing,
     aerospaceTargetingArc,
@@ -3349,6 +3358,14 @@ Hooks.once("ready", () => {
       .catch(error => {
         console.error("BMFS | Core compendium installation failed", error);
         ui.notifications.error(`BMFS core compendiums could not be installed: ${error.message}`);
+      });
+  }
+  if (game.user.isGM && game.settings.get(SYSTEM_ID, "wwe2018MapPackVersion") !== SYSTEM_VERSION) {
+    void installWwe2018MapPack()
+      .then(() => game.settings.set(SYSTEM_ID, "wwe2018MapPackVersion", SYSTEM_VERSION))
+      .catch(error => {
+        console.error("BMFS | WWE 2018 map-pack installation failed", error);
+        ui.notifications.error(`WWE 2018 map pack could not be installed: ${error.message}`);
       });
   }
 });

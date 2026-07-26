@@ -2,6 +2,13 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.19.0-alpha.0 WWE 2018 terrain map pack
+
+- Installs four user-provided Worldwide Event 2018 maps: BattleTech, Large Lakes, Scattered Woods, and Dig Site.
+- Removes all 255 four-digit hex coordinates from each image while preserving terrain, elevation, building, road, and copyright labels.
+- Includes one reviewable Foundry scene JSON file per map with native terrain Regions, elevation data, building and cliff walls, token vision, and individual fog exploration.
+- Keeps the complete physical-combat work from 0.18.0-alpha.0.
+
 ## 0.18.0-alpha.0 complete physical-attack families
 
 - Adds Hatchet/melee weapon, improvised club, push, charge, and Death From Above controls to the BattleMech sheet and token HUD.
