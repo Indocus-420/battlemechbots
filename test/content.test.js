@@ -50,6 +50,8 @@ test("generic vehicle catalog is original, complete, and importable", () => {
     assert.ok(actor.system.structure > 0);
     assert.ok(actor.items.length > 0);
     assert.equal(actor.img, actor.prototypeToken.texture.src);
+    assert.equal(actor.prototypeToken.width, 1);
+    assert.equal(actor.prototypeToken.height, 1);
     assert.match(actor.flags["battletech-foundry-system"].presentation.sound, /assets\/audio\/vehicles\/.+\.wav$/);
   }
 });
@@ -77,6 +79,8 @@ test("every BattleMech has unique packaged image, audio, and presentation metada
     const profile = actor.flags["battletech-foundry-system"].presentation;
     assert.equal(actor.img, profile.image);
     assert.equal(actor.prototypeToken.texture.src, profile.image);
+    assert.equal(actor.prototypeToken.width, 1);
+    assert.equal(actor.prototypeToken.height, 1);
     assert.match(profile.image, /^systems\/battletech-foundry-system\/assets\/mechs\/.+\.svg$/);
     assert.match(profile.sound, /^systems\/battletech-foundry-system\/assets\/audio\/mechs\/.+\.wav$/);
     images.add(profile.image);

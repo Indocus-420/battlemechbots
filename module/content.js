@@ -190,6 +190,8 @@ function vehicle(name, chassis, tonnage, motiveType, role, cruise, flank, armor,
       name,
       actorLink: true,
       disposition: 0,
+      width: 1,
+      height: 1,
       texture: { src: presentation.image, scaleX: 1, scaleY: 1 }
     },
     flags: { [SYSTEM_ID]: { presentation } },
@@ -379,6 +381,8 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
       name: `${name} ${variant}`,
       actorLink: true,
       disposition: 0,
+      width: 1,
+      height: 1,
       sight: { enabled: true, range: 30, angle: 360, visionMode: "basic" },
       detectionModes: [{ id: "basicSight", enabled: true, range: 30 }],
       texture: { src: presentation.image, scaleX: 1, scaleY: 1 }

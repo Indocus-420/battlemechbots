@@ -2,6 +2,12 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.23.0-alpha.0 visually verified token footprint
+
+- Sets every packaged BattleMech and vehicle prototype token to an explicit one-hex-by-one-hex footprint.
+- Preserves full token-art scale while preventing inherited world or module defaults from shrinking the playable token.
+- Visually verifies the packaged Hunchback against the printed and Foundry hex grids on the combined WWE 2018 battlefield.
+
 ## 0.22.0-alpha.0 exact Foundry hex registration
 
 - Uses exact flat-top hex geometry for both the combined artwork and Foundry scene grid.
