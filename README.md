@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.26.0-alpha.0 team radar and active probes
+
+- Adds a Sensor Sweep action to the token HUD.
+- Uses the longest operational weapon range as the basic radar envelope.
+- Shares same-round contacts with allied units and whispers the report to team owners.
+- Basic radar contacts have one-hex uncertainty and add +2 to attacks; active probes provide exact contacts inside their tabletop probe range.
+- Powered sweeps are a project rule: +1 heat for basic radar and +2 heat for an equipped active-probe sweep. Standard tabletop probe equipment itself remains zero heat when not actively sweeping.
+
 ## 0.25.0-alpha.0 native Foundry map grids
 
 - Removes the printed hex lattice from all four WWE 2018 maps and the combined battlefield.

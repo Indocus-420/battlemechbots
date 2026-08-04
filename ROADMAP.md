@@ -25,6 +25,8 @@ Battlefield Studio milestone: 0.16.0 generates a unique SVG landscape and its Re
 
 Native-grid map milestone: 0.25.0 removes the printed WWE 2018 hex lattice and uses Foundry's native adjustable grid while retaining the map-pack Regions, walls, fog, elevation, and sensor-vision layers.
 
+Team-radar milestone: 0.26.0 adds heat-generating HUD sensor sweeps out to the longest operational weapon range, one-round team-shared contacts, +2 approximate-contact attacks, and exact active-probe contacts inside tabletop probe range.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:

@@ -84,6 +84,7 @@ test("GATOR example combines movement, terrain, partial cover, and range", () =>
     attackerMovement: 2,
     attackerStatus: 0,
     sensors: 0,
+    radar: 0,
     weaponDamage: 0,
     targetMovement: 1,
     targetStatus: 0,

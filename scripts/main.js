@@ -33,6 +33,7 @@ import { meleeEffectProfile, mechPresentationProfile, movementEffectProfile, pla
 import { createRandomBattleTechScene, promptRandomBattleTechMap, randomBattleTechMapPlan } from "../module/map-generator.js";
 import { installWwe2018MapPack, WWE2018_MAPS } from "../module/wwe2018-map-pack.js";
 import { synchronizeActorTokenVision, tokenVisionUpdate } from "../module/vision.js";
+import { radarContact, radarSweepProfile } from "../module/radar.js";
 import { playerConsoleModel, renderPlayerConsole, unitCondition, unitReadiness } from "../module/player-console.js";
 import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, requestStorePurchase, STORE_CATALOG } from "../module/economy.js";
 import { aerospaceFiringArcForBearing, aerospaceTargetingArc, registerTokenizerTargetingFrames, targetingArc, TOKENIZER_TARGETING_FRAMES } from "../module/targeting.js";
@@ -106,7 +107,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.25.0-alpha.0";
+const SYSTEM_VERSION = "0.26.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -1432,6 +1433,9 @@ function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null)
     attackerRegionKeys: terrainKeysAtPoint(source, sourcePoint)
   });
   const lineOfSightBlocked = nativeWallBlocksSight(source, sourcePoint, targetPoint);
+  const currentRound = Number((game.combats?.active ?? game.combat)?.round) || 0;
+  const sharedContacts = actor.getFlag(SYSTEM_ID, "radarContacts") ?? [];
+  const contact = sharedContacts.find(entry => entry.tokenId === (target.id ?? target.document?.id) && Number(entry.round) === currentRound);
 
   if (terrain.attackerWaterDepth === 1 && /leg/i.test(weapon.system.location)) {
     throw new RangeError("Leg-mounted weapons cannot fire while the attacker stands in Depth 1 water.");
@@ -1449,9 +1453,44 @@ function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null)
     targetProne: target.actor.system.status.prone,
     targetImmobile: target.actor.system.heat.shutdown,
     sensorHits: actor.system.criticals.sensorHits,
+    radarContactPenalty: Number(contact?.attackPenalty) || 0,
     weaponDamageModifier: weaponCriticalModifier(actor.items, weapon.system.location),
     lineOfSightBlocked
   });
+}
+
+function tokenCombatTeam(token) {
+  const combatant = (game.combats?.active ?? game.combat)?.combatants?.find?.(entry => entry.tokenId === (token?.id ?? token?.document?.id));
+  try { return normalizeCombatTeam(combatant?.getFlag?.(SYSTEM_ID, "side")); } catch {}
+  return Number(token?.document?.disposition ?? token?.disposition) > 0 ? "Team A" : "Team B";
+}
+
+async function performRadarSweep(actor, source = activeSceneToken(actor)) {
+  if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
+  if (actor.system.status.destroyed || actor.system.heat.shutdown) throw new RangeError(`${actor.name} cannot operate sensors.`);
+  const profile = radarSweepProfile(actor);
+  if (!profile.range) throw new RangeError(`${actor.name} has no operational ranged weapon to establish radar range.`);
+  const team = tokenCombatTeam(source);
+  const round = Number((game.combats?.active ?? game.combat)?.round) || 0;
+  const contacts = [];
+  for (const target of canvas.tokens?.placeables ?? []) {
+    if (target === source || !target.actor || tokenCombatTeam(target) === team || target.actor.system?.status?.destroyed) continue;
+    const distance = Number(canvas.grid.measurePath([tokenCenter(source), tokenCenter(target)]).spaces) || 0;
+    const result = radarContact({ distance, profile });
+    if (result) contacts.push({ ...result, tokenId: target.id ?? target.document?.id, round, name: result.precision === "precise" ? target.actor.name : "Unknown enemy contact" });
+  }
+  const allies = (canvas.tokens?.placeables ?? []).filter(token => token.actor && tokenCombatTeam(token) === team);
+  for (const ally of allies) if (game.user.isGM || ally.actor.isOwner) await ally.actor.setFlag(SYSTEM_ID, "radarContacts", contacts);
+  await actor.update({ "system.heat.current": (Number(actor.system.heat.current) || 0) + profile.heat });
+  const owners = game.users?.filter?.(user => user.isGM || allies.some(token => token.actor.testUserPermission?.(user, "OWNER"))).map(user => user.id) ?? [];
+  const rows = contacts.length ? contacts.map(entry => `<li><strong>${foundry.utils.escapeHTML(entry.name)}</strong>: ${entry.distance} hexes, ${entry.precision}${entry.attackPenalty ? `; attacks +${entry.attackPenalty}` : "; exact firing solution"}</li>`).join("") : "<li>No enemy contacts in range.</li>";
+  await ChatMessage.create({ whisper: owners, speaker: ChatMessage.getSpeaker({ actor }), content: `<section class="bmfs-radar-report"><h3>${foundry.utils.escapeHTML(actor.name)} Sensor Sweep</h3><p>Team range ${profile.range}; ${profile.probe.equipped ? `${foundry.utils.escapeHTML(profile.probe.name)} precision ${profile.probe.range}` : "basic radar, one-hex uncertainty"}; +${profile.heat} heat.</p><ul>${rows}</ul></section>` });
+  for (const entry of contacts) {
+    const target = canvas.tokens?.get?.(entry.tokenId);
+    if (target) canvas.ping?.(tokenCenter(target), { style: entry.precision === "precise" ? "alert" : "pulse" });
+  }
+  ui.notifications.info(`${contacts.length} radar contact(s) shared with ${team}.`);
+  return { contacts, profile };
 }
 
 function tokenMovementMode(actor) {
@@ -2694,7 +2733,7 @@ function refreshTokenActionHud(preferredToken = null) {
     ["groups", "layer-group", "Fire Groups", fireGroupMarkup],
     ["physical", "hand-fist", "Physical", model.actorType === "mech" ? `<button type="button" data-action="punch">Punches</button><button type="button" data-action="kick-left">Left Kick</button><button type="button" data-action="kick-right">Right Kick</button><button type="button" data-action="hatchet">Hatchet</button><button type="button" data-action="club">Club</button><button type="button" data-action="push">Push</button><button type="button" data-action="charge">Charge</button><button type="button" data-action="dfa">Death From Above</button>` : `<span class="bmfs-hud-menu-empty">No BattleMech physical attacks</span>`],
     ["movement", "person-walking", "Movement", model.actorType === "mech" ? `<button type="button" data-action="movement" data-mode="stand">Stand</button><button type="button" data-action="movement" data-mode="walk">Walk</button><button type="button" data-action="movement" data-mode="run">Run</button><button type="button" data-action="movement" data-mode="jump">Jump</button>` : `<span class="bmfs-hud-menu-empty">${escape(model.movement)}</span>`],
-    ["systems", "microchip", "Systems", `<button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
+    ["systems", "microchip", "Systems", `<button type="button" data-action="radar-sweep">Sensor Sweep / Team Radar</button><button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
     ["pilot", "user-astronaut", "Pilot", `<button type="button" data-action="gunnery">Gunnery Check</button><button type="button" data-action="piloting">Piloting Check</button><button type="button" data-action="player-console">Pilot & Lance Window</button>`],
     ["utility", "toolbox", "Utility", `<button type="button" data-action="sheet">Record Sheet</button><button type="button" data-action="token">Edit Token / Arc Ring</button><button type="button" data-action="dice-style">Dice Appearance</button><button type="button" data-action="roll2d6">Roll 2D6</button>${game.user.isGM ? `<button type="button" data-action="map-generator">Random Hex Map</button>` : ""}`]
   ];
@@ -2754,6 +2793,7 @@ function refreshTokenActionHud(preferredToken = null) {
       if (action === "dice-style") return configureBattleTechDice();
       if (action === "player-console") return renderPlayerConsole();
       if (action === "map-generator") return promptRandomBattleTechMap();
+      if (action === "radar-sweep") return performRadarSweep(actor, token);
       if (action === "movement") {
         await actor.update({ "system.movement.mode": button.dataset.mode });
         ui.notifications.info(`${actor.name} movement mode: ${button.dataset.mode}.`);
@@ -2775,7 +2815,7 @@ function refreshTokenActionHud(preferredToken = null) {
       }
     };
     void run().then(() => {
-      if (["weapon", "fire-group"].includes(action)) refreshTokenActionHud(token);
+      if (["weapon", "fire-group", "radar-sweep"].includes(action)) refreshTokenActionHud(token);
     }).catch(error => ui.notifications.warn(error.message));
   });
   element.addEventListener("change", event => {

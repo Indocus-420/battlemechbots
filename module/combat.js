@@ -114,6 +114,7 @@ export function calculateAttackTargetNumber({
   targetProne = false,
   targetImmobile = false,
   sensorHits = 0,
+  radarContactPenalty = 0,
   weaponDamageModifier = 0,
   lineOfSightBlocked = false
 }) {
@@ -128,11 +129,13 @@ export function calculateAttackTargetNumber({
   const sensors = integer(sensorHits, "Sensor hits");
   const criticalDamage = integer(weaponDamageModifier, "Weapon critical modifier");
   const sensorModifier = sensors >= 1 ? 2 : 0;
+  const radarModifier = integer(radarContactPenalty, "Radar contact penalty");
   const targetStatus = targetImmobile ? -4 : (targetProne ? (hexes === 1 ? -2 : 1) : 0);
   const targetNumber = base
     + attackerMove
     + attackerStatus
     + sensorModifier
+    + radarModifier
     + criticalDamage
     + targetMove
     + targetStatus
@@ -159,6 +162,7 @@ export function calculateAttackTargetNumber({
       attackerMovement: attackerMove,
       attackerStatus,
       sensors: sensorModifier,
+      radar: radarModifier,
       weaponDamage: criticalDamage,
       targetMovement: targetMove,
       targetStatus,
