@@ -23,6 +23,8 @@ Visual-map milestone: 0.15.0 adds scalable Foundry 14 Ground-Level background pr
 
 Battlefield Studio milestone: 0.16.0 generates a unique SVG landscape and its Regions, elevations, roads, facilities, walls, fog, and sensor-vision configuration from one deterministic plan. Optional hosted generative-image enhancement remains gated on a securely configured server-side image service.
 
+Native-grid map milestone: 0.25.0 removes the printed WWE 2018 hex lattice and uses Foundry's native adjustable grid while retaining the map-pack Regions, walls, fog, elevation, and sensor-vision layers.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:

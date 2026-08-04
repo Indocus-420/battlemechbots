@@ -57,11 +57,14 @@ export async function installWwe2018MapPack({
       skipped.push(existing);
       continue;
     }
-    if (existing) await existing.delete();
-
+    const replaceActiveScene = Boolean(existing?.active || globalThis.game?.scenes?.active?.id === existing?.id);
     const scene = await globalThis.Scene.create(definition.scene);
+    const activateBeforeEmbeds = !globalThis.game?.scenes?.active;
+    if (activateBeforeEmbeds) await scene.activate();
     await scene.createEmbeddedDocuments("Region", definition.regions);
     await scene.createEmbeddedDocuments("Wall", definition.walls);
+    if (replaceActiveScene && !activateBeforeEmbeds) await scene.activate();
+    if (existing) await existing.delete();
     installed.push(scene);
   }
 

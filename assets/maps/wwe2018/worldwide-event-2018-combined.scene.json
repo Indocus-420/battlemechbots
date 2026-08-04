@@ -29,9 +29,9 @@
       "size": 264.02,
       "distance": 1,
       "units": "hex",
-      "alpha": 0,
-      "color": "#000000",
-      "thickness": 1
+      "alpha": 0.42,
+      "color": "#24313a",
+      "thickness": 2
     },
     "backgroundColor": "#8e822d",
     "initialLevel": "ground0000000001",
@@ -70,7 +70,7 @@
         "mapPack": "wwe2018",
         "mapSlug": "worldwide-event-2018-combined",
         "combinedMap": true,
-        "layoutRevision": 3,
+        "layoutRevision": 4,
         "terrainHexesByMap": {
           "battletech": {
             "0304": [

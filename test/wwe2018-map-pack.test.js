@@ -17,6 +17,9 @@ test("WWE 2018 map definitions contain images, native Regions, walls, fog, and v
     assert.match(definition.scene.levels[0].background.src, new RegExp(`${map.slug}\\.webp$`));
     assert.equal(definition.scene.tokenVision, true);
     assert.equal(definition.scene.fog.mode, 1);
+    assert.equal(definition.scene.grid.alpha, 0.42);
+    assert.equal(definition.scene.grid.thickness, 2);
+    assert.equal(definition.scene.flags["battletech-foundry-system"].layoutRevision, 4);
     assert.ok(definition.regions.length >= 7);
     assert.ok(definition.regions.every(region => region.shapes.length > 0));
     assert.ok(definition.walls.length > 0);
@@ -78,6 +81,48 @@ test("Gamemaster installer creates five scenes with embedded Regions and walls",
   }
 });
 
+test("active map replacement is activated before the previous scene is deleted", async () => {
+  const originals = { game: globalThis.game, Scene: globalThis.Scene, ui: globalThis.ui };
+  const events = [];
+  const existing = {
+    id: "old-map",
+    active: true,
+    regions: { size: 0 },
+    walls: { size: 0 },
+    getFlag: (_scope, key) => key === "mapSlug" ? "battletech" : 1,
+    delete: async () => events.push("delete-old")
+  };
+  globalThis.game = {
+    user: { isGM: true },
+    scenes: { active: existing, find: predicate => predicate(existing) ? existing : null }
+  };
+  globalThis.ui = { notifications: { info: () => {} } };
+  globalThis.Scene = {
+    create: async () => ({
+      createEmbeddedDocuments: async type => events.push(`create-${type}`),
+      activate: async () => events.push("activate-new")
+    })
+  };
+  try {
+    await installWwe2018MapPack({
+      replace: true,
+      fetchImpl: async path => {
+        const slug = path.match(/([^/]+)\.scene\.json$/)[1];
+        const data = JSON.parse(
+          await readFile(new URL(`../assets/maps/wwe2018/${slug}.scene.json`, import.meta.url), "utf8")
+        );
+        return { ok: true, json: async () => data };
+      }
+    });
+    assert.ok(events.indexOf("activate-new") < events.indexOf("delete-old"));
+    assert.ok(events.indexOf("create-Wall") < events.indexOf("activate-new"));
+  } finally {
+    globalThis.game = originals.game;
+    globalThis.Scene = originals.Scene;
+    globalThis.ui = originals.ui;
+  }
+});
+
 test("combined terrain set preserves all four map datasets below the texture limit", async () => {
   const definition = JSON.parse(
     await readFile(
@@ -86,7 +131,7 @@ test("combined terrain set preserves all four map datasets below the texture lim
     )
   );
   assert.equal(definition.scene.flags["battletech-foundry-system"].combinedMap, true);
-  assert.equal(definition.scene.flags["battletech-foundry-system"].layoutRevision, 3);
+  assert.equal(definition.scene.flags["battletech-foundry-system"].layoutRevision, 4);
   assert.deepEqual(Object.keys(definition.summary.sourceMaps), [
     "battletech", "large-lakes", "scattered-woods", "dig-site"
   ]);

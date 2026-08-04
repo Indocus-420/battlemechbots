@@ -19,9 +19,9 @@
       "size": 322.38,
       "distance": 1,
       "units": "hex",
-      "alpha": 0,
-      "color": "#000000",
-      "thickness": 1
+      "alpha": 0.42,
+      "color": "#24313a",
+      "thickness": 2
     },
     "backgroundColor": "#7d7628",
     "initialLevel": "ground0000000001",
@@ -59,6 +59,7 @@
       "battletech-foundry-system": {
         "mapPack": "wwe2018",
         "mapSlug": "dig-site",
+        "layoutRevision": 4,
         "terrainHexes": {
           "0103": [
             "level1"

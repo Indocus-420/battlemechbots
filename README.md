@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.25.0-alpha.0 native Foundry map grids
+
+- Removes the printed hex lattice from all four WWE 2018 maps and the combined battlefield.
+- Preserves the supplied terrain, roads, water, woods, elevations, labels, and structures.
+- Uses Foundry's adjustable native flat-top hex grid as the only visible grid layer.
+- Raises the map-pack layout revision so existing world scenes are automatically replaced.
+- Keeps all Regions, walls, fog, elevations, and sensor-vision configuration intact.
+
 ## 0.24.0-alpha.0 graphical armor record
 
 - Adds an original BattleMech-shaped armor and internal-structure display to the record sheet.
