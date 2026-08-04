@@ -2,6 +2,13 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.28.0-alpha.0 scene-level teams and verified fog radar
+
+- Makes Team A/Team B controls assign selected scene tokens even before a Combat Encounter exists.
+- Uses those persistent token teams for radar detection and later combat setup.
+- Live-verifies an anonymous six-hex basic-radar contact, +2 attack penalty, +1 heat, and native Foundry ping through unexplored fog.
+- Live-verifies voluntary shutdown and reactor restart through the token HUD.
+
 ## 0.27.0-alpha.0 native radar pings and reactor controls
 
 - Displays radar contacts with Foundry's native animated canvas ping, including inside unexplored fog.

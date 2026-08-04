@@ -107,7 +107,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.27.0-alpha.0";
+const SYSTEM_VERSION = "0.28.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -1465,6 +1465,7 @@ function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null)
 }
 
 function tokenCombatTeam(token) {
+  try { return normalizeCombatTeam(token?.document?.getFlag?.(SYSTEM_ID, "side") ?? token?.getFlag?.(SYSTEM_ID, "side")); } catch {}
   const combatant = (game.combats?.active ?? game.combat)?.combatants?.find?.(entry => entry.tokenId === (token?.id ?? token?.document?.id));
   try { return normalizeCombatTeam(combatant?.getFlag?.(SYSTEM_ID, "side")); } catch {}
   return Number(token?.document?.disposition ?? token?.disposition) > 0 ? "Team A" : "Team B";
@@ -1742,7 +1743,16 @@ async function ensureControlledCombatants(combat) {
 async function assignControlledCombatantsToTeam(team) {
   if (!game.user.isGM) throw new Error("Only a Gamemaster can assign BattleTech teams.");
   const normalized = normalizeCombatTeam(team);
-  const combat = activeBattleTechCombat();
+  const controlled = (canvas?.tokens?.controlled ?? []).filter(token => ["mech", "vehicle"].includes(token.actor?.type));
+  if (!controlled.length) throw new RangeError("Control one or more BattleMech or vehicle tokens first.");
+  const existingTokens = (canvas.tokens?.placeables ?? []).filter(token => token.document?.getFlag?.(SYSTEM_ID, "side") === normalized && !controlled.includes(token));
+  if (existingTokens.length + controlled.length > MAX_TEAM_SIZE) throw new RangeError(`${normalized} cannot contain more than ${MAX_TEAM_SIZE} units.`);
+  for (const token of controlled) await token.document.setFlag(SYSTEM_ID, "side", normalized);
+  const combat = game.combats?.active ?? game.combat;
+  if (!combat) {
+    ui.notifications.info(`${controlled.map(token => token.name).join(", ")} assigned to ${normalized}.`);
+    return { team: normalized, tokens: controlled.map(token => token.id) };
+  }
   const selected = await ensureControlledCombatants(combat);
   const selectedIds = new Set(selected.map(combatant => combatant.id));
   const current = eligibleCombatants(combat);
@@ -1760,7 +1770,14 @@ async function assignControlledCombatantsToTeam(team) {
 
 async function clearControlledCombatantTeams() {
   if (!game.user.isGM) throw new Error("Only a Gamemaster can clear BattleTech teams.");
-  const combat = activeBattleTechCombat();
+  const controlled = (canvas?.tokens?.controlled ?? []).filter(token => ["mech", "vehicle"].includes(token.actor?.type));
+  if (!controlled.length) throw new RangeError("Control one or more BattleMech or vehicle tokens first.");
+  for (const token of controlled) await token.document.unsetFlag(SYSTEM_ID, "side");
+  const combat = game.combats?.active ?? game.combat;
+  if (!combat) {
+    ui.notifications.info(`Cleared BattleTech team assignments for ${controlled.map(token => token.name).join(", ")}.`);
+    return { tokens: controlled.map(token => token.id) };
+  }
   const selected = await ensureControlledCombatants(combat);
   for (const combatant of selected) await combatant.unsetFlag(SYSTEM_ID, "side");
   ui.notifications.info(`Cleared BattleTech team assignments for ${selected.map(combatant => combatant.name).join(", ")}.`);

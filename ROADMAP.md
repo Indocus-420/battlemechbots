@@ -29,6 +29,8 @@ Team-radar milestone: 0.26.0 adds heat-generating HUD sensor sweeps out to the l
 
 Native-ping and reactor milestone: 0.27.0 displays team radar contacts through Foundry's animated canvas ping system in fog of war, offsets approximate pings from the true location, and begins the remaining combat-state phase with voluntary shutdown and restart HUD controls.
 
+Scene-team milestone: 0.28.0 makes team assignment usable without an active Combat Encounter and live-verifies the complete native fog-radar and reactor-control workflow in Foundry 14.364.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:
