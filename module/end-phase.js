@@ -1,3 +1,5 @@
+import { pilotConsciousnessState } from "./pilot.js";
+
 export const END_PHASE_TERRAIN_RESET = Object.freeze({
   roughHexes: 0,
   lightWoodsHexes: 0,
@@ -13,13 +15,16 @@ export const END_PHASE_TERRAIN_RESET = Object.freeze({
   pilotingChecks: 0
 });
 
-export function endPhaseActorState({ pilotHits = 0, lifeSupportHits = 0, submerged = false } = {}) {
+export function endPhaseActorState({ pilotHits = 0, pilotUnconscious = false, consciousnessRoll = null, lifeSupportHits = 0, submerged = false } = {}) {
   const pilotDamage = submerged && Number(lifeSupportHits) > 0 ? 1 : 0;
   const nextPilotHits = Math.min(6, Math.max(0, Number(pilotHits)) + pilotDamage);
+  const consciousness = pilotConsciousnessState({ hits: nextPilotHits, unconscious: pilotUnconscious, roll: consciousnessRoll });
   return {
     pilotDamage,
     pilotHits: nextPilotHits,
     pilotDestroyed: nextPilotHits >= 6,
+    pilotUnconscious: consciousness.unconscious,
+    consciousness,
     movement: {
       mode: "stand",
       hexesMoved: 0,

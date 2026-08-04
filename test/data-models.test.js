@@ -20,7 +20,15 @@ globalThis.foundry = {
   abstract: { TypeDataModel }
 };
 
-const { AmmoDataModel, EquipmentDataModel, VehicleDataModel, WeaponDataModel } = await import("../module/data-models.js");
+const { AmmoDataModel, EquipmentDataModel, MechDataModel, VehicleDataModel, WeaponDataModel } = await import("../module/data-models.js");
+
+test("BattleMech pilot unconscious state is modeled and migrated", () => {
+  const schema = MechDataModel.defineSchema();
+  assert.ok(schema.pilot.schema.unconscious);
+  const migrated = MechDataModel.migrateData({ schemaVersion: 6, pilot: {} });
+  assert.equal(migrated.pilot.unconscious, false);
+  assert.equal(migrated.schemaVersion, 7);
+});
 
 test("legacy items receive valid critical-slot assignment defaults", () => {
   const weapon = WeaponDataModel.migrateData({});

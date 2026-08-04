@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.29.0-alpha.0 pilot recovery and round cleanup
+
+- Adds the BattleTech pilot consciousness target progression (3/5/7/10/11) and records unconscious status on each playable 'Mech.
+- Prevents an unconscious pilot from moving, firing weapons, making physical attacks, or operating the radar sweep.
+- End Phase now rolls recovery for unconscious pilots and consciousness for submerged units with damaged life support, with the outcome shown in the phase summary.
+- End Phase clears temporary fired-location, physical-attack, torso-twist, and arm-flip state for the next round.
+- Keeps the v0.28 scene-level team assignment and native Foundry fog-radar workflow.
+
 ## 0.28.0-alpha.0 scene-level teams and verified fog radar
 
 - Makes Team A/Team B controls assign selected scene tokens even before a Combat Encounter exists.

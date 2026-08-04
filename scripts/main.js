@@ -107,7 +107,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.28.0-alpha.0";
+const SYSTEM_VERSION = "0.29.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -972,6 +972,7 @@ function calculateTokenPhysicalAttacks(actor, type, target, requestedLimb = null
   const source = attackerToken ?? activeSceneToken(actor);
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
   if (actor.system.status.destroyed) throw new RangeError(`${actor.name} is destroyed and cannot attack.`);
+  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot attack.`);
   if (actor.system.heat.shutdown) throw new RangeError(`${actor.name} is shut down and cannot attack.`);
   if (target.actor?.id === actor.id) throw new RangeError("A BattleMech cannot target itself.");
   if (target.actor?.system.status.destroyed) throw new RangeError(`${target.actor.name} is already destroyed.`);
@@ -1417,6 +1418,7 @@ function nativeWallBlocksSight(source, origin, destination) {
 function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null) {
   const source = attackerToken ?? activeSceneToken(actor);
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
+  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot attack.`);
   if (target.actor?.id === actor.id) throw new RangeError("A BattleMech cannot target itself.");
   if (target.actor?.system.status.destroyed) throw new RangeError(`${target.actor.name} is already destroyed.`);
 
@@ -1483,6 +1485,7 @@ function radarPingPoint(target, contact) {
 async function performRadarSweep(actor, source = activeSceneToken(actor)) {
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
   if (actor.system.status.destroyed || actor.system.heat.shutdown) throw new RangeError(`${actor.name} cannot operate sensors.`);
+  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot operate sensors.`);
   const profile = radarSweepProfile(actor);
   if (!profile.range) throw new RangeError(`${actor.name} has no operational ranged weapon to establish radar range.`);
   const team = tokenCombatTeam(source);
@@ -1531,6 +1534,7 @@ function gamemasterBypassesTokenMovementRestrictions(user = game.user) {
 function calculateTokenMovementPlan(token, movement) {
   const actor = token.actor;
   if (actor.system.status.destroyed) throw new RangeError(`${actor.name} is destroyed and cannot move.`);
+  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot move.`);
   if (actor.system.heat.shutdown) throw new RangeError(`${actor.name} is shut down and cannot move.`);
   if (actor.system.status.prone) {
     throw new RangeError(`${actor.name} is prone. Standing-up movement is not implemented yet.`);
@@ -1921,8 +1925,13 @@ async function processCombatEndPhase(combat) {
         attackerRegionKeys: keys
       })).targetWaterDepth >= 2;
     }
+    const needsConsciousnessCheck = Number(actor.system.pilot.hits) > 0 && Number(actor.system.pilot.hits) < 6
+      && (actor.system.pilot.unconscious || (submerged && Number(actor.system.criticals.lifeSupportHits) > 0));
+    const consciousnessRoll = needsConsciousnessCheck ? await new Roll("2d6").evaluate() : null;
     const result = endPhaseActorState({
       pilotHits: actor.system.pilot.hits,
+      pilotUnconscious: actor.system.pilot.unconscious,
+      consciousnessRoll: consciousnessRoll?.total ?? null,
       lifeSupportHits: actor.system.criticals.lifeSupportHits,
       submerged
     });
@@ -1935,11 +1944,15 @@ async function processCombatEndPhase(combat) {
       "system.movement.heatGenerated": result.movement.heatGenerated,
       "system.movement.terrain": result.movement.terrain,
       "system.pilot.hits": result.pilotHits,
+      "system.pilot.unconscious": result.pilotUnconscious,
       ...(result.pilotDestroyed ? { "system.status.destroyed": true } : {})
     });
     await actor.setFlag(SYSTEM_ID, "firedLocations", []);
     await actor.setFlag(SYSTEM_ID, "physicalAttackDeclared", false);
-    summaries.push(`${actor.name}: movement cleared${result.pilotDamage ? "; pilot suffered 1 life-support hit underwater" : ""}.`);
+    await actor.setFlag(SYSTEM_ID, "torsoTwist", 0);
+    await actor.setFlag(SYSTEM_ID, "armFlip", false);
+    const consciousnessText = result.consciousness.roll === null ? "" : `; consciousness ${result.consciousness.roll} vs ${result.consciousness.target}: ${result.pilotUnconscious ? "unconscious" : "awake"}`;
+    summaries.push(`${actor.name}: movement, arm-flip, and torso-twist state cleared${result.pilotDamage ? "; pilot suffered 1 life-support hit underwater" : ""}${consciousnessText}.`);
   }
   if (summaries.length) await ChatMessage.create({
     content: `<section class="bmfs-chat-card"><h3>End Phase</h3><p>${summaries.map(foundry.utils.escapeHTML).join("<br>")}</p></section>`

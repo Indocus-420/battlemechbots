@@ -21,3 +21,11 @@ test("damaged life support injures a fully submerged pilot and caps lethal hits"
   assert.equal(lethal.pilotDestroyed, true);
   assert.equal(endPhaseActorState({ pilotHits: 4, lifeSupportHits: 2, submerged: false }).pilotDamage, 0);
 });
+
+test("End Phase resolves unconscious pilot recovery", () => {
+  const failed = endPhaseActorState({ pilotHits: 3, pilotUnconscious: true, consciousnessRoll: 6 });
+  assert.equal(failed.pilotUnconscious, true);
+  const recovered = endPhaseActorState({ pilotHits: 3, pilotUnconscious: true, consciousnessRoll: 8 });
+  assert.equal(recovered.pilotUnconscious, false);
+  assert.equal(recovered.consciousness.recovered, true);
+});

@@ -107,12 +107,13 @@ function clampLegacyCurrentValues(source) {
 export class MechDataModel extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
-      schemaVersion: integer(6, { min: 1 }),
+      schemaVersion: integer(7, { min: 1 }),
       pilot: new SchemaField({
         name: text(),
         gunnery: integer(4, { min: 0 }),
         piloting: integer(5, { min: 0 }),
-        hits: integer(0, { min: 0, max: 6 })
+        hits: integer(0, { min: 0, max: 6 }),
+        unconscious: flag(false)
       }),
       mech: new SchemaField({
         chassis: text("Training Chassis"),
@@ -269,6 +270,11 @@ export class MechDataModel extends foundry.abstract.TypeDataModel {
       source.sensors ??= {};
       source.sensors.range ??= 30;
       source.schemaVersion = 6;
+    }
+    if ((source.schemaVersion ?? 0) < 7) {
+      source.pilot ??= {};
+      source.pilot.unconscious ??= false;
+      source.schemaVersion = 7;
     }
 
     return super.migrateData(source);
