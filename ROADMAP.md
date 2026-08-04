@@ -15,7 +15,7 @@ Status: complete.
 - Internal structure and critical slots.
 - Heat scale, pilot data, movement, weapons, and ammunition.
 
-Status: functional data sheet and assignable critical-slot tables complete; graphical armor layout remains.
+Status: functional data sheet, assignable critical-slot tables, and original graphical armor/internal layout complete in 0.24.0.
 
 Content milestone: 0.13.0 replaces the sample roster with 20 requested ready-to-play stock BattleMech variants in four class-specific compendiums. Every unit retains distinct original project-created token art and activation audio.
 

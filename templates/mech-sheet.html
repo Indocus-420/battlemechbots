@@ -166,19 +166,41 @@
 
   <section class="panel">
     <h2>Armor and Internal Structure</h2>
+    <p class="hint">Original project armor display. Edit the values directly; colors show healthy, damaged, critical, or destroyed locations.</p>
+    <div class="bmfs-armor-display" aria-label="BattleMech armor diagram">
+      {{#each armorDiagram as |loc|}}
+      <article class="bmfs-armor-location bmfs-armor-{{loc.position}} is-{{loc.condition}}" data-location="{{loc.key}}">
+        <strong>{{loc.label}}</strong>
+        <label>Front
+          <span><input name="system.armor.{{loc.key}}.front" type="number" min="0" max="{{loc.maxFront}}" value="{{loc.front}}"> / {{loc.maxFront}}</span>
+        </label>
+        {{#if loc.hasRear}}
+        <label>Rear
+          <span><input name="system.armor.{{loc.key}}.rear" type="number" min="0" max="{{loc.maxRear}}" value="{{loc.rear}}"> / {{loc.maxRear}}</span>
+        </label>
+        {{/if}}
+        <label>Internal
+          <span><input name="system.structure.{{loc.key}}.value" type="number" min="0" max="{{loc.maxInternal}}" value="{{loc.internal}}"> / {{loc.maxInternal}}</span>
+        </label>
+      </article>
+      {{/each}}
+    </div>
+    <details class="bmfs-armor-table-details">
+      <summary>Accessible armor table</summary>
     <table>
       <thead><tr><th>Location</th><th>Front</th><th>Rear</th><th>Internal</th></tr></thead>
       <tbody>
         {{#each system.armor as |loc key|}}
         <tr>
           <td>{{key}}</td>
-          <td><input name="system.armor.{{key}}.front" type="number" min="0" max="{{loc.maxFront}}" value="{{loc.front}}"> / {{loc.maxFront}}</td>
-          <td>{{#if loc.maxRear}}<input name="system.armor.{{key}}.rear" type="number" min="0" max="{{loc.maxRear}}" value="{{loc.rear}}"> / {{loc.maxRear}}{{else}}—{{/if}}</td>
-          <td><input name="system.structure.{{key}}.value" type="number" min="0" max="{{lookup (lookup ../system.structure key) 'max'}}" value="{{lookup (lookup ../system.structure key) 'value'}}"> / {{lookup (lookup ../system.structure key) 'max'}}</td>
+          <td>{{loc.front}} / {{loc.maxFront}}</td>
+          <td>{{#if loc.maxRear}}{{loc.rear}} / {{loc.maxRear}}{{else}}—{{/if}}</td>
+          <td>{{lookup (lookup ../system.structure key) 'value'}} / {{lookup (lookup ../system.structure key) 'max'}}</td>
         </tr>
         {{/each}}
       </tbody>
     </table>
+    </details>
   </section>
 
   <section class="panel bmfs-physical-panel">

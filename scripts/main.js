@@ -6,6 +6,7 @@ import {
   WeaponDataModel
 } from "../module/data-models.js";
 import { CORE_ITEMS, CORE_ITEMS_BY_GROUP, CORE_MECHS, CORE_MECHS_BY_CLASS, CORE_VEHICLES } from "../module/content.js";
+import { armorDiagramModel } from "../module/armor-diagram.js";
 import { endPhaseActorState } from "../module/end-phase.js";
 import {
   d6CheckOutcome,
@@ -105,7 +106,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.23.0-alpha.0";
+const SYSTEM_VERSION = "0.24.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -212,6 +213,7 @@ class BMFSMechSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         .filter(item => itemSlotNumbers(item).length !== Number(item.system.slots ?? 1))
         .map(item => `${item.name}: ${item.system.location} start ${item.system.slotStart}, count ${item.system.slots}`),
       construction,
+      armorDiagram: armorDiagramModel(this.actor.system),
       tokenizerAvailable: tokenizerIntegrationState().active && tokenizerIntegrationState().canUpload,
       bmfsVersion: SYSTEM_VERSION
     };

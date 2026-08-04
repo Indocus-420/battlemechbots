@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.24.0-alpha.0 graphical armor record
+
+- Adds an original BattleMech-shaped armor and internal-structure display to the record sheet.
+- Keeps every location directly editable and shows rear armor on the three torso locations.
+- Colors locations by the worst remaining front, rear, or internal percentage.
+- Retains a collapsible accessible table and adapts the diagram for narrow sheet widths.
+- Live-verified in Foundry 14.364 on the packaged Hunchback.
+
 ## 0.23.0-alpha.0 visually verified token footprint
 
 - Sets every packaged BattleMech and vehicle prototype token to an explicit one-hex-by-one-hex footprint.

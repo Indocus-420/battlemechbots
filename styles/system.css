@@ -33,6 +33,41 @@
 .bmfs .bmfs-critical-conflict { background: rgb(230 150 20 / 24%); }
 .bmfs .bmfs-critical-warning { color: #9d260d; font-weight: 700; }
 .bmfs .bmfs-version { margin-top: 8px; text-align: right; opacity: 0.65; font-size: 0.8em; }
+.bmfs .bmfs-armor-display {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(72px, 1fr));
+  grid-template-areas:
+    ". . head head . ."
+    "left-arm left-torso left-torso right-torso right-torso right-arm"
+    "left-arm left-torso left-torso right-torso right-torso right-arm"
+    ". left-leg center-torso center-torso right-leg ."
+    ". left-leg . . right-leg .";
+  gap: 7px;
+  align-items: stretch;
+  margin: 10px auto;
+  max-width: 730px;
+}
+.bmfs .bmfs-armor-location { --armor-color: #3f8f59; border: 2px solid var(--armor-color); border-radius: 10px; padding: 7px; background: color-mix(in srgb, var(--armor-color) 13%, transparent); box-shadow: inset 0 0 14px color-mix(in srgb, var(--armor-color) 12%, transparent); }
+.bmfs .bmfs-armor-location.is-damaged { --armor-color: #c18b22; }
+.bmfs .bmfs-armor-location.is-critical { --armor-color: #c9532f; }
+.bmfs .bmfs-armor-location.is-destroyed { --armor-color: #9f2525; opacity: 0.78; }
+.bmfs .bmfs-armor-location > strong { display: block; margin-bottom: 5px; text-align: center; color: var(--armor-color); }
+.bmfs .bmfs-armor-location label { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 5px; font-size: 0.78rem; }
+.bmfs .bmfs-armor-location label span { display: flex; align-items: center; white-space: nowrap; }
+.bmfs .bmfs-armor-location input { width: 3.1rem; min-width: 0; height: 1.6rem; text-align: center; }
+.bmfs .bmfs-armor-head { grid-area: head; }
+.bmfs .bmfs-armor-left-arm { grid-area: left-arm; }
+.bmfs .bmfs-armor-left-torso { grid-area: left-torso; }
+.bmfs .bmfs-armor-center-torso { grid-area: center-torso; }
+.bmfs .bmfs-armor-right-torso { grid-area: right-torso; }
+.bmfs .bmfs-armor-right-arm { grid-area: right-arm; }
+.bmfs .bmfs-armor-left-leg { grid-area: left-leg; }
+.bmfs .bmfs-armor-right-leg { grid-area: right-leg; }
+.bmfs .bmfs-armor-table-details { margin-top: 8px; }
+.bmfs .bmfs-armor-table-details summary { cursor: pointer; font-weight: 700; }
+@media (max-width: 680px) {
+  .bmfs .bmfs-armor-display { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "head head" "left-arm right-arm" "left-torso right-torso" "center-torso center-torso" "left-leg right-leg"; }
+}
 
 .bmfs .item-actions {
   white-space: nowrap;
