@@ -27,6 +27,8 @@ Native-grid map milestone: 0.25.0 removes the printed WWE 2018 hex lattice and u
 
 Team-radar milestone: 0.26.0 adds heat-generating HUD sensor sweeps out to the longest operational weapon range, one-round team-shared contacts, +2 approximate-contact attacks, and exact active-probe contacts inside tabletop probe range.
 
+Native-ping and reactor milestone: 0.27.0 displays team radar contacts through Foundry's animated canvas ping system in fog of war, offsets approximate pings from the true location, and begins the remaining combat-state phase with voluntary shutdown and restart HUD controls.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:

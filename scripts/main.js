@@ -107,7 +107,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.26.0-alpha.0";
+const SYSTEM_VERSION = "0.27.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -1387,6 +1387,11 @@ function configureCombatEffectSocket() {
       else pending.resolve(payload.result);
       return;
     }
+    if (payload.messageType === "radar-ping") {
+      if (payload.sceneId !== canvas.scene?.id || !payload.recipientUserIds?.includes?.(game.user?.id)) return;
+      for (const marker of payload.markers ?? []) canvas.ping?.(marker, { style: marker.precise ? "alert" : "pulse" });
+      return;
+    }
     if (senderId === game.user?.id) return;
     if (payload.messageType && payload.messageType !== "combat-effect") return;
     void playCombatEffectPayload(payload, { remote: true }).catch(error => console.warn("BMFS | Remote combat effect failed", error));
@@ -1465,6 +1470,15 @@ function tokenCombatTeam(token) {
   return Number(token?.document?.disposition ?? token?.disposition) > 0 ? "Team A" : "Team B";
 }
 
+function radarPingPoint(target, contact) {
+  const point = tokenCenter(target);
+  if (contact.precision === "precise") return { ...point, precise: true };
+  const size = Number(canvas.grid?.size) || 100;
+  const seed = Array.from(String(contact.tokenId ?? "contact")).reduce((sum, character) => sum + character.charCodeAt(0), 0) % 6;
+  const offsets = [[0.75, 0], [0.375, 0.65], [-0.375, 0.65], [-0.75, 0], [-0.375, -0.65], [0.375, -0.65]];
+  return { x: point.x + offsets[seed][0] * size, y: point.y + offsets[seed][1] * size, precise: false };
+}
+
 async function performRadarSweep(actor, source = activeSceneToken(actor)) {
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
   if (actor.system.status.destroyed || actor.system.heat.shutdown) throw new RangeError(`${actor.name} cannot operate sensors.`);
@@ -1485,12 +1499,22 @@ async function performRadarSweep(actor, source = activeSceneToken(actor)) {
   const owners = game.users?.filter?.(user => user.isGM || allies.some(token => token.actor.testUserPermission?.(user, "OWNER"))).map(user => user.id) ?? [];
   const rows = contacts.length ? contacts.map(entry => `<li><strong>${foundry.utils.escapeHTML(entry.name)}</strong>: ${entry.distance} hexes, ${entry.precision}${entry.attackPenalty ? `; attacks +${entry.attackPenalty}` : "; exact firing solution"}</li>`).join("") : "<li>No enemy contacts in range.</li>";
   await ChatMessage.create({ whisper: owners, speaker: ChatMessage.getSpeaker({ actor }), content: `<section class="bmfs-radar-report"><h3>${foundry.utils.escapeHTML(actor.name)} Sensor Sweep</h3><p>Team range ${profile.range}; ${profile.probe.equipped ? `${foundry.utils.escapeHTML(profile.probe.name)} precision ${profile.probe.range}` : "basic radar, one-hex uncertainty"}; +${profile.heat} heat.</p><ul>${rows}</ul></section>` });
-  for (const entry of contacts) {
+  const markers = contacts.map(entry => {
     const target = canvas.tokens?.get?.(entry.tokenId);
-    if (target) canvas.ping?.(tokenCenter(target), { style: entry.precision === "precise" ? "alert" : "pulse" });
-  }
+    return target ? radarPingPoint(target, entry) : null;
+  }).filter(Boolean);
+  for (const marker of markers) canvas.ping?.(marker, { style: marker.precise ? "alert" : "pulse" });
+  game.socket.emit(COMBAT_EFFECT_SOCKET, { messageType: "radar-ping", sceneId: canvas.scene?.id, recipientUserIds: owners.filter(id => id !== game.user?.id), markers });
   ui.notifications.info(`${contacts.length} radar contact(s) shared with ${team}.`);
   return { contacts, profile };
+}
+
+async function setVoluntaryShutdown(actor, shutdown) {
+  if (actor.system.status.destroyed) throw new RangeError(`${actor.name} is destroyed.`);
+  if (!shutdown && Number(actor.system.heat.current) >= 30) throw new RangeError(`${actor.name} cannot restart at 30 or more heat.`);
+  await actor.update({ "system.heat.shutdown": Boolean(shutdown) });
+  await ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<h3>${foundry.utils.escapeHTML(actor.name)} ${shutdown ? "Voluntary Shutdown" : "Restarted"}</h3><p>${shutdown ? "Movement, weapons, and powered sensors are offline." : "Movement, weapons, and powered sensors are back online."}</p>` });
+  ui.notifications.info(`${actor.name} ${shutdown ? "shut down" : "restarted"}.`);
 }
 
 function tokenMovementMode(actor) {
@@ -2733,7 +2757,7 @@ function refreshTokenActionHud(preferredToken = null) {
     ["groups", "layer-group", "Fire Groups", fireGroupMarkup],
     ["physical", "hand-fist", "Physical", model.actorType === "mech" ? `<button type="button" data-action="punch">Punches</button><button type="button" data-action="kick-left">Left Kick</button><button type="button" data-action="kick-right">Right Kick</button><button type="button" data-action="hatchet">Hatchet</button><button type="button" data-action="club">Club</button><button type="button" data-action="push">Push</button><button type="button" data-action="charge">Charge</button><button type="button" data-action="dfa">Death From Above</button>` : `<span class="bmfs-hud-menu-empty">No BattleMech physical attacks</span>`],
     ["movement", "person-walking", "Movement", model.actorType === "mech" ? `<button type="button" data-action="movement" data-mode="stand">Stand</button><button type="button" data-action="movement" data-mode="walk">Walk</button><button type="button" data-action="movement" data-mode="run">Run</button><button type="button" data-action="movement" data-mode="jump">Jump</button>` : `<span class="bmfs-hud-menu-empty">${escape(model.movement)}</span>`],
-    ["systems", "microchip", "Systems", `<button type="button" data-action="radar-sweep">Sensor Sweep / Team Radar</button><button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
+    ["systems", "microchip", "Systems", `<button type="button" data-action="radar-sweep">Sensor Sweep / Team Radar</button><button type="button" data-action="shutdown">Voluntary Shutdown</button><button type="button" data-action="restart">Restart Reactor</button><button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
     ["pilot", "user-astronaut", "Pilot", `<button type="button" data-action="gunnery">Gunnery Check</button><button type="button" data-action="piloting">Piloting Check</button><button type="button" data-action="player-console">Pilot & Lance Window</button>`],
     ["utility", "toolbox", "Utility", `<button type="button" data-action="sheet">Record Sheet</button><button type="button" data-action="token">Edit Token / Arc Ring</button><button type="button" data-action="dice-style">Dice Appearance</button><button type="button" data-action="roll2d6">Roll 2D6</button>${game.user.isGM ? `<button type="button" data-action="map-generator">Random Hex Map</button>` : ""}`]
   ];
@@ -2794,6 +2818,8 @@ function refreshTokenActionHud(preferredToken = null) {
       if (action === "player-console") return renderPlayerConsole();
       if (action === "map-generator") return promptRandomBattleTechMap();
       if (action === "radar-sweep") return performRadarSweep(actor, token);
+      if (action === "shutdown") return setVoluntaryShutdown(actor, true);
+      if (action === "restart") return setVoluntaryShutdown(actor, false);
       if (action === "movement") {
         await actor.update({ "system.movement.mode": button.dataset.mode });
         ui.notifications.info(`${actor.name} movement mode: ${button.dataset.mode}.`);
@@ -2815,7 +2841,7 @@ function refreshTokenActionHud(preferredToken = null) {
       }
     };
     void run().then(() => {
-      if (["weapon", "fire-group", "radar-sweep"].includes(action)) refreshTokenActionHud(token);
+      if (["weapon", "fire-group", "radar-sweep", "shutdown", "restart"].includes(action)) refreshTokenActionHud(token);
     }).catch(error => ui.notifications.warn(error.message));
   });
   element.addEventListener("change", event => {

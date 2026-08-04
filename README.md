@@ -2,6 +2,13 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.27.0-alpha.0 native radar pings and reactor controls
+
+- Displays radar contacts with Foundry's native animated canvas ping, including inside unexplored fog.
+- Sends pings only to connected users who own a unit on the sweeping team.
+- Offsets basic-radar pings by one neighboring hex; active-probe contacts ping the exact target position.
+- Adds voluntary shutdown and reactor restart controls to the token HUD; units at 30+ heat cannot restart.
+
 ## 0.26.0-alpha.0 team radar and active probes
 
 - Adds a Sensor Sweep action to the token HUD.
