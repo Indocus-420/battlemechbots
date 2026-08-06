@@ -31,6 +31,8 @@ Native-ping and reactor milestone: 0.27.0 displays team radar contacts through F
 
 Pilot-state milestone: 0.29.0 adds persistent unconscious-pilot state, BattleTech consciousness targets, End Phase recovery, action restrictions while unconscious, and temporary arm/torso combat-state cleanup. Scene teams and the native fog-radar workflow remain available from 0.28.0.
 
+Operational-state milestone: 0.30.0 centralizes action legality for movement, attacks, sensors, shutdown, and restart. Engine destruction, cockpit destruction, pilot death, unconsciousness, reactor shutdown, and sensor destruction now produce consistent restrictions and persistent destroyed/shutdown state.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:
@@ -52,7 +54,7 @@ Combat rules include GATOR calculations, hex and terrain movement, elevation, Wa
 - 2.4 Heat, hit locations, damage transfer, critical slots, and core component effects - complete and live-verified in 0.5.2.
 - 2.5 Initiative and complete turn sequencing - complete and live-verified in 0.6.1, including active-versus-viewed encounter handling, loser-first alternation, phase gating, and next-round initiative rerolls.
 - 2.6 Physical attacks - complete attack-family milestone in 0.18.0: punches, kicks, Hatchet/melee weapons, GM-adjudicated clubs, pushes, charges, and Death From Above; attack arcs, elevation and prone restrictions, movement/equipment legality, attacker/target/terrain modifiers, actuator damage, displacement, attacker feedback damage, hit locations, critical resolution, and automatic Piloting Skill Rolls.
-- 2.7 Missile clusters, ammunition consumption, kick Piloting Skill Rolls, End Phase, and remaining combat edge cases - missiles, ammunition, kick PSRs, falls, facing changes, and pilot injury checks implemented in 0.8.0. Version 0.9.0 clears transient movement/action state at End Phase and applies the damaged-life-support underwater pilot hit. Unconscious-pilot recovery, torso/arm reset, and voluntary shutdown/restart remain pending record-sheet state and UI support.
+- 2.7 Missile clusters, ammunition consumption, kick Piloting Skill Rolls, End Phase, and remaining combat edge cases - complete through 0.30.0. Missiles, ammunition, kick PSRs, falls, facing changes, pilot injury, End Phase cleanup, unconscious-pilot recovery, torso/arm reset, voluntary shutdown/restart, and unified component action restrictions are implemented.
 
 ## Phase 3 - Visuals
 

@@ -390,6 +390,15 @@ technology restrictions must come from verified rules data.
   ACT-005  The BattleMech HUD uses the mounted pilot's applicable statistics.
   ACT-006  Define behavior for no pilot, multiple candidates, deleted pilot, and broken link.
 
+0.30.0 OPERATIONAL-STATE DECISION
+
+  Movement, weapon attacks, physical attacks, powered sensors, shutdown, and
+  restart use one operational-state policy. Three engine hits, cockpit
+  destruction, six pilot hits, or explicit destruction make the BattleMech
+  destroyed and shut down. Unconscious pilots cannot operate the unit or its
+  reactor controls. Two sensor hits disable powered sensor sweeps. This policy
+  is enforced in the action path and covered by automated regression tests.
+
 7.2 Rideable Integration
 
   ACT-010  Use an optional adapter for the Rideable module.

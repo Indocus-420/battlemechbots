@@ -120,6 +120,7 @@ export function applyCriticalComponentEffect(state, item) {
     state.criticals.engineHits = Math.min(3, state.criticals.engineHits + 1);
     item.system.destroyed = state.criticals.engineHits >= 3;
     state.status.destroyed ||= item.system.destroyed;
+    if (item.system.destroyed) state.heat.shutdown = true;
     detail = `Engine shielding hit ${state.criticals.engineHits}/3`;
   } else if (effect === "gyro") {
     state.criticals.gyroHits = Math.min(2, state.criticals.gyroHits + 1);
@@ -137,6 +138,7 @@ export function applyCriticalComponentEffect(state, item) {
   } else if (effect === "cockpit") {
     state.criticals.cockpitDestroyed = true;
     state.status.destroyed = true;
+    state.heat.shutdown = true;
     item.system.destroyed = true;
     detail = "Cockpit destroyed; BattleMech destroyed";
   } else if (firstComponentHit && effect === "heatSink") {

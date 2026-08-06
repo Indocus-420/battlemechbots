@@ -2,6 +2,14 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.30.0-alpha.0 unified operational state
+
+- Uses one authoritative operational-state check for movement, weapon attacks, physical attacks, powered sensors, voluntary shutdown, and reactor restart.
+- Treats three engine hits, a destroyed cockpit, six pilot hits, and an explicitly destroyed unit consistently across every action surface.
+- Immediately shuts down a BattleMech whose engine or cockpit is destroyed and prevents destroyed units from restarting.
+- Prevents an unconscious pilot from operating reactor controls and prevents a two-hit sensor suite from performing radar sweeps.
+- Persists lethal End Phase pilot damage as both destroyed and shut down, with regression coverage for every operational-state branch.
+
 ## 0.29.0-alpha.0 pilot recovery and round cleanup
 
 - Adds the BattleTech pilot consciousness target progression (3/5/7/10/11) and records unconscious status on each playable 'Mech.

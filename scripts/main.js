@@ -8,6 +8,7 @@ import {
 import { CORE_ITEMS, CORE_ITEMS_BY_GROUP, CORE_MECHS, CORE_MECHS_BY_CLASS, CORE_VEHICLES } from "../module/content.js";
 import { armorDiagramModel } from "../module/armor-diagram.js";
 import { endPhaseActorState } from "../module/end-phase.js";
+import { mechActionBlockReason, operationalStateUpdates, reactorControlState } from "../module/operational-state.js";
 import {
   d6CheckOutcome,
   d6Formula,
@@ -107,7 +108,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.29.0-alpha.0";
+const SYSTEM_VERSION = "0.30.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -971,9 +972,8 @@ function physicalLimbState(actor, limb) {
 function calculateTokenPhysicalAttacks(actor, type, target, requestedLimb = null, attackerToken = null) {
   const source = attackerToken ?? activeSceneToken(actor);
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
-  if (actor.system.status.destroyed) throw new RangeError(`${actor.name} is destroyed and cannot attack.`);
-  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot attack.`);
-  if (actor.system.heat.shutdown) throw new RangeError(`${actor.name} is shut down and cannot attack.`);
+  const blocked = mechActionBlockReason(actor.system, "attack");
+  if (blocked) throw new RangeError(`${actor.name} ${blocked}.`);
   if (target.actor?.id === actor.id) throw new RangeError("A BattleMech cannot target itself.");
   if (target.actor?.system.status.destroyed) throw new RangeError(`${target.actor.name} is already destroyed.`);
 
@@ -1418,7 +1418,8 @@ function nativeWallBlocksSight(source, origin, destination) {
 function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null) {
   const source = attackerToken ?? activeSceneToken(actor);
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
-  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot attack.`);
+  const blocked = mechActionBlockReason(actor.system, "attack");
+  if (blocked) throw new RangeError(`${actor.name} ${blocked}.`);
   if (target.actor?.id === actor.id) throw new RangeError("A BattleMech cannot target itself.");
   if (target.actor?.system.status.destroyed) throw new RangeError(`${target.actor.name} is already destroyed.`);
 
@@ -1484,8 +1485,8 @@ function radarPingPoint(target, contact) {
 
 async function performRadarSweep(actor, source = activeSceneToken(actor)) {
   if (!source) throw new RangeError(`${actor.name} needs an active token on this scene.`);
-  if (actor.system.status.destroyed || actor.system.heat.shutdown) throw new RangeError(`${actor.name} cannot operate sensors.`);
-  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot operate sensors.`);
+  const blocked = mechActionBlockReason(actor.system, "operate sensors");
+  if (blocked) throw new RangeError(`${actor.name} ${blocked}.`);
   const profile = radarSweepProfile(actor);
   if (!profile.range) throw new RangeError(`${actor.name} has no operational ranged weapon to establish radar range.`);
   const team = tokenCombatTeam(source);
@@ -1514,8 +1515,9 @@ async function performRadarSweep(actor, source = activeSceneToken(actor)) {
 }
 
 async function setVoluntaryShutdown(actor, shutdown) {
-  if (actor.system.status.destroyed) throw new RangeError(`${actor.name} is destroyed.`);
-  if (!shutdown && Number(actor.system.heat.current) >= 30) throw new RangeError(`${actor.name} cannot restart at 30 or more heat.`);
+  const controls = reactorControlState(actor.system);
+  if (shutdown && !controls.canShutdown) throw new RangeError(`${actor.name} cannot shut down${controls.reason ? `: ${controls.reason}` : ""}.`);
+  if (!shutdown && !controls.canRestart) throw new RangeError(`${actor.name} cannot restart${controls.reason ? `: ${controls.reason}` : ""}.`);
   await actor.update({ "system.heat.shutdown": Boolean(shutdown) });
   await ChatMessage.create({ speaker: ChatMessage.getSpeaker({ actor }), content: `<h3>${foundry.utils.escapeHTML(actor.name)} ${shutdown ? "Voluntary Shutdown" : "Restarted"}</h3><p>${shutdown ? "Movement, weapons, and powered sensors are offline." : "Movement, weapons, and powered sensors are back online."}</p>` });
   ui.notifications.info(`${actor.name} ${shutdown ? "shut down" : "restarted"}.`);
@@ -1533,9 +1535,8 @@ function gamemasterBypassesTokenMovementRestrictions(user = game.user) {
 
 function calculateTokenMovementPlan(token, movement) {
   const actor = token.actor;
-  if (actor.system.status.destroyed) throw new RangeError(`${actor.name} is destroyed and cannot move.`);
-  if (actor.system.pilot.unconscious) throw new RangeError(`${actor.name}'s pilot is unconscious and cannot move.`);
-  if (actor.system.heat.shutdown) throw new RangeError(`${actor.name} is shut down and cannot move.`);
+  const blocked = mechActionBlockReason(actor.system, "move");
+  if (blocked) throw new RangeError(`${actor.name} ${blocked}.`);
   if (actor.system.status.prone) {
     throw new RangeError(`${actor.name} is prone. Standing-up movement is not implemented yet.`);
   }
@@ -1935,6 +1936,10 @@ async function processCombatEndPhase(combat) {
       lifeSupportHits: actor.system.criticals.lifeSupportHits,
       submerged
     });
+    const projectedSystem = foundry.utils.deepClone(actor.system);
+    projectedSystem.pilot.hits = result.pilotHits;
+    projectedSystem.pilot.unconscious = result.pilotUnconscious;
+    if (result.pilotDestroyed) projectedSystem.status.destroyed = true;
     await actor.update({
       "system.movement.mode": result.movement.mode,
       "system.movement.hexesMoved": result.movement.hexesMoved,
@@ -1945,7 +1950,7 @@ async function processCombatEndPhase(combat) {
       "system.movement.terrain": result.movement.terrain,
       "system.pilot.hits": result.pilotHits,
       "system.pilot.unconscious": result.pilotUnconscious,
-      ...(result.pilotDestroyed ? { "system.status.destroyed": true } : {})
+      ...operationalStateUpdates(projectedSystem)
     });
     await actor.setFlag(SYSTEM_ID, "firedLocations", []);
     await actor.setFlag(SYSTEM_ID, "physicalAttackDeclared", false);
