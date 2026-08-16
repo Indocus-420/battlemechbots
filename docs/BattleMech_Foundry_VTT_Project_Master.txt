@@ -73,9 +73,10 @@ IMPLEMENTATION SNAPSHOT (0.28.0-alpha.0)
                  and delivery of units/equipment
   PARTIAL        Campaign economy; shared accounts, mission payouts, repairs,
                  salvage, contracts, and selling remain planned
-  PARTIAL        MechLab now reports tracked mass, remaining chassis allowance,
-                 slots, ammunition, jump jets, diagnostics, and readiness;
-                 complete engine/structure/technology tables remain planned
+  PARTIAL        MechLab reports tracked mass, chassis allowance, slots,
+                 ammunition, jump jets, standard engine rating, walk/run
+                 consistency, tonnage-based internal structure, diagnostics,
+                 and readiness; mass and technology tables remain planned
   PARTIAL        303 Sarna-only shop entries are reference inventory; combat
                  statistics and era legality require official-rules validation
 

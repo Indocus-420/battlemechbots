@@ -33,6 +33,8 @@ Pilot-state milestone: 0.29.0 adds persistent unconscious-pilot state, BattleTec
 
 Operational-state milestone: 0.30.0 centralizes action legality for movement, attacks, sensors, shutdown, and restart. Engine destruction, cockpit destruction, pilot death, unconsciousness, reactor shutdown, and sensor destruction now produce consistent restrictions and persistent destroyed/shutdown state.
 
+MechLab chassis milestone: 0.31.0 validates standard engine ratings, walk/run movement pairs, tonnage-based internal structure, standard fusion-engine and gyro mass, cockpit/structure mass, and overweight designs.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:
@@ -83,7 +85,7 @@ Version 0.10.0 adds a native BattleTech token action HUD, D6-only quick rolls, D
 - Critical-slot allocation.
 - Automatic construction-rule validation.
 
-Status: first validation increment complete in 0.17.0. BattleMech sheets now show tracked armor and payload mass, remaining chassis allowance, critical-slot usage, ammunition and jump-jet checks, structured warnings/errors, and deployment readiness. Full engine-rating, internal-structure, armor-technology, and era/tech-base tables remain.
+Status: chassis validation expanded in 0.31.0. BattleMech sheets show tracked armor, payload and standard chassis mass, remaining allowance, critical-slot usage, ammunition and jump-jet checks, engine/gyro mass, structured warnings/errors, and deployment readiness. Armor technology and era/tech-base tables remain.
 
 ## Phase 5 - Campaign
 

@@ -2,6 +2,13 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.31.0-alpha.0 MechLab chassis validation
+
+- Calculates standard fusion-engine and gyro mass from engine rating.
+- Tracks standard internal-structure and cockpit mass in the construction total.
+- Validates engine rating, walk/run MP consistency, tonnage-based internal structure, and overweight designs.
+- Displays the chassis mass breakdown and remaining allowance on the BattleMech sheet.
+
 ## 0.30.0-alpha.0 unified operational state
 
 - Uses one authoritative operational-state check for movement, weapon attacks, physical attacks, powered sensors, voluntary shutdown, and reactor restart.

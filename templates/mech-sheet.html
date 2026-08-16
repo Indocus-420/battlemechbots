@@ -36,7 +36,9 @@
     <div class="bmfs-mechlab-metrics">
       <span><b>{{construction.armorPoints}}</b> armor points · {{construction.armorMass}} t</span>
       <span><b>{{construction.equipmentMass}}</b> t weapons/equipment/ammo</span>
-      <span><b>{{construction.untrackedMass}}</b> t chassis/engine/structure allowance</span>
+      <span><b>{{construction.chassisMass}}</b> t structure/engine/gyro/cockpit</span>
+      <span><b>{{construction.untrackedMass}}</b> t remaining allowance</span>
+      <span><b>{{construction.engineRating}}</b> engine · {{construction.engineMass}} t engine · {{construction.gyroMass}} t gyro · {{construction.expectedRun}} Running MP</span>
       <span><b>{{construction.slotsUsed}}</b> / {{construction.slotsAvailable}} critical slots assigned</span>
     </div>
     {{#each construction.diagnostics as |diagnostic|}}
@@ -44,7 +46,7 @@
     {{else}}
       <p class="bmfs-mechlab-diagnostic is-pass">No blocking construction errors detected.</p>
     {{/each}}
-    <p class="hint">Tracked mass covers armor, verified weapons, ammunition bins, external heat sinks, jump jets, and supported equipment. The remaining allowance represents chassis, engine, gyro, internal structure, cockpit systems, and other integral components until the full engine/structure tables are added.</p>
+    <p class="hint">Tracked mass covers standard structure, fusion engine, gyro, cockpit, armor, verified weapons, ammunition bins, heat sinks, jump jets, and supported equipment. Remaining allowance is available for additional supported equipment; armor technology and era/tech-base validation remain planned.</p>
   </section>
 
   <section class="panel">
