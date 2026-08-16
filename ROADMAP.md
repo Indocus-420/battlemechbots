@@ -1,0 +1,109 @@
+# BattleMech Foundry System Roadmap
+
+## Phase 0 - Bootstrap
+
+- Load the system without errors.
+- Create and launch a world using the system.
+- Create a BattleMech actor.
+- Open its sheet and save/reload data reliably.
+
+Status: complete.
+
+## Phase 1 - Record Sheets
+
+- Original armor diagram without reproducing copyrighted artwork.
+- Internal structure and critical slots.
+- Heat scale, pilot data, movement, weapons, and ammunition.
+
+Status: functional data sheet, assignable critical-slot tables, and original graphical armor/internal layout complete in 0.24.0.
+
+Content milestone: 0.13.0 replaces the sample roster with 20 requested ready-to-play stock BattleMech variants in four class-specific compendiums. Every unit retains distinct original project-created token art and activation audio.
+
+Visual-map milestone: 0.15.0 adds scalable Foundry 14 Ground-Level background presets, scenic facility Tiles, and low-opacity functional overlays while retaining Regions, walls, fog, sensor vision, and seeded map sizes.
+
+Battlefield Studio milestone: 0.16.0 generates a unique SVG landscape and its Regions, elevations, roads, facilities, walls, fog, and sensor-vision configuration from one deterministic plan. Optional hosted generative-image enhancement remains gated on a securely configured server-side image service.
+
+Native-grid map milestone: 0.25.0 removes the printed WWE 2018 hex lattice and uses Foundry's native adjustable grid while retaining the map-pack Regions, walls, fog, elevation, and sensor-vision layers.
+
+Team-radar milestone: 0.26.0 adds heat-generating HUD sensor sweeps out to the longest operational weapon range, one-round team-shared contacts, +2 approximate-contact attacks, and exact active-probe contacts inside tabletop probe range.
+
+Native-ping and reactor milestone: 0.27.0 displays team radar contacts through Foundry's animated canvas ping system in fog of war, offsets approximate pings from the true location, and begins the remaining combat-state phase with voluntary shutdown and restart HUD controls.
+
+Pilot-state milestone: 0.29.0 adds persistent unconscious-pilot state, BattleTech consciousness targets, End Phase recovery, action restrictions while unconscious, and temporary arm/torso combat-state cleanup. Scene teams and the native fog-radar workflow remain available from 0.28.0.
+
+Operational-state milestone: 0.30.0 centralizes action legality for movement, attacks, sensors, shutdown, and restart. Engine destruction, cockpit destruction, pilot death, unconsciousness, reactor shutdown, and sensor destruction now produce consistent restrictions and persistent destroyed/shutdown state.
+
+MechLab chassis milestone: 0.31.0 validates standard engine ratings, walk/run movement pairs, tonnage-based internal structure, standard fusion-engine and gyro mass, cockpit/structure mass, and overweight designs.
+
+## Phase 2 - Combat
+
+Implement the complete tabletop turn sequence:
+
+1. Initiative
+2. Movement
+3. Weapon Attack
+4. Physical Attack
+5. Heat
+6. End Phase
+
+Combat rules include GATOR calculations, hex and terrain movement, elevation, Walls and line of sight, hit locations, armor and internal damage, damage transfer, and critical hits.
+
+### Phase 2 subphases
+
+- 2.1 Core movement modes and modifiers - complete.
+- 2.2 Hex paths, terrain Regions, elevation, and Walls - complete.
+- 2.3 Weapon attacks and GATOR - complete for direct-fire weapons.
+- 2.4 Heat, hit locations, damage transfer, critical slots, and core component effects - complete and live-verified in 0.5.2.
+- 2.5 Initiative and complete turn sequencing - complete and live-verified in 0.6.1, including active-versus-viewed encounter handling, loser-first alternation, phase gating, and next-round initiative rerolls.
+- 2.6 Physical attacks - complete attack-family milestone in 0.18.0: punches, kicks, Hatchet/melee weapons, GM-adjudicated clubs, pushes, charges, and Death From Above; attack arcs, elevation and prone restrictions, movement/equipment legality, attacker/target/terrain modifiers, actuator damage, displacement, attacker feedback damage, hit locations, critical resolution, and automatic Piloting Skill Rolls.
+- 2.7 Missile clusters, ammunition consumption, kick Piloting Skill Rolls, End Phase, and remaining combat edge cases - complete through 0.30.0. Missiles, ammunition, kick PSRs, falls, facing changes, pilot injury, End Phase cleanup, unconscious-pilot recovery, torso/arm reset, voluntary shutdown/restart, and unified component action restrictions are implemented.
+
+## Phase 3 - Visuals
+
+- Small Laser: red beam.
+- Medium Laser: green beam.
+- Large Laser: blue beam.
+- PPC: blue-white electrical arc.
+- Autocannon: tracer and impact sparks.
+- SRM/LRM: missile trails, explosions, and cluster impacts.
+- Machine Guns: rapid tracers.
+- Flamers: fire stream.
+- Prefer built-in canvas rendering, with optional animation-module integration when available.
+
+Status: built-in Foundry VTT 14 projectile, impact, and procedural weapon-audio foundation implemented in 0.5.1. Version 0.13.0 packages uniquely labeled portraits and activation sounds for the requested 20-unit roster. Version 0.10.0 adds vehicle portraits/audio, item icons, and optional JB2A/Sequencer weapon effects with automatic built-in fallback; weapon-specific refinement and network-synchronized built-in audio remain.
+
+## Interface and optional-module milestone
+
+Version 0.10.0 adds a native BattleTech token action HUD, D6-only quick rolls, Dice So Nice compatibility through Foundry's normal roll pipeline, and Tokenizer integration. These are additive and do not make external modules mandatory.
+
+## Phase 4 - MechLab
+
+- Engine and gyro selection.
+- Armor allocation.
+- Heat sinks and jump jets.
+- Weapons and ammunition.
+- Critical-slot allocation.
+- Automatic construction-rule validation.
+
+Status: chassis validation expanded in 0.31.0. BattleMech sheets show tracked armor, payload and standard chassis mass, remaining allowance, critical-slot usage, ammunition and jump-jet checks, engine/gyro mass, structured warnings/errors, and deployment readiness. Armor technology and era/tech-base tables remain.
+
+## Phase 5 - Campaign
+
+- Mercenary company management.
+- Repairs and salvage.
+- Pilot experience.
+- Contracts and finances.
+
+Status: first economy increment complete in 0.12.0. The live storefront includes
+71 supported listings, GM-controlled M-Notes adjustments, exact-price purchase
+deductions, insufficient-funds protection, unit/equipment delivery, and a
+250-entry transaction ledger. Shared company accounts, mission payouts, repairs,
+salvage, contracts, and pilot progression remain planned.
+
+## Living project documentation
+
+The repository and release ZIP include
+`docs/BattleMech_Foundry_VTT_Project_Master.txt`, which combines the Game Design
+Document, Technical Design Document, developer roadmap and issue hierarchy,
+rules-to-implementation reference, backlog, decisions, change log, and developer
+notes. Update it with every material design or implementation change.
