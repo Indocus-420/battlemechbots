@@ -161,6 +161,29 @@
 #bmfs-token-action-hud .bmfs-hud-window-tools button { width: 29px; min-width: 29px; padding: 0; }
 #bmfs-token-action-hud .bmfs-hud-console { display: grid; grid-template-columns: minmax(0, 1fr) 126px; }
 #bmfs-token-action-hud .bmfs-hud-command-deck { min-width: 0; padding: 8px 9px 9px 18px; }
+#bmfs-token-action-hud .bmfs-activation-hotbar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; margin-bottom: 7px; }
+#bmfs-token-action-hud .bmfs-activation-action { display: grid; grid-template-columns: 22px 1fr auto; grid-template-rows: auto auto; gap: 1px 5px; align-items: center; min-height: 48px; padding: 4px 6px; border-bottom: 3px solid rgb(145 191 213 / 50%); text-align: left; }
+#bmfs-token-action-hud .bmfs-activation-action > i { grid-row: 1 / 3; color: var(--bmfs-hud-accent); font-size: 1.05rem; text-align: center; }
+#bmfs-token-action-hud .bmfs-activation-action > span { font-weight: 900; letter-spacing: .045em; text-transform: uppercase; }
+#bmfs-token-action-hud .bmfs-activation-action > small { grid-column: 2 / 4; overflow: hidden; color: #9fb6c1; font-size: .58rem; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-activation-action > kbd { min-width: 19px; padding: 1px 4px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 3px; background: rgb(0 0 0 / 35%); color: #f3d36a; font-size: .65rem; text-align: center; }
+#bmfs-token-action-hud .bmfs-activation-action.is-active { border-color: var(--bmfs-hud-accent); background: var(--bmfs-hud-accent-soft); box-shadow: inset 0 0 15px var(--bmfs-hud-accent-soft); }
+#bmfs-token-action-hud .bmfs-resolve-hotbar { display: grid; grid-template-columns: minmax(150px, 1fr) auto; gap: 7px; align-items: center; margin-bottom: 7px; padding: 5px 6px; border: 1px solid rgb(109 211 231 / 25%); background: rgb(0 0 0 / 18%); }
+#bmfs-token-action-hud .bmfs-resolve-hotbar > header { display: grid; grid-template-columns: auto 1fr; gap: 2px 7px; align-items: center; }
+#bmfs-token-action-hud .bmfs-resolve-hotbar header strong { color: #72d9eb; font-size: .72rem; }
+#bmfs-token-action-hud .bmfs-resolve-hotbar header span { grid-column: 1 / 3; color: #9fb6c1; font-size: .6rem; }
+#bmfs-token-action-hud .bmfs-resolve-hotbar meter { width: 100%; accent-color: #58cce1; }
+#bmfs-token-action-hud .bmfs-resolve-hotbar > nav { display: flex; gap: 4px; }
+#bmfs-token-action-hud .bmfs-resolve-action { display: grid; grid-template-columns: auto 1fr auto; gap: 4px; align-items: center; padding: 3px 6px; }
+#bmfs-token-action-hud .bmfs-resolve-action small { grid-column: 2 / 4; color: #9fb6c1; font-size: .56rem; }
+#bmfs-token-action-hud .bmfs-resolve-action kbd { color: #6fe5f7; }
+#bmfs-token-action-hud .bmfs-pilot-feats { margin-bottom: 7px; border: 1px solid rgb(255 255 255 / 12%); }
+#bmfs-token-action-hud .bmfs-pilot-feats > summary { padding: 4px 7px; color: #e5c875; font-size: .66rem; font-weight: 800; cursor: pointer; }
+#bmfs-token-action-hud .bmfs-pilot-feats > nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 5px; }
+#bmfs-token-action-hud .bmfs-pilot-ability { display: grid; grid-template-columns: auto 1fr; gap: 4px; align-items: center; min-width: 0; padding: 3px 5px; font-size: .62rem; text-align: left; }
+#bmfs-token-action-hud .bmfs-pilot-ability span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#bmfs-token-action-hud .bmfs-pilot-ability small { grid-column: 2; color: #8fa7b2; font-size: .52rem; text-transform: uppercase; }
+#bmfs-token-action-hud .bmfs-pilot-ability.is-passive { border-style: dashed; }
 #bmfs-token-action-hud .bmfs-hud-action-strip { display: flex; align-items: center; gap: 5px; min-width: 0; }
 #bmfs-token-action-hud .bmfs-hud-category-bar { display: flex; align-items: flex-start; gap: 4px; min-width: 0; overflow: visible; }
 #bmfs-token-action-hud .bmfs-hud-category { position: relative; flex: 1 1 auto; min-width: 0; }

@@ -2,6 +2,15 @@
 
 Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 
+## 0.32.0-alpha.0 activation HUD, firing arcs, and expanded deployment content
+
+- Adds Move, Sprint, Jump, and Brace activation controls with hotkeys and action tradeoffs.
+- Adds a transparent front/side/rear firing-arc overlay that follows the active token and rotates with facing.
+- Adds team Resolve, Precision Strike, Vigilance, Inspired status, and seven pilot-feat references to the action HUD.
+- Expands deployment validation to five BattleMechs in every weight class and removes construction warnings from all 20 packaged units.
+- Adds matching ammunition to ammunition-dependent packaged vehicles and validates all six vehicle loadouts.
+- Documents a local-only HBS data normalization workflow for user-owned game files; copyrighted source data is not redistributed in this package.
+
 ## 0.31.0-alpha.0 MechLab chassis validation
 
 - Calculates standard fusion-engine and gyro mass from engine rating.

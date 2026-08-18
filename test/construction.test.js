@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { analyzeMechConstruction, itemConstructionMass, standardEngineRating, standardFusionEngineMass, standardGyroMass, standardInternalStructure } from "../module/construction.js";
+import { CORE_MECHS, CORE_MECHS_BY_CLASS } from "../module/content.js";
 
 const item = (name, type, location, slotStart, slots, extra = {}) => ({
   id: `${name}-${slotStart}`,
@@ -52,8 +53,26 @@ test("jump jet construction mass follows BattleMech weight class", () => {
 
 test("renamed integral components and external heat sinks retain their construction mass", () => {
   assert.equal(itemConstructionMass(item("Medium Laser 2", "weapon", "leftArm", 1, 1)), 1);
+  assert.equal(itemConstructionMass(item("Particle Projection Cannon - Left", "weapon", "leftArm", 1, 3)), 7);
+  assert.equal(itemConstructionMass(item("Medium Laser - Left", "weapon", "leftArm", 4, 1)), 1);
   assert.equal(itemConstructionMass(item("Life Support - Upper", "equipment", "head", 1, 1, { criticalEffect: "lifeSupport" })), 0);
   assert.equal(itemConstructionMass(item("External Heat Sink 1", "equipment", "leftTorso", 1, 1, { criticalEffect: "heatSink" })), 1);
+  assert.equal(itemConstructionMass(item("Jump Jet 5", "equipment", "rightLeg", 5, 1, { criticalEffect: "jumpJet" }), 35), 0.5);
+});
+
+test("all five packaged BattleMechs in every weight class pass MechLab deployment", () => {
+  const summary = {};
+  for (const [weightClass, actors] of Object.entries(CORE_MECHS_BY_CLASS)) {
+    assert.equal(actors.length, 5, `${weightClass} roster size`);
+    summary[weightClass] = actors.map(actor => {
+      const result = analyzeMechConstruction(actor);
+      assert.equal(result.ready, true, `${actor.name}: ${result.errors.map(error => error.message).join("; ")}`);
+      assert.equal(result.warnings.length, 0, `${actor.name}: ${result.warnings.map(warning => warning.message).join("; ")}`);
+      assert.equal(result.status, "DEPLOYMENT READY", actor.name);
+      return actor.name;
+    });
+  }
+  assert.equal(Object.values(summary).flat().length, CORE_MECHS.length);
 });
 
 test("standard engine rating and internal structure follow chassis tonnage", () => {

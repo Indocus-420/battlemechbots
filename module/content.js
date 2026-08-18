@@ -215,22 +215,27 @@ const vehicleWeapon = (name, damage, heat, ranges, location = "turret") => {
   return { ...item, system: { ...item.system, location } };
 };
 
+const vehicleAmmo = (name, ammoType, shots, damagePerShot, location = "body") => {
+  const item = ammo(name, ammoType, shots, damagePerShot);
+  return { ...item, system: { ...item.system, location } };
+};
+
 export const CORE_VEHICLES = Object.freeze([
   vehicle("Generic Light Scout Car", "Light Scout Car", 20, "wheeled", "Reconnaissance", 8, 12,
     { front: 8, left: 6, right: 6, rear: 4, turret: 6 }, 8,
-    [vehicleWeapon("Machine Gun", 2, 0, range(0, 1, 2, 3))],
+    [vehicleWeapon("Machine Gun", 2, 0, range(0, 1, 2, 3)), vehicleAmmo("Machine Gun Ammunition", "Machine Gun", 1000, 2)],
     "Fast original sample vehicle for scouting and objective play."),
   vehicle("Generic Medium Battle Tank", "Medium Battle Tank", 50, "tracked", "Line Combat", 4, 6,
     { front: 28, left: 20, right: 20, rear: 14, turret: 22 }, 25,
-    [vehicleWeapon("Autocannon/10", 10, 3, range(0, 5, 10, 15)), vehicleWeapon("Medium Laser", 5, 3, range(0, 3, 6, 9), "front")],
+    [vehicleWeapon("Autocannon/10", 10, 3, range(0, 5, 10, 15)), vehicleWeapon("Medium Laser", 5, 3, range(0, 3, 6, 9), "front"), vehicleAmmo("Autocannon/10 Ammunition", "AC/10", 10, 10)],
     "Balanced original tracked combat vehicle."),
   vehicle("Generic Heavy Assault Tank", "Heavy Assault Tank", 80, "tracked", "Assault", 3, 5,
     { front: 45, left: 32, right: 32, rear: 20, turret: 38 }, 40,
-    [vehicleWeapon("Autocannon/20", 20, 7, range(0, 3, 6, 9)), vehicleWeapon("Medium Laser", 5, 3, range(0, 3, 6, 9), "front")],
+    [vehicleWeapon("Autocannon/20", 20, 7, range(0, 3, 6, 9)), vehicleWeapon("Medium Laser", 5, 3, range(0, 3, 6, 9), "front"), vehicleAmmo("Autocannon/20 Ammunition", "AC/20", 5, 20)],
     "Slow original assault vehicle with a heavy direct-fire weapon."),
   vehicle("Generic Missile Support Carrier", "Missile Support Carrier", 60, "tracked", "Fire Support", 3, 5,
     { front: 20, left: 15, right: 15, rear: 10, turret: 18 }, 25,
-    [vehicleWeapon("LRM 20 Missile Rack", 1, 6, range(6, 7, 14, 21))],
+    [vehicleWeapon("LRM 20 Missile Rack", 1, 6, range(6, 7, 14, 21)), vehicleAmmo("LRM 20 Ammunition", "LRM 20", 120, 1)],
     "Original long-range support vehicle; cluster resolution remains manual."),
   vehicle("Generic Hover Skirmisher", "Hover Skirmisher", 35, "hover", "Flanker", 7, 11,
     { front: 14, left: 10, right: 10, rear: 8, turret: 12 }, 15,
@@ -238,7 +243,7 @@ export const CORE_VEHICLES = Object.freeze([
     "Fast original hover vehicle for flanking maneuvers."),
   vehicle("Generic VTOL Gunship", "VTOL Gunship", 30, "vtol", "Air Support", 8, 12,
     { front: 12, left: 9, right: 9, rear: 7, turret: 10 }, 12,
-    [vehicleWeapon("SRM 6 Missile Rack", 2, 4, range(0, 3, 6, 9))],
+    [vehicleWeapon("SRM 6 Missile Rack", 2, 4, range(0, 3, 6, 9)), vehicleAmmo("SRM 6 Ammunition", "SRM 6", 90, 2)],
     "Original VTOL sample; altitude and aerospace movement remain manual.")
 ]);
 
@@ -412,7 +417,7 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
 
 export const CORE_MECHS = Object.freeze([
   // Light BattleMechs
-  originalMech({ name: "Jenner", variant: "JR7-D", tonnage: 35, role: "Fast Striker", walk: 7, run: 11, jump: 5, sinks: 10, armorFactor: 0.72, equipment: [
+  originalMech({ name: "Jenner", variant: "JR7-D", tonnage: 35, role: "Fast Striker", walk: 7, run: 11, jump: 5, sinks: 10, armorFactor: 0.50, equipment: [
     loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 6, "Medium Laser 2"),
     loadout("Medium Laser", "leftArm", 5, "Medium Laser 3"), loadout("Medium Laser", "leftArm", 6, "Medium Laser 4"),
     loadout("SRM 4", "centerTorso", 11), loadout("SRM 4 Ammunition", "rightTorso", 1),
@@ -420,7 +425,7 @@ export const CORE_MECHS = Object.freeze([
     loadout("Jump Jet", "centerTorso", 12, "Jump Jet 3"),
     loadout("Jump Jet", "leftLeg", 5, "Jump Jet 4"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 5")
   ]}),
-  originalMech({ name: "Firestarter", variant: "FS9-H", tonnage: 35, role: "Anti-Infantry Skirmisher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.8, equipment: [
+  originalMech({ name: "Firestarter", variant: "FS9-H", tonnage: 35, role: "Anti-Infantry Skirmisher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.72, equipment: [
     loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "leftArm", 5, "Medium Laser 2"),
     loadout("Machine Gun", "rightArm", 6), loadout("Machine Gun", "leftArm", 6, "Machine Gun 2"),
     loadout("Machine Gun Ammunition", "leftTorso", 2),
@@ -430,7 +435,7 @@ export const CORE_MECHS = Object.freeze([
     loadout("Jump Jet", "rightTorso", 2, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 3, "Jump Jet 4"),
     loadout("Jump Jet", "leftLeg", 5, "Jump Jet 5"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 6")
   ]}),
-  originalMech({ name: "Javelin", variant: "JVN-10N", tonnage: 30, role: "Ambusher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.76, equipment: [
+  originalMech({ name: "Javelin", variant: "JVN-10N", tonnage: 30, role: "Ambusher", walk: 6, run: 9, jump: 6, sinks: 10, armorFactor: 0.59, equipment: [
     loadout("SRM 6", "leftTorso", 1), loadout("SRM 6 Ammunition", "leftTorso", 3),
     loadout("SRM 6", "rightTorso", 1, "SRM 6 - Right"), loadout("SRM 6 Ammunition", "rightTorso", 3, "SRM 6 Ammunition - Right"),
     loadout("Jump Jet", "leftTorso", 4, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 5, "Jump Jet 2"),
@@ -449,7 +454,7 @@ export const CORE_MECHS = Object.freeze([
   ]}),
 
   // Medium BattleMechs
-  originalMech({ name: "Assassin", variant: "ASN-21", tonnage: 40, role: "Recon Hunter", walk: 7, run: 11, jump: 7, sinks: 10, armorFactor: 0.7, equipment: [
+  originalMech({ name: "Assassin", variant: "ASN-21", tonnage: 40, role: "Recon Hunter", walk: 7, run: 11, jump: 7, sinks: 10, armorFactor: 0.51, equipment: [
     loadout("Medium Laser", "rightArm", 5),
     loadout("LRM 5", "leftTorso", 1), loadout("LRM 5 Ammunition", "leftTorso", 2),
     loadout("SRM 2", "rightTorso", 1), loadout("SRM 2 Ammunition", "rightTorso", 2),
@@ -466,7 +471,7 @@ export const CORE_MECHS = Object.freeze([
     loadout("Jump Jet", "leftTorso", 4, "Jump Jet 1"), loadout("Jump Jet", "rightTorso", 4, "Jump Jet 2"),
     loadout("Jump Jet", "leftLeg", 5, "Jump Jet 3"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 4")
   ]}),
-  originalMech({ name: "Hatchetman", variant: "HCT-3F", tonnage: 45, role: "Close-Quarters Fighter", walk: 4, run: 6, jump: 4, sinks: 11, armorFactor: 0.84, equipment: [
+  originalMech({ name: "Hatchetman", variant: "HCT-3F", tonnage: 45, role: "Close-Quarters Fighter", walk: 4, run: 6, jump: 4, sinks: 11, armorFactor: 0.56, equipment: [
     loadout("Autocannon/10", "rightTorso", 1), loadout("Autocannon/10 Ammunition", "rightTorso", 8),
     loadout("Medium Laser", "leftTorso", 1), loadout("Medium Laser", "rightTorso", 9, "Medium Laser 2"),
     loadout("Hatchet", "rightArm", 5),
@@ -490,7 +495,7 @@ export const CORE_MECHS = Object.freeze([
   ]}),
 
   // Heavy BattleMechs
-  originalMech({ name: "Catapult", variant: "CPLT-C1", tonnage: 65, role: "Missile Fire Support", walk: 4, run: 6, jump: 4, sinks: 15, armorFactor: 0.86, equipment: [
+  originalMech({ name: "Catapult", variant: "CPLT-C1", tonnage: 65, role: "Missile Fire Support", walk: 4, run: 6, jump: 4, sinks: 15, armorFactor: 0.58, equipment: [
     loadout("LRM 15", "rightArm", 5), loadout("LRM 15", "leftArm", 5, "LRM 15 - Left"),
     loadout("LRM 15 Ammunition", "rightTorso", 1), loadout("LRM 15 Ammunition", "rightTorso", 2, "LRM 15 Ammunition 2"),
     loadout("LRM 15 Ammunition", "leftTorso", 1, "LRM 15 Ammunition - Left"), loadout("LRM 15 Ammunition", "leftTorso", 2, "LRM 15 Ammunition - Left 2"),
@@ -499,7 +504,7 @@ export const CORE_MECHS = Object.freeze([
     loadout("Jump Jet", "leftTorso", 5, "Jump Jet 1"), loadout("Jump Jet", "leftTorso", 6, "Jump Jet 2"),
     loadout("Jump Jet", "rightTorso", 5, "Jump Jet 3"), loadout("Jump Jet", "rightTorso", 6, "Jump Jet 4")
   ]}),
-  originalMech({ name: "JagerMech", variant: "JM6-S", tonnage: 65, role: "Long-Range Fire Support", walk: 4, run: 6, jump: 0, sinks: 10, armorFactor: 0.68, equipment: [
+  originalMech({ name: "JagerMech", variant: "JM6-S", tonnage: 65, role: "Long-Range Fire Support", walk: 4, run: 6, jump: 0, sinks: 10, armorFactor: 0.36, equipment: [
     loadout("Autocannon/5", "rightArm", 5), loadout("Autocannon/5", "leftArm", 5, "Autocannon/5 - Left"),
     loadout("Autocannon/2", "rightTorso", 1), loadout("Autocannon/2", "leftTorso", 1, "Autocannon/2 - Left"),
     loadout("Autocannon/5 Ammunition", "rightTorso", 2), loadout("Autocannon/5 Ammunition", "leftTorso", 2, "Autocannon/5 Ammunition - Left"),
@@ -522,7 +527,7 @@ export const CORE_MECHS = Object.freeze([
     loadout("Machine Gun", "leftArm", 5), loadout("Machine Gun", "leftArm", 6, "Machine Gun 2"),
     loadout("Machine Gun Ammunition", "rightTorso", 4)
   ]}),
-  originalMech({ name: "Marauder", variant: "MAD-3R", tonnage: 75, role: "Heavy Command Fighter", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.84, equipment: [
+  originalMech({ name: "Marauder", variant: "MAD-3R", tonnage: 75, role: "Heavy Command Fighter", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.80, equipment: [
     loadout("Particle Projection Cannon", "rightArm", 5), loadout("Particle Projection Cannon", "leftArm", 5, "Particle Projection Cannon - Left"),
     loadout("Autocannon/5", "rightTorso", 1), loadout("Autocannon/5 Ammunition", "rightTorso", 5),
     loadout("Medium Laser", "rightArm", 8), loadout("Medium Laser", "leftArm", 8, "Medium Laser - Left")
@@ -537,12 +542,12 @@ export const CORE_MECHS = Object.freeze([
     loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 6, "Medium Laser 2"),
     loadout("Medium Laser", "leftArm", 5, "Medium Laser 3"), loadout("Medium Laser", "leftArm", 6, "Medium Laser 4")
   ]}),
-  originalMech({ name: "Banshee", variant: "BNC-3E", tonnage: 95, role: "Assault Brawler", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.9, equipment: [
+  originalMech({ name: "Banshee", variant: "BNC-3E", tonnage: 95, role: "Assault Brawler", walk: 4, run: 6, jump: 0, sinks: 16, armorFactor: 0.81, equipment: [
     loadout("Particle Projection Cannon", "rightArm", 5),
     loadout("Autocannon/5", "leftArm", 5), loadout("Autocannon/5 Ammunition", "leftTorso", 1),
     loadout("Small Laser", "head", 6)
   ]}),
-  originalMech({ name: "Stalker", variant: "STK-3F", tonnage: 85, role: "Assault Fire Support", walk: 3, run: 5, jump: 0, sinks: 20, armorFactor: 0.94, equipment: [
+  originalMech({ name: "Stalker", variant: "STK-3F", tonnage: 85, role: "Assault Fire Support", walk: 3, run: 5, jump: 0, sinks: 20, armorFactor: 0.81, equipment: [
     loadout("LRM 10", "leftTorso", 1), loadout("LRM 10 Ammunition", "leftTorso", 3),
     loadout("LRM 10", "rightTorso", 1, "LRM 10 - Right"), loadout("LRM 10 Ammunition", "rightTorso", 3, "LRM 10 Ammunition - Right"),
     loadout("SRM 6", "leftTorso", 4), loadout("SRM 6 Ammunition", "leftTorso", 6),
@@ -557,7 +562,7 @@ export const CORE_MECHS = Object.freeze([
     loadout("Particle Projection Cannon", "rightTorso", 1, "Particle Projection Cannon - Torso"),
     loadout("Small Laser", "head", 6)
   ]}),
-  originalMech({ name: "Zeus", variant: "ZEU-6S", tonnage: 80, role: "Mobile Assault", walk: 4, run: 6, jump: 0, sinks: 17, armorFactor: 0.88, equipment: [
+  originalMech({ name: "Zeus", variant: "ZEU-6S", tonnage: 80, role: "Mobile Assault", walk: 4, run: 6, jump: 0, sinks: 17, armorFactor: 0.74, equipment: [
     loadout("Large Laser", "rightArm", 5),
     loadout("Autocannon/5", "leftArm", 5), loadout("Autocannon/5 Ammunition", "leftTorso", 1),
     loadout("LRM 15", "rightTorso", 1), loadout("LRM 15 Ammunition", "rightTorso", 4),

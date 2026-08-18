@@ -38,6 +38,9 @@ import { radarContact, radarSweepProfile } from "../module/radar.js";
 import { playerConsoleModel, renderPlayerConsole, unitCondition, unitReadiness } from "../module/player-console.js";
 import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, requestStorePurchase, STORE_CATALOG } from "../module/economy.js";
 import { aerospaceFiringArcForBearing, aerospaceTargetingArc, registerTokenizerTargetingFrames, targetingArc, TOKENIZER_TARGETING_FRAMES } from "../module/targeting.js";
+import { ACTIVATION_ACTIONS, activationActionState, activationActionUpdate, guardedDamage } from "../module/action-hotbar.js";
+import { removeFiringArcOverlay, renderFiringArcOverlay } from "../module/firing-arc-overlay.js";
+import { PILOT_ABILITIES, RESOLVE_ABILITIES, RESOLVE_PER_ROUND, resolveAfterRound, specialAttackModifier, spendResolve } from "../module/pilot-abilities.js";
 import {
   addTerrainProfiles,
   calculateTerrainProfile,
@@ -108,7 +111,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.31.0-alpha.0";
+const SYSTEM_VERSION = "0.32.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -801,7 +804,9 @@ async function resolveActorPendingCriticals(actor) {
 async function resolveDamageGroup(targetActor, damage, direction) {
   const locationRoll = await new Roll("2d6").evaluate();
   const hit = hitLocation(locationRoll.total, direction);
-  const result = applyMechDamage(targetActor.system, hit.location, damage, { rear: hit.rear });
+  const guarded = Boolean(targetActor.getFlag?.(SYSTEM_ID, "guarded"));
+  const appliedDamage = guardedDamage(damage, { guarded, rear: hit.rear });
+  const result = applyMechDamage(targetActor.system, hit.location, appliedDamage, { rear: hit.rear });
   const triggers = [...result.criticalLocations];
   if (hit.throughArmorCritical) triggers.push(hit.location);
   const criticals = await resolveCriticalTriggers(targetActor, result, triggers);
@@ -1061,7 +1066,9 @@ function calculateTokenPhysicalAttacks(actor, type, target, requestedLimb = null
 async function resolvePhysicalHit(attackerActor, target, attack) {
   const locationRoll = await new Roll(attack.locationTable === "normal" ? "2d6" : "1d6").evaluate();
   const hit = physicalHitLocation(attack.locationTable, locationRoll.total, attack.direction);
-  const result = applyMechDamage(target.actor.system, hit.location, attack.damage, { rear: hit.rear });
+  const guarded = Boolean(target.actor.getFlag?.(SYSTEM_ID, "guarded"));
+  const appliedDamage = guardedDamage(attack.damage, { guarded, rear: hit.rear });
+  const result = applyMechDamage(target.actor.system, hit.location, appliedDamage, { rear: hit.rear });
   const triggers = [...result.criticalLocations];
   if (hit.throughArmorCritical) triggers.push(hit.location);
   const criticals = await resolveCriticalTriggers(target.actor, result, triggers);
@@ -1449,7 +1456,7 @@ function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null)
     throw new RangeError("Leg-mounted weapons cannot fire while the attacker stands in Depth 1 water.");
   }
 
-  return calculateAttackTargetNumber({
+  const profile = calculateAttackTargetNumber({
     gunnery: actor.system.pilot.gunnery,
     attackerMovement: actor.system.movement.attackerModifier,
     targetMovement: target.actor.system.movement.targetModifier,
@@ -1465,6 +1472,13 @@ function calculateTokenWeaponAttack(actor, weapon, target, attackerToken = null)
     weaponDamageModifier: weaponCriticalModifier(actor.items, weapon.system.location),
     lineOfSightBlocked
   });
+  const special = specialAttackModifier({
+    precisionStrike: Boolean(actor.getFlag?.(SYSTEM_ID, "precisionStrike")),
+    resolve: teamResolve(source)
+  });
+  if (!special) return profile;
+  const targetNumber = Math.max(2, profile.targetNumber + special);
+  return { ...profile, targetNumber, automaticFailure: targetNumber > 12, components: { ...profile.components, special } };
 }
 
 function tokenCombatTeam(token) {
@@ -1472,6 +1486,37 @@ function tokenCombatTeam(token) {
   const combatant = (game.combats?.active ?? game.combat)?.combatants?.find?.(entry => entry.tokenId === (token?.id ?? token?.document?.id));
   try { return normalizeCombatTeam(combatant?.getFlag?.(SYSTEM_ID, "side")); } catch {}
   return Number(token?.document?.disposition ?? token?.disposition) > 0 ? "Team A" : "Team B";
+}
+
+function teamResolve(token) {
+  const combat = game.combats?.active ?? game.combat;
+  return Number(combat?.getFlag?.(SYSTEM_ID, tokenCombatTeam(token) === "Team A" ? "resolveTeamA" : "resolveTeamB")) || 0;
+}
+
+async function activateResolveAbility(token, ability) {
+  const profile = RESOLVE_ABILITIES[ability];
+  if (!profile) throw new RangeError(`Unknown Resolve ability: ${ability}`);
+  const combat = game.combats?.active ?? game.combat;
+  if (!combat) throw new RangeError("Resolve abilities require an active combat encounter.");
+  const team = tokenCombatTeam(token);
+  const remaining = spendResolve(teamResolve(token), profile.cost);
+  await combat.setFlag(SYSTEM_ID, team === "Team A" ? "resolveTeamA" : "resolveTeamB", remaining);
+  if (ability === "precisionStrike") await token.actor.setFlag(SYSTEM_ID, "precisionStrike", true);
+  else await Promise.all([
+    token.actor.setFlag(SYSTEM_ID, "guarded", true),
+    token.actor.setFlag(SYSTEM_ID, "entrenched", true),
+    token.actor.setFlag(SYSTEM_ID, "initiativeBonus", 1),
+    token.actor.setFlag(SYSTEM_ID, "stabilityDamage", 0)
+  ]);
+  ui.notifications.info(`${token.actor.name}: ${profile.label}. ${remaining} Resolve remains.`);
+}
+
+async function activatePilotAbility(actor, ability) {
+  const profile = PILOT_ABILITIES[ability];
+  if (!profile) throw new RangeError(`Unknown pilot ability: ${ability}`);
+  if (profile.kind === "passive") return ui.notifications.info(`${profile.label} is passive. ${profile.description}`);
+  await actor.setFlag(SYSTEM_ID, "pilotAbilityMode", ability);
+  ui.notifications.info(`${actor.name}: ${profile.label} selected. ${profile.description}`);
 }
 
 function radarPingPoint(target, contact) {
@@ -1527,6 +1572,32 @@ function tokenMovementMode(actor) {
   const mode = actor.system.movement.mode === "stand" ? "walk" : actor.system.movement.mode;
   if (!(mode in MOVEMENT_MODES)) throw new RangeError(`Unknown movement mode: ${mode}`);
   return mode;
+}
+
+async function selectActivationAction(actor, action) {
+  const state = activationActionState(actor, action);
+  if (!state.enabled) throw new RangeError(state.reason);
+  const update = activationActionUpdate(action);
+  await actor.update({ "system.movement.mode": update["system.movement.mode"] });
+  for (const [key, value] of Object.entries(update.flags)) await actor.setFlag(SYSTEM_ID, key, value);
+  ui.notifications.info(`${actor.name}: ${state.label}. ${state.bonus}`);
+  return state;
+}
+
+function firingActionBlockReason(actor) {
+  return actor?.getFlag?.(SYSTEM_ID, "firingActionConsumed") ? "Its Fire Action was consumed by Sprint or Brace." : null;
+}
+
+function activeCombatToken() {
+  const combat = game.combats?.active ?? game.combat;
+  const tokenId = combat?.combatant?.tokenId ?? combat?.combatant?.token?.id;
+  return tokenId ? canvas?.tokens?.get?.(tokenId) : null;
+}
+
+function refreshActiveFiringArcOverlay() {
+  for (const token of canvas?.tokens?.placeables ?? []) removeFiringArcOverlay(token);
+  const token = activeCombatToken();
+  if (token && ["mech", "vehicle"].includes(token.actor?.type)) renderFiringArcOverlay(token);
 }
 
 function gamemasterBypassesTokenMovementRestrictions(user = game.user) {
@@ -2805,6 +2876,14 @@ function refreshTokenActionHud(preferredToken = null) {
     });
   } catch {}
   const categoryMarkup = categoryDefinitions.map(([id, icon, label, content]) => `<details class="bmfs-hud-category" data-category="${id}" draggable="false"><summary><i class="fa-solid fa-${icon}"></i> ${label}</summary><div class="bmfs-hud-category-menu">${content}</div></details>`).join("");
+  const activationMarkup = model.actorType === "mech" ? Object.entries(ACTIVATION_ACTIONS).map(([action, profile]) => {
+    const state = activationActionState(token.actor, action);
+    const active = token.actor.getFlag?.(SYSTEM_ID, "action") === action;
+    return `<button type="button" class="bmfs-activation-action${active ? " is-active" : ""}" data-action="activation" data-activation="${action}" title="${escape(profile.bonus)}"${state.enabled ? "" : ` disabled aria-label="${escape(state.reason)}"`}><i class="fa-solid fa-${profile.icon}"></i><span>${escape(profile.label)}</span><kbd>${escape(profile.hotkey)}</kbd><small>${escape(profile.bonus)}</small></button>`;
+  }).join("") : "";
+  const resolve = teamResolve(token);
+  const resolveMarkup = model.actorType === "mech" ? Object.entries(RESOLVE_ABILITIES).map(([ability, profile]) => `<button type="button" class="bmfs-resolve-action" data-action="resolve-ability" data-ability="${ability}" title="${escape(profile.description)}"${resolve >= profile.cost ? "" : " disabled"}><i class="fa-solid fa-${profile.icon}"></i><span>${escape(profile.label)}</span><kbd>${profile.hotkey}</kbd><small>${profile.cost} Resolve</small></button>`).join("") : "";
+  const pilotAbilityMarkup = model.actorType === "mech" ? Object.entries(PILOT_ABILITIES).map(([ability, profile]) => `<button type="button" class="bmfs-pilot-ability is-${profile.kind}" data-action="pilot-ability" data-ability="${ability}" title="${escape(profile.description)}"><i class="fa-solid fa-${profile.icon}"></i><span>${escape(profile.label)}</span><small>${profile.kind}</small></button>`).join("") : "";
   const element = document.createElement("section");
   element.id = "bmfs-token-action-hud";
   element.className = `${enhancedEffects ? "bmfs-hud-enhanced-fx" : "bmfs-hud-fallback-fx"} bmfs-theme-${model.faction}`;
@@ -2817,6 +2896,9 @@ function refreshTokenActionHud(preferredToken = null) {
     </header>
     <div class="bmfs-hud-console">
       <main class="bmfs-hud-command-deck">
+        ${activationMarkup ? `<nav class="bmfs-activation-hotbar" aria-label="Activation actions">${activationMarkup}</nav>` : ""}
+        ${resolveMarkup ? `<section class="bmfs-resolve-hotbar"><header><strong>RESOLVE ${resolve}%</strong><meter min="0" max="100" value="${resolve}">${resolve}%</meter><span>${resolve >= 50 ? "INSPIRED: -1 attack target numbers" : `+${RESOLVE_PER_ROUND} each round`}</span></header><nav>${resolveMarkup}</nav></section>` : ""}
+        ${pilotAbilityMarkup ? `<details class="bmfs-pilot-feats"><summary>Pilot Feats & Abilities</summary><nav>${pilotAbilityMarkup}</nav></details>` : ""}
         <div class="bmfs-hud-category-bar">${categoryMarkup}</div>
       </main>
       <aside class="bmfs-hud-telemetry">
@@ -2860,14 +2942,25 @@ function refreshTokenActionHud(preferredToken = null) {
         ui.notifications.info(`${actor.name} movement mode: ${button.dataset.mode}.`);
         return;
       }
+      if (action === "activation") return selectActivationAction(actor, button.dataset.activation);
+      if (action === "resolve-ability") return activateResolveAbility(token, button.dataset.ability);
+      if (action === "pilot-ability") return activatePilotAbility(actor, button.dataset.ability);
       if (action === "roll1d6") return rollBattleTechD6({ count: 1, actor, label: `${actor.name} 1D6 Roll` });
       if (action === "roll2d6") return rollBattleTechD6({ count: 2, actor, label: `${actor.name} 2D6 Roll` });
       if (action === "gunnery") return rollBattleTechD6({ count: 2, actor, target: model.gunnery, label: `${actor.name} Gunnery Check` });
       if (action === "piloting") return rollBattleTechD6({ count: 2, actor, target: model.piloting, label: `${actor.name} Piloting Check` });
       if (action === "sheet") return actor.sheet?.render({ force: true });
       if (action === "token") return editActorTokenImage(actor);
-      if (action === "weapon") return BMFSMechSheet.onRollWeaponAttack.call({ actor }, event, { closest: () => ({ dataset: { itemId: button.dataset.itemId } }) });
-      if (action === "fire-group") return fireWeaponGroup(actor, button.dataset.fireGroup);
+      if (action === "weapon") {
+        const blocked = firingActionBlockReason(actor);
+        if (blocked) throw new RangeError(blocked);
+        return BMFSMechSheet.onRollWeaponAttack.call({ actor }, event, { closest: () => ({ dataset: { itemId: button.dataset.itemId } }) });
+      }
+      if (action === "fire-group") {
+        const blocked = firingActionBlockReason(actor);
+        if (blocked) throw new RangeError(blocked);
+        return fireWeaponGroup(actor, button.dataset.fireGroup);
+      }
       if (action === "punch") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "punch", physicalLimb: "" } });
       if (action === "kick-left") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "kick", physicalLimb: "leftLeg" } });
       if (action === "kick-right") return BMFSMechSheet.onRollPhysicalAttack.call({ actor }, event, { dataset: { physicalType: "kick", physicalLimb: "rightLeg" } });
@@ -3078,6 +3171,32 @@ Hooks.on("renderCombatTracker", (_application, html) => {
 });
 
 Hooks.on("controlToken", (token, controlled) => refreshTokenActionHud(controlled ? token : null));
+Hooks.on("updateCombat", (combat, change) => {
+  refreshActiveFiringArcOverlay();
+  if (change.round !== undefined && Number(change.round) > 0) {
+    for (const team of ["Team A", "Team B"]) {
+      const key = team === "Team A" ? "resolveTeamA" : "resolveTeamB";
+      const current = Number(combat.getFlag?.(SYSTEM_ID, key)) || 0;
+      void combat.setFlag(SYSTEM_ID, key, resolveAfterRound(current));
+    }
+  }
+  if (change.turn === undefined && change.round === undefined) return;
+  const actor = combat.combatant?.actor;
+  if (!actor) return;
+  void Promise.all([
+    actor.setFlag(SYSTEM_ID, "action", null),
+    actor.setFlag(SYSTEM_ID, "firingActionConsumed", false),
+    actor.setFlag(SYSTEM_ID, "guarded", false),
+    actor.setFlag(SYSTEM_ID, "entrenched", false),
+    actor.setFlag(SYSTEM_ID, "precisionStrike", false)
+  ]).then(() => refreshTokenActionHud(activeCombatToken())).catch(error => console.warn("BMFS | Activation reset failed", error));
+});
+Hooks.on("deleteCombat", refreshActiveFiringArcOverlay);
+Hooks.on("updateToken", (document, change) => {
+  if (change.rotation === undefined) return;
+  const token = canvas?.tokens?.get?.(document.id);
+  if (token === activeCombatToken()) refreshActiveFiringArcOverlay();
+});
 Hooks.on("updateActor", actor => {
   void synchronizeActorTokenVision(actor).catch(error => console.warn("BMFS | Sensor vision synchronization failed", error));
   const controlled = canvas?.tokens?.controlled?.find(token => token.actor?.id === actor.id);
@@ -3094,13 +3213,32 @@ Hooks.on("preCreateToken", token => {
 });
 Hooks.on("canvasReady", () => {
   refreshTokenActionHud();
+  refreshActiveFiringArcOverlay();
   for (const token of canvas?.tokens?.placeables ?? []) {
     if (token.actor?.type === "mech") {
       void synchronizeActorTokenVision(token.actor).catch(error => console.warn("BMFS | Sensor vision synchronization failed", error));
     }
   }
 });
-Hooks.on("canvasTearDown", removeTokenActionHud);
+Hooks.on("canvasTearDown", () => {
+  removeTokenActionHud();
+  for (const token of canvas?.tokens?.placeables ?? []) removeFiringArcOverlay(token);
+});
+
+Hooks.once("ready", () => {
+  globalThis.document?.addEventListener?.("keydown", event => {
+    if (event.ctrlKey || event.altKey || event.metaKey || event.repeat) return;
+    if (event.target?.closest?.("input, textarea, select, [contenteditable=true]")) return;
+    const action = Object.entries(ACTIVATION_ACTIONS).find(([, profile]) => profile.hotkey === event.key)?.[0];
+    const resolveAbility = Object.entries(RESOLVE_ABILITIES).find(([, profile]) => profile.hotkey === event.key)?.[0];
+    if (!action && !resolveAbility) return;
+    const token = canvas?.tokens?.controlled?.find(candidate => candidate.actor?.type === "mech") ?? activeCombatToken();
+    if (!token?.actor?.isOwner && !game.user?.isGM) return;
+    event.preventDefault();
+    const operation = action ? selectActivationAction(token.actor, action) : activateResolveAbility(token, resolveAbility);
+    void operation.then(() => refreshTokenActionHud(token)).catch(error => ui.notifications.warn(error.message));
+  });
+});
 
 Hooks.on("preMoveToken", (token, movement) => {
   pendingTokenMovementPlans.delete(movement.id);

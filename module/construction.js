@@ -82,17 +82,26 @@ function armorPoints(system) {
     total + number(location.front) + number(location.rear), 0);
 }
 
+function catalogMass(catalog, name) {
+  const value = String(name ?? "").trim();
+  if (catalog[value] !== undefined) return catalog[value];
+  const withoutNumber = value.replace(/ \d+$/, "");
+  if (catalog[withoutNumber] !== undefined) return catalog[withoutNumber];
+  const withoutLocation = withoutNumber.replace(/ - (?:Left|Right|Center|Front|Rear|Upper|Lower|Torso|Arm|Leg)$/i, "");
+  return catalog[withoutLocation] ?? null;
+}
+
 export function itemConstructionMass(item, tonnage = 50) {
   if (item.type === "ammo") return 1;
-  if (item.type === "weapon") return WEAPON_TONS[item.name] ?? WEAPON_TONS[item.name?.replace(/ \d+$/, "")] ?? null;
+  if (item.type === "weapon") return catalogMass(WEAPON_TONS, item.name);
   if (INTEGRAL_COMPONENT_EFFECTS.has(item.system?.criticalEffect)) return 0;
   if (item.system?.criticalEffect === "heatSink") return 1;
-  if (item.name === "Jump Jet") {
+  if (item.system?.criticalEffect === "jumpJet" || /^Jump Jet(?: \d+)?$/i.test(item.name ?? "")) {
     if (tonnage <= 55) return 0.5;
     if (tonnage <= 85) return 1;
     return 2;
   }
-  if (item.type === "equipment") return EQUIPMENT_TONS[item.name] ?? null;
+  if (item.type === "equipment") return catalogMass(EQUIPMENT_TONS, item.name);
   return null;
 }
 

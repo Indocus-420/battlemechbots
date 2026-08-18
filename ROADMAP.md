@@ -35,6 +35,8 @@ Operational-state milestone: 0.30.0 centralizes action legality for movement, at
 
 MechLab chassis milestone: 0.31.0 validates standard engine ratings, walk/run movement pairs, tonnage-based internal structure, standard fusion-engine and gyro mass, cockpit/structure mass, and overweight designs.
 
+Activation-interface milestone: 0.32.0 adds Move, Sprint, Jump, Brace, team Resolve, Precision Strike, Vigilance, pilot-feat references, and a facing-aware transparent firing-arc overlay. It also expands strict deployment validation to five units per weight class and begins the local-only HBS data ingestion workflow without redistributing proprietary source content.
+
 ## Phase 2 - Combat
 
 Implement the complete tabletop turn sequence:

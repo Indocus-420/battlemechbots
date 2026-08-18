@@ -56,6 +56,21 @@ test("generic vehicle catalog is original, complete, and importable", () => {
   }
 });
 
+test("every packaged combat vehicle has a deployment-ready operational loadout", () => {
+  for (const actor of CORE_VEHICLES) {
+    assert.ok(actor.system.vehicle.tonnage > 0, `${actor.name}: tonnage`);
+    assert.ok(actor.system.movement.cruise > 0, `${actor.name}: cruise movement`);
+    assert.ok(actor.system.movement.flank >= actor.system.movement.cruise, `${actor.name}: flank movement`);
+    assert.ok(actor.system.structure > 0, `${actor.name}: structure`);
+    assert.ok(Object.values(actor.system.armor).some(value => Number(value) > 0), `${actor.name}: armor`);
+    const ammunition = actor.items.filter(item => item.type === "ammo" && !item.system.destroyed);
+    for (const weapon of actor.items.filter(item => item.type === "weapon" && !item.system.destroyed)) {
+      const ammoType = ammunitionTypeForWeapon(weapon.name);
+      if (ammoType) assert.ok(ammunition.some(item => item.system.ammoType === ammoType), `${actor.name}: ammunition for ${weapon.name}`);
+    }
+  }
+});
+
 test("requested BattleMech catalog contains five units in every weight class", () => {
   assert.equal(CORE_MECHS.length, 20);
   assert.equal(new Set(CORE_MECHS.map(actor => actor.name)).size, 20);
