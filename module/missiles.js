@@ -67,8 +67,9 @@ export function selectAmmunitionBin(items, weaponName, required = 1, remainingBy
   const ammoType = ammunitionTypeForWeapon(weaponName);
   if (!ammoType) return null;
   const amount = Math.max(1, Number(required) || 1);
+  const family = ammoType.split(" ")[0];
   const candidates = [...items].filter(item => item.type === "ammo"
-    && item.system.ammoType === ammoType
+    && (item.system.ammoType === ammoType || item.system.ammoType === family)
     && !item.system.destroyed
     && Number(remainingById?.get(item.id) ?? item.system.shots) >= amount);
   candidates.sort((left, right) =>

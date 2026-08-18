@@ -1,6 +1,8 @@
 import { CRITICAL_SLOT_COUNTS, buildCriticalTable, itemSlotNumbers } from "./criticals.js";
 import { ammunitionTypeForWeapon } from "./missiles.js";
 
+const SYSTEM_ID = "battletech-foundry-system";
+
 const WEAPON_TONS = Object.freeze({
   "Small Laser": 0.5,
   "Medium Laser": 1,
@@ -92,6 +94,8 @@ function catalogMass(catalog, name) {
 }
 
 export function itemConstructionMass(item, tonnage = 50) {
+  const importedMass = Number(item.flags?.[SYSTEM_ID]?.hbsImport?.tonnage);
+  if (Number.isFinite(importedMass) && importedMass >= 0) return importedMass;
   if (item.type === "ammo") return 1;
   if (item.type === "weapon") return catalogMass(WEAPON_TONS, item.name);
   if (INTEGRAL_COMPONENT_EFFECTS.has(item.system?.criticalEffect)) return 0;
@@ -183,7 +187,8 @@ export function analyzeMechConstruction(actorOrData) {
   const ammoTypes = new Set(items.filter(item => item.type === "ammo" && !item.system?.destroyed).map(item => item.system?.ammoType));
   for (const weapon of items.filter(item => item.type === "weapon")) {
     const required = ammunitionTypeForWeapon(weapon.name);
-    if (required && !ammoTypes.has(required)) add("error", "AMMO", `${weapon.name} has no compatible ${required} ammunition bin.`);
+    const family = required?.split(" ")[0];
+    if (required && !ammoTypes.has(required) && !ammoTypes.has(family)) add("error", "AMMO", `${weapon.name} has no compatible ${required} ammunition bin.`);
   }
 
   const jumpJets = items.filter(item => item.type === "equipment" && item.system?.criticalEffect === "jumpJet").length;
