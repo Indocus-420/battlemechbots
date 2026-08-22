@@ -15,6 +15,16 @@ export function visualFacingRotation(rotation = 0) {
   return (((Number(rotation) || 0) + 180) % 360 + 360) % 360;
 }
 
+export function alignFiringArcOverlay(token) {
+  const graphic = token?.bmfsFiringArcOverlay?.bmfsSectorGraphic;
+  if (!graphic) return false;
+  const renderedRotation = Number(token?.mesh?.rotation);
+  graphic.rotation = Number.isFinite(renderedRotation)
+    ? renderedRotation + Math.PI
+    : visualFacingRotation(token?.document?.rotation) * Math.PI / 180;
+  return true;
+}
+
 function wedgePoints(start, end, inner, outer, steps = 12) {
   const points = [];
   for (let index = 0; index <= steps; index += 1) {
@@ -114,7 +124,6 @@ export function renderFiringArcOverlay(token, { radius = null } = {}) {
   const outline = new Graphics();
   overlay.eventMode = "none";
   overlay.position?.set?.(width / 2, height / 2);
-  graphic.rotation = visualFacingRotation(token.document?.rotation) * Math.PI / 180;
   for (const sector of ARC_SECTORS) {
     const points = wedgePoints(sector.start, sector.end, inner, outer);
     if (typeof graphic.poly === "function") {
@@ -137,8 +146,10 @@ export function renderFiringArcOverlay(token, { radius = null } = {}) {
     outline.drawPolygon?.(boundary);
   }
   overlay.addChild(mask, graphic, outline);
+  overlay.bmfsSectorGraphic = graphic;
   graphic.mask = mask;
   token.addChild?.(overlay);
   token.bmfsFiringArcOverlay = overlay;
+  alignFiringArcOverlay(token);
   return overlay;
 }

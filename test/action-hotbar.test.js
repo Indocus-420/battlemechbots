@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { activationActionState, activationActionUpdate, guardedDamage } from "../module/action-hotbar.js";
-import { firingArcSectors, hexClusterBoundary, visualFacingRotation } from "../module/firing-arc-overlay.js";
+import { alignFiringArcOverlay, firingArcSectors, hexClusterBoundary, visualFacingRotation } from "../module/firing-arc-overlay.js";
 import { snapTokenChangeToHexCenter } from "../module/token-grid.js";
 
 const mech = jump => ({ type: "mech", system: { movement: { jump } } });
@@ -40,6 +40,16 @@ test("visible token nose and firing arc share the same facing", () => {
   assert.equal(visualFacingRotation(0), 180);
   assert.equal(visualFacingRotation(60), 240);
   assert.equal(visualFacingRotation(300), 120);
+});
+
+test("firing arc locks to the rendered token angle through a full rotation", () => {
+  const graphic = { rotation: 0 };
+  const token = { mesh: { rotation: 0 }, bmfsFiringArcOverlay: { bmfsSectorGraphic: graphic } };
+  for (let degrees = 0; degrees <= 360; degrees += 60) {
+    token.mesh.rotation = degrees * Math.PI / 180;
+    assert.equal(alignFiringArcOverlay(token), true);
+    assert.ok(Math.abs(graphic.rotation - (token.mesh.rotation + Math.PI)) < 1e-10);
+  }
 });
 
 test("token movement ends at a whole hex center", () => {
