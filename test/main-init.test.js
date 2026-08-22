@@ -108,7 +108,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.32.7-alpha.0");
+  assert.equal(game.bmfs.version, "0.32.8-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.installWwe2018MapPack, "function");
@@ -520,6 +520,18 @@ test("Gamemasters bypass BattleTech token movement restrictions", () => {
   assert.equal(onHooks.get("preMoveToken")(token, { id: "gm-free-move" }), undefined);
   game.user.isGM = false;
   assert.equal(game.bmfs.gamemasterBypassesTokenMovementRestrictions(), false);
+});
+
+test("only the active Gamemaster performs startup world synchronization", () => {
+  const first = { id: "first-gm", isGM: true, active: true };
+  const second = { id: "second-gm", isGM: true, active: true };
+  game.users = Object.assign([first, second], { activeGM: first });
+  game.user = second;
+  assert.equal(game.bmfs.isAuthoritativeGamemaster(), false);
+  game.user = first;
+  assert.equal(game.bmfs.isAuthoritativeGamemaster(), true);
+  game.user = { id: "player", isGM: false };
+  game.users = [];
 });
 
 test("turn state follows the active encounter instead of a differently viewed encounter", () => {

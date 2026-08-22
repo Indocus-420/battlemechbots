@@ -112,7 +112,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.32.7-alpha.0";
+const SYSTEM_VERSION = "0.32.8-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition.v2`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -2387,6 +2387,10 @@ function activeGamemaster() {
     ?? null;
 }
 
+function isAuthoritativeGamemaster() {
+  return Boolean(game.user?.isGM && activeGamemaster()?.id === game.user.id);
+}
+
 function validateAttackTokenAuthority({ attacker, attackerToken, sceneId }) {
   if (!attackerToken || attackerToken.actor?.id !== attacker.id) {
     throw new Error("The requested attacking token does not represent the attacking BattleMech.");
@@ -3572,6 +3576,7 @@ Hooks.once("ready", () => {
     startBattleTechTurn,
     recordControlledBattleTechSelections,
     advanceBattleTechPhase,
+    isAuthoritativeGamemaster,
     processCombatEndPhase,
     currentTurnSequence: () => (game.combats?.active ?? game.combat)?.getFlag(SYSTEM_ID, TURN_SEQUENCE_FLAG) ?? null,
     runDiagnostics() {
@@ -3596,13 +3601,14 @@ Hooks.once("ready", () => {
 
   console.log("BMFS | Ready", game.bmfs.runDiagnostics());
   ui.notifications.info(`BattleMech Foundry System ${SYSTEM_VERSION} loaded.`);
-  if (game.user.isGM) {
+  const authoritativeGamemaster = isAuthoritativeGamemaster();
+  if (authoritativeGamemaster) {
     void migrateLegacyAmmunitionBins().catch(error => {
       console.error("BMFS | Ammunition migration failed", error);
       ui.notifications.error(`BattleMech ammunition migration failed: ${error.message}`);
     });
   }
-  if (game.user.isGM && game.settings.get(SYSTEM_ID, "coreContentVersion") !== SYSTEM_VERSION) {
+  if (authoritativeGamemaster && game.settings.get(SYSTEM_ID, "coreContentVersion") !== SYSTEM_VERSION) {
     void installCoreCompendiums()
       .then(result => game.settings.set(SYSTEM_ID, "coreContentVersion", SYSTEM_VERSION)
         .then(() => ui.notifications.info(`BMFS core compendiums ready: ${result.items} items, ${result.vehicles} vehicles, and ${result.mechs} BattleMechs.`)))
@@ -3611,7 +3617,7 @@ Hooks.once("ready", () => {
         ui.notifications.error(`BMFS core compendiums could not be installed: ${error.message}`);
       });
   }
-  if (game.user.isGM && game.settings.get(SYSTEM_ID, "wwe2018MapPackVersion") !== SYSTEM_VERSION) {
+  if (authoritativeGamemaster && game.settings.get(SYSTEM_ID, "wwe2018MapPackVersion") !== SYSTEM_VERSION) {
     void installWwe2018MapPack()
       .then(() => game.settings.set(SYSTEM_ID, "wwe2018MapPackVersion", SYSTEM_VERSION))
       .catch(error => {
