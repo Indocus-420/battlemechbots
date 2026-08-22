@@ -37,9 +37,9 @@ test("firing arc boundary follows the outer edges of a two-hex cluster", () => {
 });
 
 test("visible token nose and firing arc share the same facing", () => {
-  assert.equal(visualFacingRotation(0), 90);
-  assert.equal(visualFacingRotation(60), 150);
-  assert.equal(visualFacingRotation(300), 30);
+  assert.equal(visualFacingRotation(0), 180);
+  assert.equal(visualFacingRotation(60), 240);
+  assert.equal(visualFacingRotation(300), 120);
 });
 
 test("token movement ends at a whole hex center", () => {

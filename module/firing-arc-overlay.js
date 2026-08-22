@@ -10,9 +10,9 @@ export function firingArcSectors(rotation = 0) {
   return ARC_SECTORS.map(sector => ({ ...sector, start: sector.start + facing, end: sector.end + facing }));
 }
 
-/** Packaged unit art points to the right at zero Foundry rotation. */
+/** Packaged unit art points down at zero Foundry rotation. */
 export function visualFacingRotation(rotation = 0) {
-  return (((Number(rotation) || 0) + 90) % 360 + 360) % 360;
+  return (((Number(rotation) || 0) + 180) % 360 + 360) % 360;
 }
 
 function wedgePoints(start, end, inner, outer, steps = 12) {
