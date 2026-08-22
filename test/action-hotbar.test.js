@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { activationActionState, activationActionUpdate, guardedDamage } from "../module/action-hotbar.js";
-import { firingArcSectors, hexClusterBoundary } from "../module/firing-arc-overlay.js";
+import { firingArcSectors, hexClusterBoundary, visualFacingRotation } from "../module/firing-arc-overlay.js";
+import { snapTokenChangeToHexCenter } from "../module/token-grid.js";
 
 const mech = jump => ({ type: "mech", system: { movement: { jump } } });
 
@@ -33,4 +34,20 @@ test("firing arc boundary follows the outer edges of a two-hex cluster", () => {
   assert.equal(boundary.length / 2, 30);
   assert.deepEqual([Math.min(...x), Math.max(...x)], [-200, 200]);
   assert.deepEqual([Math.min(...y), Math.max(...y)], [-250, 250]);
+});
+
+test("visible token nose and firing arc share the same facing", () => {
+  assert.equal(visualFacingRotation(0), 90);
+  assert.equal(visualFacingRotation(60), 150);
+  assert.equal(visualFacingRotation(300), 30);
+});
+
+test("token movement ends at a whole hex center", () => {
+  const grid = {
+    size: 100,
+    getOffset: ({ x, y }) => ({ i: Math.round(x / 75), j: Math.round(y / 100) }),
+    getCenterPoint: ({ i, j }) => ({ x: i * 75, y: j * 100 })
+  };
+  const document = { x: 0, y: 0, width: 1, height: 1 };
+  assert.deepEqual(snapTokenChangeToHexCenter(document, { x: 116, y: 63 }, grid), { x: 100, y: 50 });
 });

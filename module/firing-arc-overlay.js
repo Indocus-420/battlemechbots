@@ -10,6 +10,11 @@ export function firingArcSectors(rotation = 0) {
   return ARC_SECTORS.map(sector => ({ ...sector, start: sector.start + facing, end: sector.end + facing }));
 }
 
+/** Packaged unit art points to the right at zero Foundry rotation. */
+export function visualFacingRotation(rotation = 0) {
+  return (((Number(rotation) || 0) + 90) % 360 + 360) % 360;
+}
+
 function wedgePoints(start, end, inner, outer, steps = 12) {
   const points = [];
   for (let index = 0; index <= steps; index += 1) {
@@ -109,7 +114,7 @@ export function renderFiringArcOverlay(token, { radius = null } = {}) {
   const outline = new Graphics();
   overlay.eventMode = "none";
   overlay.position?.set?.(width / 2, height / 2);
-  overlay.rotation = (Number(token.document?.rotation) || 0) * Math.PI / 180;
+  graphic.rotation = visualFacingRotation(token.document?.rotation) * Math.PI / 180;
   for (const sector of ARC_SECTORS) {
     const points = wedgePoints(sector.start, sector.end, inner, outer);
     if (typeof graphic.poly === "function") {
@@ -123,12 +128,12 @@ export function renderFiringArcOverlay(token, { radius = null } = {}) {
   }
   if (typeof mask.poly === "function") {
     mask.poly(boundary).fill({ color: 0xffffff });
-    outline.poly(boundary).stroke({ color: 0xf2f2f2, alpha: 0.62, width: 3 });
+    outline.poly(boundary).stroke({ color: 0xf2f2f2, alpha: 0.62, width: 1 });
   } else {
     mask.beginFill?.(0xffffff, 1);
     mask.drawPolygon?.(boundary);
     mask.endFill?.();
-    outline.lineStyle?.(3, 0xf2f2f2, 0.62);
+    outline.lineStyle?.(1, 0xf2f2f2, 0.62);
     outline.drawPolygon?.(boundary);
   }
   overlay.addChild(mask, graphic, outline);

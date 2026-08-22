@@ -40,6 +40,7 @@ import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, 
 import { aerospaceFiringArcForBearing, aerospaceTargetingArc, registerTokenizerTargetingFrames, targetingArc, TOKENIZER_TARGETING_FRAMES } from "../module/targeting.js";
 import { ACTIVATION_ACTIONS, activationActionState, activationActionUpdate, guardedDamage } from "../module/action-hotbar.js";
 import { removeFiringArcOverlay, renderFiringArcOverlay } from "../module/firing-arc-overlay.js";
+import { snapTokenChangeToHexCenter } from "../module/token-grid.js";
 import { PILOT_ABILITIES, RESOLVE_ABILITIES, RESOLVE_PER_ROUND, resolveAfterRound, specialAttackModifier, spendResolve } from "../module/pilot-abilities.js";
 import {
   addTerrainProfiles,
@@ -111,7 +112,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.32.3-alpha.0";
+const SYSTEM_VERSION = "0.32.4-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition.v2`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -3197,6 +3198,11 @@ Hooks.on("updateToken", (document, change) => {
   if (change.rotation === undefined) return;
   const token = canvas?.tokens?.get?.(document.id);
   if (token === activeCombatToken()) refreshActiveFiringArcOverlay();
+});
+Hooks.on("preUpdateToken", (document, change) => {
+  if (!["mech", "vehicle"].includes(document.actor?.type)) return;
+  const snapped = snapTokenChangeToHexCenter(document, change, globalThis.canvas?.grid);
+  if (snapped) Object.assign(change, snapped);
 });
 Hooks.on("updateActor", actor => {
   void synchronizeActorTokenVision(actor).catch(error => console.warn("BMFS | Sensor vision synchronization failed", error));
