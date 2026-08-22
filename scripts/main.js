@@ -111,8 +111,8 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.32.0-alpha.0";
-const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition`;
+const SYSTEM_VERSION = "0.32.2-alpha.0";
+const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition.v2`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
   ["attackerMovement", "Attacker Movement"],
@@ -1619,7 +1619,7 @@ function calculateTokenMovementPlan(token, movement) {
     ? measured.waypoints
     : [movement.origin, movement.destination];
   const completePath = token.getCompleteMovementPath(operationWaypoints);
-  const movementPath = completePath.slice(-(measured.spaces + 1));
+  const movementPath = completePath;
   const movedWaypoints = movementPath.slice(1);
   const regionTerrain = summarizeRegionTerrainPath(
     movedWaypoints.map(waypoint => terrainKeysForWaypoint(token, waypoint))
@@ -1632,7 +1632,7 @@ function calculateTokenMovementPlan(token, movement) {
   }
 
   terrain.levelChanges = (Number(previous.terrain.levelChanges) || 0) + (mode === "jump" ? 0 : levelChanges);
-  const addedHexes = measured.spaces;
+  const addedHexes = Math.max(0, movementPath.length - 1);
   const addedTerrain = calculateTerrainProfile(regionTerrain).terrainCost + (mode === "jump" ? 0 : levelChanges);
 
   return calculateMovementPlan({
@@ -2248,6 +2248,7 @@ function positionTokenActionHud(element, position) {
   element.style.left = `${left}px`;
   element.style.top = `${top}px`;
   element.style.bottom = "auto";
+  element.style.transform = "none";
 }
 
 function saveTokenActionHudGeometry(element) {

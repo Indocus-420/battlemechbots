@@ -36,7 +36,7 @@ export function renderFiringArcOverlay(token, { radius = null } = {}) {
   const Graphics = globalThis.PIXI?.Graphics;
   if (!Graphics || !token || !["mech", "vehicle"].includes(token.actor?.type)) return null;
   const gridSize = Number(globalThis.canvas?.grid?.size) || 100;
-  const outer = radius ?? gridSize * 3.25;
+  const outer = radius ?? gridSize * 2.25;
   const inner = Math.max(Number(token.w) || gridSize, Number(token.h) || gridSize) * 0.58;
   const graphic = new Graphics();
   graphic.eventMode = "none";

@@ -90,8 +90,9 @@
   --bmfs-hud-bg-start: rgb(18 35 47 / 98%);
   --bmfs-hud-bg-end: rgb(9 18 27 / 97%);
   position: fixed;
-  left: 88px;
+  left: 50%;
   bottom: 18px;
+  transform: translateX(-50%);
   z-index: 70;
   width: min(720px, calc(100vw - 132px));
   min-width: 420px;
