@@ -101,14 +101,14 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
   assert.deepEqual(Object.keys(CONFIG.Item.dataModels).sort(), ["ammo", "equipment", "weapon"]);
   assert.equal(registrations.length, 3);
   assert.equal(CONFIG.Canvas.vfx.enabled, true);
-  for (const key of ["coreContentVersion", "wwe2018MapPackVersion", "weaponEffects", "weaponAudio", "mechActivationEffects", "mechActivationAudio", "jb2aEffects", "tokenActionHud", "visualDice", "diceBodyColor", "dicePipColor", "diceSize"]) {
+  for (const key of ["coreContentVersion", "wwe2018MapPackVersion", "weaponEffects", "weaponAudio", "mechActivationEffects", "mechActivationAudio", "jb2aEffects", "tokenActionHud", "firingArcOverlay", "visualDice", "diceBodyColor", "dicePipColor", "diceSize"]) {
     assert.ok(settings.has(`battletech-foundry-system.${key}`));
   }
 });
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.32.8-alpha.0");
+  assert.equal(game.bmfs.version, "0.32.9-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.installWwe2018MapPack, "function");

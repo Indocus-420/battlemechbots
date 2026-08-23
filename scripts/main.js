@@ -112,7 +112,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.32.8-alpha.0";
+const SYSTEM_VERSION = "0.32.9-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition.v2`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -1597,6 +1597,7 @@ function activeCombatToken() {
 
 function refreshActiveFiringArcOverlay() {
   for (const token of canvas?.tokens?.placeables ?? []) removeFiringArcOverlay(token);
+  if (!game.settings.get(SYSTEM_ID, "firingArcOverlay")) return;
   const token = activeCombatToken();
   if (token && ["mech", "vehicle"].includes(token.actor?.type)) renderFiringArcOverlay(token);
 }
@@ -2844,6 +2845,7 @@ function refreshTokenActionHud(preferredToken = null) {
     ["ggg", "GGG SoundFX"]
   ].filter(([id]) => game.modules?.get?.(id)?.active).map(([, name]) => name);
   const enhancedEffects = game.modules?.get?.("sequencer")?.active && game.modules?.get?.("JB2A_DnD5e")?.active;
+  const firingArcEnabled = game.settings.get(SYSTEM_ID, "firingArcOverlay");
   const heatSegments = model.heat === null ? "" : [5, 4, 3, 2, 1]
     .map(level => `<span class="bmfs-heat-segment${level <= model.heatSegments ? " is-active" : ""}" data-level="${level}"></span>`).join("");
   const ammunitionPercent = model.ammunition.maximum > 0
@@ -2871,7 +2873,7 @@ function refreshTokenActionHud(preferredToken = null) {
     ["movement", "person-walking", "Movement", model.actorType === "mech" ? `<button type="button" data-action="movement" data-mode="stand">Stand</button><button type="button" data-action="movement" data-mode="walk">Walk</button><button type="button" data-action="movement" data-mode="run">Run</button><button type="button" data-action="movement" data-mode="jump">Jump</button>` : `<span class="bmfs-hud-menu-empty">${escape(model.movement)}</span>`],
     ["systems", "microchip", "Systems", `<button type="button" data-action="radar-sweep">Sensor Sweep / Team Radar</button><button type="button" data-action="shutdown">Voluntary Shutdown</button><button type="button" data-action="restart">Restart Reactor</button><button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
     ["pilot", "user-astronaut", "Pilot", `<button type="button" data-action="gunnery">Gunnery Check</button><button type="button" data-action="piloting">Piloting Check</button><button type="button" data-action="player-console">Pilot & Lance Window</button>`],
-    ["utility", "toolbox", "Utility", `<button type="button" data-action="sheet">Record Sheet</button><button type="button" data-action="token">Edit Token / Arc Ring</button><button type="button" data-action="dice-style">Dice Appearance</button><button type="button" data-action="roll2d6">Roll 2D6</button>${game.user.isGM ? `<button type="button" data-action="map-generator">Random Hex Map</button>` : ""}`]
+    ["utility", "toolbox", "Utility", `<button type="button" data-action="sheet">Record Sheet</button><button type="button" data-action="toggle-firing-arc"><i class="fa-solid fa-${firingArcEnabled ? "eye-slash" : "eye"}"></i> ${firingArcEnabled ? "Hide" : "Show"} Firing Arc Ring</button><button type="button" data-action="token">Edit Token Image</button><button type="button" data-action="dice-style">Dice Appearance</button><button type="button" data-action="roll2d6">Roll 2D6</button>${game.user.isGM ? `<button type="button" data-action="map-generator">Random Hex Map</button>` : ""}`]
   ];
   try {
     const storedOrder = JSON.parse(globalThis.localStorage?.getItem(`${SYSTEM_ID}.hudCategoryOrder.${game.user?.id}`) ?? "[]");
@@ -2938,6 +2940,12 @@ function refreshTokenActionHud(preferredToken = null) {
         return;
       }
       if (action === "dice-style") return configureBattleTechDice();
+      if (action === "toggle-firing-arc") {
+        await game.settings.set(SYSTEM_ID, "firingArcOverlay", !game.settings.get(SYSTEM_ID, "firingArcOverlay"));
+        refreshActiveFiringArcOverlay();
+        refreshTokenActionHud(token);
+        return;
+      }
       if (action === "player-console") return renderPlayerConsole();
       if (action === "map-generator") return promptRandomBattleTechMap();
       if (action === "radar-sweep") return performRadarSweep(actor, token);
@@ -3400,6 +3408,12 @@ Hooks.once("init", () => {
     hint: "Shows a movable action hub with D6 checks, record sheet, token editing, physical attacks, and weapons for the controlled unit.",
     scope: "client", config: true, type: Boolean, default: true,
     onChange: () => refreshTokenActionHud()
+  });
+  game.settings.register(SYSTEM_ID, "firingArcOverlay", {
+    name: "Show BattleTech firing arc ring",
+    hint: "Displays the grid-aligned front, side, and rear firing sectors around the active unit. It can also be toggled from the Utility section of the action HUD.",
+    scope: "client", config: true, type: Boolean, default: true,
+    onChange: () => refreshActiveFiringArcOverlay()
   });
   game.settings.register(SYSTEM_ID, "visualDice", {
     name: "Show animated BattleTech D6 rolls",
