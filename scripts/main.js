@@ -112,7 +112,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.32.9-alpha.0";
+const SYSTEM_VERSION = "0.33.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition.v2`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],

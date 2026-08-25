@@ -10,6 +10,7 @@ Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 - Expands deployment validation to five BattleMechs in every weight class and removes construction warnings from all 20 packaged units.
 - Adds matching ammunition to ammunition-dependent packaged vehicles and validates all six vehicle loadouts.
 - Documents a local-only HBS data normalization workflow for user-owned game files; copyrighted source data is not redistributed in this package.
+- Adds a duplicate-safe local HBS vehicle builder and reusable Foundry importer for user-owned data, including folder placement, embedded equipment, motive classification, presentation assets, and a 98% controlled-test report.
 
 ## 0.31.0-alpha.0 MechLab chassis validation
 
