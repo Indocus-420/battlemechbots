@@ -108,7 +108,7 @@ test("init registers all data models, sheets, settings, and VFX opt-in", () => {
 
 test("ready exposes diagnostics and the public BMFS API without installing content for a player", () => {
   onceHooks.get("ready")();
-  assert.equal(game.bmfs.version, "0.33.0-alpha.0");
+  assert.equal(game.bmfs.version, "0.33.1-alpha.0");
   assert.equal(game.bmfs.runDiagnostics().generation, 14);
   assert.equal(typeof game.bmfs.installCoreCompendiums, "function");
   assert.equal(typeof game.bmfs.installWwe2018MapPack, "function");
@@ -540,20 +540,19 @@ test("turn state follows the active encounter instead of a differently viewed en
   assert.deepEqual(game.bmfs.currentTurnSequence(), { source: "active" });
 });
 
-test("core compendium installer separates five mechs into each weight-class pack", async () => {
+test("core compendium installer separates mechs into weight-class packs", async () => {
   game.user.isGM = true;
   const result = await game.bmfs.installCoreCompendiums();
-  assert.equal(result.items, 45);
+  assert.equal(result.items, 46);
   assert.equal(result.vehicles, 6);
-  assert.equal(result.mechs, 20);
+  assert.equal(result.mechs, 21);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-core-items").length, 5);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-ballistic-items").length, 10);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-missile-items").length, 14);
-  assert.equal(createdCompendiumDocuments.get("world.bmfs-equipment-items").length, 16);
+  assert.equal(createdCompendiumDocuments.get("world.bmfs-equipment-items").length, 17);
   assert.equal(createdCompendiumDocuments.get("world.bmfs-core-vehicles").length, 6);
-  for (const collection of ["world.bmfs-core-mechs", "world.bmfs-medium-mechs", "world.bmfs-heavy-mechs", "world.bmfs-assault-mechs"]) {
-    assert.equal(createdCompendiumDocuments.get(collection).length, 5);
-  }
+  assert.equal(createdCompendiumDocuments.get("world.bmfs-core-mechs").length, 6);
+  for (const collection of ["world.bmfs-medium-mechs", "world.bmfs-heavy-mechs", "world.bmfs-assault-mechs"]) assert.equal(createdCompendiumDocuments.get(collection).length, 5);
   createdCompendiumDocuments.get("world.bmfs-core-mechs").push({ _id: "legacy-heavy", name: "Legacy Heavy" });
   createdCompendiumDocuments.get("world.bmfs-core-items").push({ _id: "legacy-ballistic", name: "Legacy Ballistic" });
   const lightPack = createdCompendiumDocuments.get("world.bmfs-core-mechs");
@@ -563,9 +562,9 @@ test("core compendium installer separates five mechs into each weight-class pack
     items: [...lightPack[0].items, ...lightPack[0].items]
   });
   await game.bmfs.installCoreCompendiums();
-  assert.equal(createdCompendiumDocuments.get("world.bmfs-core-mechs").length, 5, "obsolete entries are pruned from migrated Light pack");
+  assert.equal(createdCompendiumDocuments.get("world.bmfs-core-mechs").length, 6, "obsolete entries are pruned from migrated Light pack");
   assert.equal(createdCompendiumDocuments.get("world.bmfs-core-items").length, 5, "obsolete entries are pruned from migrated Energy pack");
-  assert.equal(new Set(createdCompendiumDocuments.get("world.bmfs-core-mechs").map(actor => actor.name)).size, 5, "same-name packed Actors are replaced by one clean catalog Actor");
+  assert.equal(new Set(createdCompendiumDocuments.get("world.bmfs-core-mechs").map(actor => actor.name)).size, 6, "same-name packed Actors are replaced by one clean catalog Actor");
   for (const actor of createdCompendiumDocuments.get("world.bmfs-core-mechs")) {
     assert.equal(new Set(actor.items.map(item => `${item.type}:${item.name}:${item.system.location ?? ""}`)).size, actor.items.length, `${actor.name} has no duplicated embedded Items`);
   }

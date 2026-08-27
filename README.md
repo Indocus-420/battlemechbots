@@ -7,7 +7,7 @@ Target: Foundry Virtual Tabletop 14.363 and newer (verified through 14.364).
 - Adds Move, Sprint, Jump, and Brace activation controls with hotkeys and action tradeoffs.
 - Adds a transparent front/side/rear firing-arc overlay that follows the active token and rotates with facing.
 - Adds team Resolve, Precision Strike, Vigilance, Inspired status, and seven pilot-feat references to the action HUD.
-- Expands deployment validation to five BattleMechs in every weight class and removes construction warnings from all 20 packaged units.
+- Expands deployment validation to at least five BattleMechs in every weight class, adds the Raven RVN-1X, and removes construction warnings from all 21 packaged units.
 - Adds matching ammunition to ammunition-dependent packaged vehicles and validates all six vehicle loadouts.
 - Documents a local-only HBS data normalization workflow for user-owned game files; copyrighted source data is not redistributed in this package.
 - Adds a duplicate-safe local HBS vehicle builder and reusable Foundry importer for user-owned data, including folder placement, embedded equipment, motive classification, presentation assets, and a 98% controlled-test report.
@@ -194,7 +194,7 @@ Technical Design, and Rules master document now ship as one maintained project.
 
 - Adds an authoritative M-Notes economy stored per Foundry user.
 - Adds GM controls to add or remove M-Notes with a required reason.
-- Adds a searchable storefront containing every supported system item, all 20 BattleMechs, and all 6 original vehicles.
+- Adds a searchable storefront containing every supported system item, all 21 BattleMechs, and all 6 original vehicles.
 - Delivers purchased equipment to an owned BattleMech or vehicle and newly purchased units to the buyer's Mech Bay.
 - Deducts the exact listed price, rejects insufficient funds, and records a 250-entry transaction ledger.
 - Routes player purchases through a connected Gamemaster so clients cannot submit their own prices or balances.
@@ -580,7 +580,7 @@ The major project phases are now Bootstrap, Record Sheets, Combat, Visuals, Mech
 ### 0.7.1-alpha.0 original BattleMech roster
 
 - Adds a locked, automatically synchronized `BMFS Original BattleMechs` world compendium with 20 ready-to-use units.
-- Provides five original designs in each weight class: Light, Medium, Heavy, and Assault.
+- Provides at least five designs in each weight class, with the HBS-derived Raven RVN-1X supplementing the Light roster.
 - Each Actor includes a linked prototype token, baseline pilot skills, movement and heat ratings, complete armor and internal structure, weapons, ammunition, jump jets, external heat sinks, standard components, and collision-free critical-slot assignments.
 - Light: Sparrowhawk, Needleback, Ridge Runner, Wayfarer, and Bulwark Scout.
 - Medium: Emberguard, Borderer, Rampart, Horizon, and Vanguard.

@@ -37,7 +37,7 @@ MechLab chassis milestone: 0.31.0 validates standard engine ratings, walk/run mo
 
 Activation-interface milestone: 0.32.0 adds Move, Sprint, Jump, Brace, team Resolve, Precision Strike, Vigilance, pilot-feat references, and a facing-aware transparent firing-arc overlay. It also expands strict deployment validation to five units per weight class and begins the local-only HBS data ingestion workflow without redistributing proprietary source content.
 
-Controlled-test milestone: 0.33.0 completes local-only conversion and live validation for 21 HBS vehicles plus packaged hover and VTOL support, verifies 79 embedded components and all six combat phases, and reaches the 98% controlled-test readiness gate. Raven data and deeper motive-system damage remain subsequent increments.
+Controlled-test milestone: 0.33.0 completes local-only conversion and live validation for 21 HBS vehicles plus packaged hover and VTOL support, verifies 79 embedded components and all six combat phases, and reaches the 98% controlled-test readiness gate. Version 0.33.1 adds the official Urban Warfare Raven RVN-1X as a deployment-ready Light BattleMech and preserves its prototype EW suite as explicit equipment; deeper motive-system damage and full ECM automation remain subsequent increments.
 
 ## Phase 2 - Combat
 

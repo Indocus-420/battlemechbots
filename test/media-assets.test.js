@@ -27,8 +27,8 @@ test("all mech portrait and activation-sound files are present and valid", async
     imageHashes.add(createHash("sha256").update(image).digest("hex"));
     soundHashes.add(createHash("sha256").update(sound).digest("hex"));
   }
-  assert.equal(imageHashes.size, 20);
-  assert.equal(soundHashes.size, 20);
+  assert.equal(imageHashes.size, CORE_MECHS.length);
+  assert.equal(soundHashes.size, CORE_MECHS.length);
 });
 
 test("all catalog item icons and vehicle media are present, unique, and valid", async () => {

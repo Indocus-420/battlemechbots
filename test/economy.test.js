@@ -55,7 +55,7 @@ test("storefront contains every supported item, BattleMech, and vehicle with a p
   assert.ok(STORE_CATALOG.every(entry => entry.sourceUrl.startsWith("https://")));
   assert.deepEqual([...new Set(STORE_CATALOG.map(entry => entry.kind))].sort(), ["item", "mech", "vehicle"]);
   const mechs = STORE_CATALOG.filter(entry => entry.kind === "mech");
-  assert.equal(mechs.length, 20);
+  assert.equal(mechs.length, CORE_MECHS.length);
   assert.ok(mechs.every(entry => entry.sourceUrl.startsWith("https://www.sarna.net/wiki/")));
   assert.equal(mechs.find(entry => entry.name === "Firestarter FS9-H").sourceUrl, "https://www.sarna.net/wiki/Firestarter_(BattleMech)");
   assert.equal(SARNA_REFERENCE_CATALOG.filter(entry => entry.type === "weapon").length, 256);

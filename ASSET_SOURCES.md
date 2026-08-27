@@ -34,3 +34,7 @@ Before any candidate is bundled, preserve its downloaded license/metadata alongs
   limit. Partial edge hexes are overlapped on whole grid intervals and the
   source-page margins are cropped, producing one uniform lattice without
   generated or replacement terrain.
+# HBS design-data references
+
+- Raven RVN-1X chassis, loadout, movement, armor, and prototype EW-suite facts are derived from Harebrained Schemes' public `bt-dlc-designdata` repository, Urban Warfare data, commit `fbce5dfcc49d64aeed128c6ab5dd94655dde77c6`: https://github.com/caardappel-hbs/bt-dlc-designdata
+- Raven portrait and activation audio remain original generated system assets; no HBS artwork or audio is redistributed.

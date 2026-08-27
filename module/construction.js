@@ -26,6 +26,7 @@ const WEAPON_TONS = Object.freeze({
 const EQUIPMENT_TONS = Object.freeze({
   "Heat Sink": 1,
   Hatchet: 5,
+  "X-1 EW Equipment": 7.5,
   "Fusion Engine": 0,
   Gyro: 0,
   Sensors: 0,

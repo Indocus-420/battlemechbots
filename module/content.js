@@ -155,6 +155,7 @@ export const CORE_ITEMS = Object.freeze([
   equipment("Heat Sink", "heatSink", "centerTorso", 1),
   equipment("Jump Jet", "jumpJet", "leftTorso", 1),
   equipment("Hatchet", "general", "rightArm", 3, "Physical weapon carried by the Hatchetman. Dedicated hatchet-attack automation is planned; use standard physical-attack adjudication until implemented."),
+  equipment("X-1 EW Equipment", "sensors", "leftTorso", 4, "Prototype Raven electronic-warfare suite: projects an ECM field and provides an Active Probe area Sensor Lock that consumes the firing action. ECM stealth charges, indirect-fire immunity, and the area Sensor Lock require manual adjudication in this build. Source: HBS Urban Warfare Gear_Sensor_Prototype_EWE."),
   equipment("Shoulder Actuator", "shoulder", "rightArm", 1),
   equipment("Upper Arm Actuator", "upperArm", "rightArm", 1),
   equipment("Lower Arm Actuator", "lowerArm", "rightArm", 1),
@@ -363,7 +364,7 @@ function externalHeatSinkItems(items, totalSinks) {
   return sinks;
 }
 
-function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, armorFactor, equipment }) {
+function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, armorFactor, armor = null, equipment, source = null }) {
   const structure = structureForTonnage(tonnage);
   const presentation = mechPresentation(name, variant, tonnage);
   const zeroTerrain = {
@@ -392,7 +393,7 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
       detectionModes: [{ id: "basicSight", enabled: true, range: 30 }],
       texture: { src: presentation.image, scaleX: 1, scaleY: 1 }
     },
-    flags: { [SYSTEM_ID]: { presentation } },
+    flags: { [SYSTEM_ID]: { presentation, ...(source ? { source } : {}) } },
     system: {
       schemaVersion: 4,
       pilot: { name: "", gunnery: 4, piloting: 5, hits: 0 },
@@ -407,7 +408,7 @@ function originalMech({ name, variant, tonnage, role, walk, run, jump, sinks, ar
         engineHits: 0, gyroHits: 0, sensorHits: 0, lifeSupportHits: 0,
         cockpitDestroyed: false, pending
       },
-      armor: armorForStructure(structure, armorFactor),
+      armor: armor ?? armorForStructure(structure, armorFactor),
       structure,
       status: { prone: false, destroyed: false }
     },
@@ -452,6 +453,22 @@ export const CORE_MECHS = Object.freeze([
     loadout("Small Laser", "leftArm", 5),
     loadout("Jump Jet", "leftLeg", 5, "Jump Jet 1"), loadout("Jump Jet", "rightLeg", 5, "Jump Jet 2")
   ]}),
+  originalMech({
+    name: "Raven", variant: "RVN-1X", tonnage: 35, role: "Recon & Electronic Warfare",
+    walk: 5, run: 8, jump: 0, sinks: 12, armorFactor: 1,
+    source: { publisher: "Harebrained Schemes", product: "BATTLETECH: Urban Warfare", id: "mechdef_raven_RVN-1X", appearanceDate: "3027-01-01", faction: "Liao" },
+    armor: {
+      head: { front: 6, maxFront: 6 }, centerTorso: { front: 8, maxFront: 8, rear: 4, maxRear: 4 },
+      leftTorso: { front: 6, maxFront: 6, rear: 3, maxRear: 3 }, rightTorso: { front: 6, maxFront: 6, rear: 3, maxRear: 3 },
+      leftArm: { front: 6, maxFront: 6 }, rightArm: { front: 6, maxFront: 6 },
+      leftLeg: { front: 8, maxFront: 8 }, rightLeg: { front: 8, maxFront: 8 }
+    },
+    equipment: [
+      loadout("Medium Laser", "rightArm", 5), loadout("Medium Laser", "rightArm", 6, "Medium Laser 2"),
+      loadout("SRM 6", "rightTorso", 1), loadout("SRM 6 Ammunition", "leftTorso", 1),
+      loadout("X-1 EW Equipment", "leftTorso", 2)
+    ]
+  }),
 
   // Medium BattleMechs
   originalMech({ name: "Assassin", variant: "ASN-21", tonnage: 40, role: "Recon Hunter", walk: 7, run: 11, jump: 7, sinks: 10, armorFactor: 0.51, equipment: [

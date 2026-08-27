@@ -23,7 +23,7 @@ test("every equipment critical effect is accepted by the Foundry data model", ()
 
 test("core item catalog is separated into energy, ballistic, missile, and equipment groups", () => {
   assert.deepEqual(Object.fromEntries(Object.entries(CORE_ITEMS_BY_GROUP).map(([key, items]) => [key, items.length])), {
-    energy: 5, ballistic: 10, missile: 14, equipment: 16
+    energy: 5, ballistic: 10, missile: 14, equipment: 17
   });
   assert.equal(Object.values(CORE_ITEMS_BY_GROUP).flat().length, CORE_ITEMS.length);
   assert.ok(CORE_ITEMS.every(item => item.img.startsWith("systems/battletech-foundry-system/assets/items/")));
@@ -71,11 +71,11 @@ test("every packaged combat vehicle has a deployment-ready operational loadout",
   }
 });
 
-test("requested BattleMech catalog contains five units in every weight class", () => {
-  assert.equal(CORE_MECHS.length, 20);
-  assert.equal(new Set(CORE_MECHS.map(actor => actor.name)).size, 20);
+test("requested BattleMech catalog contains the controlled roster plus the Raven", () => {
+  assert.equal(CORE_MECHS.length, 21);
+  assert.equal(new Set(CORE_MECHS.map(actor => actor.name)).size, 21);
   assert.deepEqual(CORE_MECHS.map(actor => actor.system.mech.chassis), [
-    "Jenner", "Firestarter", "Javelin", "Commando", "UrbanMech",
+    "Jenner", "Firestarter", "Javelin", "Commando", "UrbanMech", "Raven",
     "Assassin", "Blackjack", "Hatchetman", "Phoenix Hawk", "Hunchback",
     "Catapult", "JagerMech", "Archer", "Thunderbolt", "Marauder",
     "Atlas", "Banshee", "Stalker", "Awesome", "Zeus"
@@ -83,7 +83,7 @@ test("requested BattleMech catalog contains five units in every weight class", (
   const weightClass = tonnage => tonnage <= 35 ? "light" : tonnage <= 55 ? "medium" : tonnage <= 75 ? "heavy" : "assault";
   const counts = { light: 0, medium: 0, heavy: 0, assault: 0 };
   for (const actor of CORE_MECHS) counts[weightClass(actor.system.mech.tonnage)] += 1;
-  assert.deepEqual(counts, { light: 5, medium: 5, heavy: 5, assault: 5 });
+  assert.deepEqual(counts, { light: 6, medium: 5, heavy: 5, assault: 5 });
   assert.deepEqual(Object.fromEntries(Object.entries(CORE_MECHS_BY_CLASS).map(([key, actors]) => [key, actors.length])), counts);
 });
 
@@ -101,8 +101,8 @@ test("every BattleMech has unique packaged image, audio, and presentation metada
     images.add(profile.image);
     sounds.add(profile.sound);
   }
-  assert.equal(images.size, 20);
-  assert.equal(sounds.size, 20);
+  assert.equal(images.size, 21);
+  assert.equal(sounds.size, 21);
 });
 
 test("every catalog BattleMech is immediately playable", () => {

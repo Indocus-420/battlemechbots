@@ -85,10 +85,10 @@ test("Foundry 14 VFX timelines omit numeric positions rejected by animejs", asyn
   delete globalThis.foundry;
 });
 
-test("the 20 BattleMechs expose distinct activation media profiles", () => {
+test("the BattleMechs expose distinct activation media profiles", () => {
   const profiles = CORE_MECHS.map(mechPresentationProfile);
-  assert.equal(new Set(profiles.map(profile => profile.image)).size, 20);
-  assert.equal(new Set(profiles.map(profile => profile.sound)).size, 20);
+  assert.equal(new Set(profiles.map(profile => profile.image)).size, CORE_MECHS.length);
+  assert.equal(new Set(profiles.map(profile => profile.sound)).size, CORE_MECHS.length);
   assert.ok(profiles.every(profile => ["light", "medium", "heavy", "assault"].includes(profile.weightClass)));
 });
 

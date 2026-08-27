@@ -60,10 +60,10 @@ test("renamed integral components and external heat sinks retain their construct
   assert.equal(itemConstructionMass(item("Jump Jet 5", "equipment", "rightLeg", 5, 1, { criticalEffect: "jumpJet" }), 35), 0.5);
 });
 
-test("all five packaged BattleMechs in every weight class pass MechLab deployment", () => {
+test("all packaged BattleMechs pass MechLab deployment", () => {
   const summary = {};
   for (const [weightClass, actors] of Object.entries(CORE_MECHS_BY_CLASS)) {
-    assert.equal(actors.length, 5, `${weightClass} roster size`);
+    assert.ok(actors.length >= 5, `${weightClass} roster size`);
     summary[weightClass] = actors.map(actor => {
       const result = analyzeMechConstruction(actor);
       assert.equal(result.ready, true, `${actor.name}: ${result.errors.map(error => error.message).join("; ")}`);
