@@ -99,6 +99,10 @@ export function itemConstructionMass(item, tonnage = 50) {
   if (Number.isFinite(importedMass) && importedMass >= 0) return importedMass;
   if (item.type === "ammo") return 1;
   if (item.type === "weapon") return catalogMass(WEAPON_TONS, item.name);
+  if (item.type === "equipment") {
+    const verifiedMass = catalogMass(EQUIPMENT_TONS, item.name);
+    if (verifiedMass !== null) return verifiedMass;
+  }
   if (INTEGRAL_COMPONENT_EFFECTS.has(item.system?.criticalEffect)) return 0;
   if (item.system?.criticalEffect === "heatSink") return 1;
   if (item.system?.criticalEffect === "jumpJet" || /^Jump Jet(?: \d+)?$/i.test(item.name ?? "")) {
@@ -106,7 +110,7 @@ export function itemConstructionMass(item, tonnage = 50) {
     if (tonnage <= 85) return 1;
     return 2;
   }
-  if (item.type === "equipment") return catalogMass(EQUIPMENT_TONS, item.name);
+  if (item.type === "equipment") return null;
   return null;
 }
 

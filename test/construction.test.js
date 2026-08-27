@@ -73,6 +73,8 @@ test("all packaged BattleMechs pass MechLab deployment", () => {
     });
   }
   assert.equal(Object.values(summary).flat().length, CORE_MECHS.length);
+  const raven = CORE_MECHS.find(actor => actor.name === "Raven RVN-1X");
+  assert.equal(analyzeMechConstruction(raven).trackedMass, 35, "Raven includes the 7.5-ton X-1 EW suite");
 });
 
 test("standard engine rating and internal structure follow chassis tonnage", () => {
