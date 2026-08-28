@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { activeProbeProfile, longestWeaponRange, radarContact, radarSweepProfile } from "../module/radar.js";
+import { activeProbeProfile, longestWeaponRange, radarContact, radarSweepProfile, x1AreaSensorLockUpdate } from "../module/radar.js";
 
 const weapon = (long, extra = {}) => ({ type: "weapon", system: { range: { long }, ...extra } });
 const equipment = name => ({ name, type: "equipment", system: {} });
@@ -16,6 +16,13 @@ test("active probes use tabletop identification ranges", () => {
   assert.equal(activeProbeProfile([equipment("Bloodhound Active Probe")]).range, 8);
 });
 
+test("Raven X-1 EW equipment provides automated area Sensor Lock and ECM", () => {
+  const probe = activeProbeProfile([{ name: "X-1 EW Equipment", type: "equipment", system: {} }]);
+  assert.deepEqual(probe, { equipped: true, name: "X-1 EW Equipment", range: 6, heat: 0, areaSensorLock: true, ecm: true });
+  assert.deepEqual(x1AreaSensorLockUpdate(4), { targetModifier: 2, sensorLocked: true, evasiveChargesRemoved: 2 });
+  assert.equal(x1AreaSensorLockUpdate(1).targetModifier, 0);
+});
+
 test("basic radar is approximate while a nearby probe is precise", () => {
   const basic = radarSweepProfile({ items: [weapon(15)] });
   assert.deepEqual(radarContact({ distance: 10, profile: basic }), { distance: 10, precision: "approximate", attackPenalty: 2, uncertaintyHexes: 1 });
@@ -24,4 +31,3 @@ test("basic radar is approximate while a nearby probe is precise", () => {
   assert.equal(radarContact({ distance: 5, profile: probe }).attackPenalty, 2);
   assert.equal(radarContact({ distance: 16, profile: probe }), null);
 });
-

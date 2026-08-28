@@ -34,7 +34,7 @@ import { meleeEffectProfile, mechPresentationProfile, movementEffectProfile, pla
 import { createRandomBattleTechScene, promptRandomBattleTechMap, randomBattleTechMapPlan } from "../module/map-generator.js";
 import { installWwe2018MapPack, WWE2018_MAPS } from "../module/wwe2018-map-pack.js";
 import { synchronizeActorTokenVision, tokenVisionUpdate } from "../module/vision.js";
-import { radarContact, radarSweepProfile } from "../module/radar.js";
+import { radarContact, radarSweepProfile, x1AreaSensorLockUpdate } from "../module/radar.js";
 import { playerConsoleModel, renderPlayerConsole, unitCondition, unitReadiness } from "../module/player-console.js";
 import { adjustMNotes, campaignLedger, configureEconomySocket, executePurchase, requestStorePurchase, STORE_CATALOG } from "../module/economy.js";
 import { aerospaceFiringArcForBearing, aerospaceTargetingArc, registerTokenizerTargetingFrames, targetingArc, TOKENIZER_TARGETING_FRAMES } from "../module/targeting.js";
@@ -112,7 +112,7 @@ import {
 } from "../module/teams.js";
 
 const SYSTEM_ID = "battletech-foundry-system";
-const SYSTEM_VERSION = "0.33.1-alpha.0";
+const SYSTEM_VERSION = "0.34.0-alpha.0";
 const ACTION_HUD_POSITION_KEY = `${SYSTEM_ID}.tokenActionHudPosition.v2`;
 const GATOR_STEPS = Object.freeze([
   ["gunnery", "Gunnery"],
@@ -1544,6 +1544,17 @@ async function performRadarSweep(actor, source = activeSceneToken(actor)) {
     const result = radarContact({ distance, profile });
     if (result) contacts.push({ ...result, tokenId: target.id ?? target.document?.id, round, name: result.precision === "precise" ? target.actor.name : "Unknown enemy contact" });
   }
+  if (profile.probe.areaSensorLock) {
+    for (const contact of contacts.filter(entry => entry.precision === "precise")) {
+      const target = canvas.tokens?.get?.(contact.tokenId);
+      if (!target?.actor) continue;
+      const lock = x1AreaSensorLockUpdate(target.actor.system?.movement?.targetModifier);
+      await target.actor.update({ "system.movement.targetModifier": lock.targetModifier });
+      await target.actor.setFlag(SYSTEM_ID, "sensorLocked", { by: actor.id, round, evasiveChargesRemoved: lock.evasiveChargesRemoved });
+    }
+    await actor.setFlag(SYSTEM_ID, "firingActionConsumed", true);
+    await actor.setFlag(SYSTEM_ID, "ecmFieldActive", { round, range: profile.probe.range });
+  }
   const allies = (canvas.tokens?.placeables ?? []).filter(token => token.actor && tokenCombatTeam(token) === team);
   for (const ally of allies) if (game.user.isGM || ally.actor.isOwner) await ally.actor.setFlag(SYSTEM_ID, "radarContacts", contacts);
   await actor.update({ "system.heat.current": (Number(actor.system.heat.current) || 0) + profile.heat });
@@ -1556,7 +1567,7 @@ async function performRadarSweep(actor, source = activeSceneToken(actor)) {
   }).filter(Boolean);
   for (const marker of markers) canvas.ping?.(marker, { style: marker.precise ? "alert" : "pulse" });
   game.socket.emit(COMBAT_EFFECT_SOCKET, { messageType: "radar-ping", sceneId: canvas.scene?.id, recipientUserIds: owners.filter(id => id !== game.user?.id), markers });
-  ui.notifications.info(`${contacts.length} radar contact(s) shared with ${team}.`);
+  ui.notifications.info(`${contacts.length} radar contact(s) shared with ${team}.${profile.probe.areaSensorLock ? " X-1 area Sensor Lock applied; Fire Action consumed." : ""}`);
   return { contacts, profile };
 }
 
@@ -2871,7 +2882,7 @@ function refreshTokenActionHud(preferredToken = null) {
     ["groups", "layer-group", "Fire Groups", fireGroupMarkup],
     ["physical", "hand-fist", "Physical", model.actorType === "mech" ? `<button type="button" data-action="punch">Punches</button><button type="button" data-action="kick-left">Left Kick</button><button type="button" data-action="kick-right">Right Kick</button><button type="button" data-action="hatchet">Hatchet</button><button type="button" data-action="club">Club</button><button type="button" data-action="push">Push</button><button type="button" data-action="charge">Charge</button><button type="button" data-action="dfa">Death From Above</button>` : `<span class="bmfs-hud-menu-empty">No BattleMech physical attacks</span>`],
     ["movement", "person-walking", "Movement", model.actorType === "mech" ? `<button type="button" data-action="movement" data-mode="stand">Stand</button><button type="button" data-action="movement" data-mode="walk">Walk</button><button type="button" data-action="movement" data-mode="run">Run</button><button type="button" data-action="movement" data-mode="jump">Jump</button>` : `<span class="bmfs-hud-menu-empty">${escape(model.movement)}</span>`],
-    ["systems", "microchip", "Systems", `<button type="button" data-action="radar-sweep">Sensor Sweep / Team Radar</button><button type="button" data-action="shutdown">Voluntary Shutdown</button><button type="button" data-action="restart">Restart Reactor</button><button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
+    ["systems", "microchip", "Systems", `<button type="button" data-action="radar-sweep">${radarSweepProfile(token.actor).probe.areaSensorLock ? "X-1 Area Sensor Lock" : "Sensor Sweep / Team Radar"}</button><button type="button" data-action="shutdown">Voluntary Shutdown</button><button type="button" data-action="restart">Restart Reactor</button><button type="button" data-action="sheet">Heat · ammunition · armor · internals · criticals</button><span class="bmfs-hud-menu-empty">Ammo ${model.ammunition.current}/${model.ammunition.maximum}${model.heat === null ? "" : ` · Heat ${model.heat}`}</span>`],
     ["pilot", "user-astronaut", "Pilot", `<button type="button" data-action="gunnery">Gunnery Check</button><button type="button" data-action="piloting">Piloting Check</button><button type="button" data-action="player-console">Pilot & Lance Window</button>`],
     ["utility", "toolbox", "Utility", `<button type="button" data-action="sheet">Record Sheet</button><button type="button" data-action="toggle-firing-arc"><i class="fa-solid fa-${firingArcEnabled ? "eye-slash" : "eye"}"></i> ${firingArcEnabled ? "Hide" : "Show"} Firing Arc Ring</button><button type="button" data-action="token">Edit Token Image</button><button type="button" data-action="dice-style">Dice Appearance</button><button type="button" data-action="roll2d6">Roll 2D6</button>${game.user.isGM ? `<button type="button" data-action="map-generator">Random Hex Map</button>` : ""}`]
   ];

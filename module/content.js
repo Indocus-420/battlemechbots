@@ -155,7 +155,7 @@ export const CORE_ITEMS = Object.freeze([
   equipment("Heat Sink", "heatSink", "centerTorso", 1),
   equipment("Jump Jet", "jumpJet", "leftTorso", 1),
   equipment("Hatchet", "general", "rightArm", 3, "Physical weapon carried by the Hatchetman. Dedicated hatchet-attack automation is planned; use standard physical-attack adjudication until implemented."),
-  equipment("X-1 EW Equipment", "sensors", "leftTorso", 4, "Prototype Raven electronic-warfare suite: projects an ECM field and provides an Active Probe area Sensor Lock that consumes the firing action. ECM stealth charges, indirect-fire immunity, and the area Sensor Lock require manual adjudication in this build. Source: HBS Urban Warfare Gear_Sensor_Prototype_EWE."),
+  equipment("X-1 EW Equipment", "sensors", "leftTorso", 4, "Prototype Raven electronic-warfare suite: projects an ECM field and provides a six-hex Active Probe area Sensor Lock. The automated action reveals contacts, removes two points of target movement evasion, and consumes the firing action. Source: HBS Urban Warfare Gear_Sensor_Prototype_EWE."),
   equipment("Shoulder Actuator", "shoulder", "rightArm", 1),
   equipment("Upper Arm Actuator", "upperArm", "rightArm", 1),
   equipment("Lower Arm Actuator", "lowerArm", "rightArm", 1),
