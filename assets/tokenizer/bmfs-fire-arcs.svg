@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity=".75"/></filter></defs>
+  <g fill="none" stroke-linejoin="round" filter="url(#s)">
+    <circle cx="256" cy="256" r="244" stroke="#071019" stroke-width="18"/>
+    <path d="M256 256 73 95A244 244 0 0 1 439 95Z" fill="#f5df2a" fill-opacity=".52" stroke="#f5df2a" stroke-width="6"/>
+    <path d="M256 256 439 95A244 244 0 0 1 467 363Z" fill="#38bde5" fill-opacity=".5" stroke="#38bde5" stroke-width="6"/>
+    <path d="M256 256 467 363A244 244 0 0 1 45 363Z" fill="#ef5b2a" fill-opacity=".48" stroke="#ef5b2a" stroke-width="6"/>
+    <path d="M256 256 45 363A244 244 0 0 1 73 95Z" fill="#38bde5" fill-opacity=".5" stroke="#38bde5" stroke-width="6"/>
+    <polygon points="256,205 300,231 300,281 256,307 212,281 212,231" fill="#071019" fill-opacity=".34" stroke="#fff" stroke-width="6"/>
+  </g>
+  <g fill="#fff" font-family="Arial Narrow,Arial,sans-serif" font-size="24" font-weight="900" text-anchor="middle" paint-order="stroke" stroke="#071019" stroke-width="7">
+    <text x="256" y="70">FRONT</text><text x="420" y="242" transform="rotate(62 420 242)">RIGHT ARM</text>
+    <text x="256" y="456">REAR</text><text x="92" y="242" transform="rotate(-62 92 242)">LEFT ARM</text>
+  </g>
+</svg>

@@ -6,6 +6,7 @@ import {
   calculateMovementPlan,
   calculateTerrainProfile,
   combineMovementSections,
+  summarizeElevationPath,
   summarizeRegionTerrainPath,
   targetMovementModifier
 } from "../module/movement.js";
@@ -157,4 +158,35 @@ test("a completed movement is retained when the pending section is empty", () =>
   );
   assert.equal(movement.spaces, 5);
   assert.equal(movement.waypoints.length, 2);
+});
+
+test("heat reduces walking and recalculates running MP but not jumping MP", () => {
+  assert.equal(calculateMovementPlan({
+    mode: "walk", hexesMoved: 4, mpSpent: 4,
+    ratings: { walk: 5, run: 8, jump: 5 }, heat: 5
+  }).allowance, 4);
+  assert.equal(calculateMovementPlan({
+    mode: "run", hexesMoved: 6, mpSpent: 6,
+    ratings: { walk: 5, run: 8, jump: 5 }, heat: 5
+  }).allowance, 6);
+  assert.equal(calculateMovementPlan({
+    mode: "jump", hexesMoved: 5, mpSpent: 5,
+    ratings: { walk: 5, run: 8, jump: 5 }, heat: 25
+  }).allowance, 5);
+});
+
+test("native movement elevation is converted into BattleTech level costs", () => {
+  assert.deepEqual(summarizeElevationPath([
+    { elevation: 0 },
+    { elevation: 1 },
+    { elevation: 1 },
+    { elevation: -1 }
+  ]), { levelChanges: 3, maximumStep: 2 });
+});
+
+test("fractional native elevation is rejected for BattleTech levels", () => {
+  assert.throws(() => summarizeElevationPath([
+    { elevation: 0 },
+    { elevation: 0.5 }
+  ]), /whole levels/);
 });
