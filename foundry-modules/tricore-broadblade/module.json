@@ -1,0 +1,19 @@
+{
+  "id": "tricore-broadblade",
+  "title": "Tri-Core Broadblade",
+  "description": "Adds an interactive three-socket elemental core controller and PF2e damage roller to the Tri-Core Broadblade item sheet.",
+  "version": "1.0.0",
+  "manifest": "https://raw.githubusercontent.com/Indocus-420/battlemechbots/main/foundry-modules/tricore-broadblade/module.json",
+  "download": "https://raw.githubusercontent.com/Indocus-420/battlemechbots/main/foundry-modules/tricore-broadblade/releases/tricore-broadblade-v1.0.0.zip",
+  "authors": [{ "name": "Mistwood" }],
+  "compatibility": {
+    "minimum": "14.361",
+    "verified": "14.367",
+    "maximum": "14"
+  },
+  "relationships": {
+    "systems": [{ "id": "pf2e", "type": "system", "compatibility": { "minimum": "8.0.0" } }]
+  },
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/tricore.css"]
+}
