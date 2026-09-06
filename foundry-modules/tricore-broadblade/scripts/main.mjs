@@ -170,15 +170,15 @@ const CROSS_TAIL_FORMS = [
     id: "free-threads",
     name: "Free Threads",
     icon: "🧵",
-    passive: "2d4 slashing; agile, finesse, reach, trip, and versatile P. Use the threads for ordinary Strikes and combat maneuvers.",
-    damage: "2d4[slashing]",
+    passive: "10d4 slashing; agile, finesse, reach, trip, and versatile P. Use the threads for ordinary Strikes and combat maneuvers.",
+    damage: "10d4[slashing]",
     technique: T("Thread Snare", 1, "at will", "", "Athletics check against the target's Fortitude DC; target within 15 feet.", "Use Cross Tail to Grapple or Trip at reach. The check has the attack trait and uses the weapon's +2 item bonus.", "effect")
   },
   {
     id: "dragon-hair-armor",
     name: "Dragon-Hair Armor",
     icon: "🛡️",
-    passive: "The threads wrap your body. Gain resistance 5 to physical damage and a +1 circumstance bonus to AC, but Cross Tail can't make Strikes in this form.",
+    passive: "The threads wrap your body. Gain a +2 circumstance bonus to AC, but Cross Tail can't make Strikes in this form.",
     damage: "",
     technique: T("Cocoon the Impact", 0, "once per hour", "", "Reaction; trigger: you would take physical damage.", "Reduce the triggering bludgeoning, piercing, or slashing damage by 15. If this reduces the damage to 0, Step after the effect resolves.", "effect")
   },
@@ -186,9 +186,9 @@ const CROSS_TAIL_FORMS = [
     id: "long-spear",
     name: "Long Spear",
     icon: "🔱",
-    passive: "2d6 piercing; reach 15 feet. Cross Tail loses agile and trip while shaped into the spear.",
-    damage: "2d6[piercing]",
-    technique: T("Internal Unraveling", 2, "once per 10 minutes", "2d6[bleed]", "Make a Long Spear Strike; the target then attempts a DC 28 Fortitude save.", "On a failed save, the target takes 2d6 persistent bleed damage; on a critical failure, it is also enfeebled 1 until the bleeding ends. A success prevents the persistent damage.")
+    passive: "5d6 piercing; reach 30 feet. Cross Tail loses agile and trip while shaped into the spear.",
+    damage: "5d6[piercing]",
+    technique: T("Internal Unraveling", 2, "once per 10 minutes", "2d6[bleed]", "Make a Long Spear Strike; the target then attempts a DC 30 Fortitude save.", "On a failed save, the target takes 2d6 persistent bleed damage; on a critical failure, it is also enfeebled 1 until the bleeding ends. A success prevents the persistent damage.")
   },
   {
     id: "thread-barrier",
@@ -202,9 +202,9 @@ const CROSS_TAIL_FORMS = [
     id: "orbiting-axes",
     name: "Orbiting Axes",
     icon: "🪓",
-    passive: "Five or six axe heads orbit on controlled wires. Your melee Strikes deal 2d8 slashing, have reach 15 feet, and lose agile and finesse.",
-    damage: "2d8[slashing]",
-    technique: T("Axe-Wheel Tempest", 2, "once per 10 minutes", "8d6[slashing]", "DC 28 basic Reflex; enemies in a 20-foot emanation.", "On a critical failure, a creature is also knocked prone. You can exclude a number of creatures equal to your Dexterity modifier (minimum 0).")
+    passive: "Five or six axe heads orbit on controlled wires. Your melee Strikes deal 4d8 slashing, have reach 15 feet, and lose agile and finesse.",
+    damage: "4d8[slashing]",
+    technique: T("Axe-Wheel Tempest", 2, "once per 10 minutes", "10d6[slashing]", "DC 30 basic Reflex; enemies in a 20-foot emanation.", "On a critical failure, a creature is also knocked prone. You can exclude a number of creatures equal to your Dexterity modifier (minimum 0).")
   },
   {
     id: "heart-entanglement",
@@ -212,7 +212,7 @@ const CROSS_TAIL_FORMS = [
     icon: "🫀",
     passive: "The finest threads seek a living creature's pulse. This form is used only for the Heartbreaker execution and can't make ordinary Strikes.",
     damage: "",
-    technique: T("Heartbreaker", 3, "once per month", "14d6[piercing]", "DC 28 Fortitude; incapacitation and death; one living creature grabbed by Cross Tail, within 15 feet, and at half its maximum HP or fewer.", "Critical Success: unaffected and temporarily immune for 1 month. Success: 7d6 piercing and the grab ends. Failure: 14d6 piercing, drained 2, and the grab ends; if reduced to 0 HP, the target dies. Critical Failure: the threads crush the target's heart and it dies. A creature without a functioning heart is immune.")
+    technique: T("Heartbreaker", 3, "once per 30 days", "14d6[piercing]", "DC 30 Fortitude; incapacitation and death; one living creature grabbed by Cross Tail, within 15 feet, and at half its maximum HP or fewer.", "Critical Success: unaffected and temporarily immune for 1 month. Success: 7d6 piercing and the grab ends. Failure: 14d6 piercing, drained 2, and the grab ends; if reduced to 0 HP, the target dies. Critical Failure: the threads crush the target's heart and it dies. A creature without a functioning heart is immune.")
   },
   {
     id: "guided-blades",

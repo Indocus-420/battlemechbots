@@ -6,6 +6,9 @@ Version 1.1 adds a seven-form Cross Tail Matrix with armor, spear, barrier,
 orbiting axes, guided blades, free threads, and the monthly Heartbreaker
 execution. Open a PF2e weapon named exactly `Cross Tail` to use it.
 
+Version 1.2 synchronizes the Matrix with the revised live Mistwood statistics,
+including the stronger thread, spear, and axe forms and DC 30 techniques.
+
 ## Installation
 
 Paste this manifest URL into Foundry's **Install Module** dialog:

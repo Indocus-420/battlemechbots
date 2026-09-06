@@ -2,9 +2,9 @@
   "id": "tricore-broadblade",
   "title": "Tri-Core Broadblade & Cross Tail Matrix",
   "description": "Adds interactive PF2e weapon matrices, damage rollers, and technique controls to the Tri-Core Broadblade and Cross Tail item sheets.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "manifest": "https://raw.githubusercontent.com/Indocus-420/battlemechbots/main/foundry-modules/tricore-broadblade/module.json",
-  "download": "https://raw.githubusercontent.com/Indocus-420/battlemechbots/main/foundry-modules/tricore-broadblade/releases/tricore-broadblade-v1.1.0.zip",
+  "download": "https://raw.githubusercontent.com/Indocus-420/battlemechbots/main/foundry-modules/tricore-broadblade/releases/tricore-broadblade-v1.2.0.zip",
   "authors": [{ "name": "Mistwood" }],
   "compatibility": {
     "minimum": "14.361",
