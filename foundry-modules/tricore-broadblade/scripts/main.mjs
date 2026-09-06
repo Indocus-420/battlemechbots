@@ -238,7 +238,7 @@ const CROSS_TAIL_FORMS = [
     icon: "🧵",
     passive: "10d4 slashing; agile, finesse, reach, trip, and versatile P. Use the threads for ordinary Strikes and combat maneuvers.",
     damage: "10d4[slashing]",
-    technique: T("Thread Snare", 1, "at will", "", "Athletics check against the target's Fortitude DC; target within 15 feet.", "Use Cross Tail to Grapple or Trip at reach. The check has the attack trait and uses the weapon's +2 item bonus.", "effect")
+    technique: T("Thread Snare", 1, "at will", "", "Athletics check against the target's Fortitude DC; target within 15 feet.", "Use the PF2e Grapple action with Cross Tail's reach and grapple trait. Critical Success restrains; Success grabs; Failure releases an existing wire-grab; Critical Failure uses the standard Grapple consequences.", "grapple")
   },
   {
     id: "dragon-hair-armor",
@@ -278,17 +278,32 @@ const CROSS_TAIL_FORMS = [
     icon: "🫀",
     passive: "The finest threads seek a living creature's pulse. This form is used only for the Heartbreaker execution and can't make ordinary Strikes.",
     damage: "",
-    technique: T("Heartbreaker", 3, "once per 30 days", "14d6[piercing]", "DC 30 Fortitude; incapacitation and death; one living creature grabbed by Cross Tail, within 15 feet, and at half its maximum HP or fewer.", "Critical Success: unaffected and temporarily immune for 1 month. Success: 7d6 piercing and the grab ends. Failure: 14d6 piercing, drained 2, and the grab ends; if reduced to 0 HP, the target dies. Critical Failure: the threads crush the target's heart and it dies. A creature without a functioning heart is immune.")
+    technique: T("Heartbreaker", 2, "once per 30 days", "14d6[piercing]", "DC 30 Fortitude; incapacitation and death; one living creature grabbed or restrained by Cross Tail's Thread Snare, within 15 feet, and at half its maximum HP or fewer.", "Critical Success: unaffected and temporarily immune for 1 month. Success: 7d6 piercing and the wire-grab ends. Failure: 14d6 piercing, drained 2, and the wire-grab ends; if reduced to 0 HP, the target dies. Critical Failure: the threads crush the target's heart and it dies. A creature without a functioning heart is immune.")
   },
   {
     id: "guided-blades",
     name: "Guided Twin Blades",
     icon: "🗡️",
-    passive: "Two blades ride nearly invisible wires. Each guided blade deals 2d4 slashing and can curve around cover.",
-    damage: "2d4[slashing]",
-    technique: T("Twin-Blade Pursuit", 2, "once per round", "", "Make two Cross Tail Strikes against one or two creatures within 60 feet.", "Both Strikes use your current multiple attack penalty; increase it only after both attacks. Targets are concealed rather than hidden, and lesser cover grants no circumstance bonus to AC. If both Strikes hit the same target, it also takes 2d6 persistent bleed damage.", "effect")
+    passive: "Two blades ride nearly invisible wires. Each blade deals 4d6 slashing and can curve around cover.",
+    damage: "4d6[slashing]+4d6[slashing]",
+    technique: T("Twin-Blade Pursuit", 2, "once per round", "8d6[slashing]", "DC 32 basic Reflex when both blades focus on one creature within 60 feet.", "Focused target: both blades automatically hit one creature for 8d6 slashing, subject to its basic Reflex save. Split focus: choose two creatures and make one attack roll for each blade with a +4 bonus; each hit deals 4d6 slashing. A critical failure on either split attack triggers Tangled Recoil.")
   }
 ];
+
+const CROSS_TAIL_DESCRIPTION_VERSION = 2;
+const CROSS_TAIL_DESCRIPTION = `<p><strong>Infinite Uses:</strong> Cross Tail is a spool of nearly unbreakable silver thread linked to metal caps worn over the wielder's fingers. Its threads can become weapons, snares, an alarm web, or a protective cocoon.</p>
+<hr>
+<p><strong>Cross Tail Matrix</strong> <span class="action-glyph">1</span> (<em>concentrate, manipulate</em>) Reshape Cross Tail into any form below. The selected form remains until you reshape it again. Each damage entry and required check is clickable and can be posted or rolled from chat.</p>
+<h3>Free Threads</h3><p>@Damage[10d4[slashing]]{10d4 slashing}; agile, finesse, reach, grapple, trip, and versatile P. Use [[/act grapple]]{Grapple} against the target's Fortitude DC or [[/act trip]]{Trip} with Cross Tail's reach and potency bonus. Grapple uses the complete PF2e degree-of-success rules. A creature grabbed or restrained by this form satisfies Heartbreaker's wire-grab requirement.</p>
+<h3>Dragon-Hair Armor</h3><p>Gain a +2 circumstance bonus to AC, but Cross Tail can't Strike. Once per hour, its reaction reduces triggering physical damage by 15.</p>
+<h3>Long Spear</h3><p>@Damage[5d6[piercing]]{5d6 piercing} with reach 30 feet. <strong>Internal Unraveling:</strong> after a Strike, the target attempts @Check[fortitude|dc:30|options:damaging-effect]{DC 30 Fortitude}; on a failure it takes @Damage[2d6[persistent,bleed]]{2d6 persistent bleed}.</p>
+<h3>Thread Barrier</h3><p>Raise the barrier for +2 circumstance AC. It has Hardness 10, 40 HP, and BT 20, and can intercept damage for you or an adjacent ally once per round.</p>
+<h3>Orbiting Axes</h3><p>@Damage[4d8[slashing]]{4d8 slashing} with reach 15 feet. <strong>Axe-Wheel Tempest:</strong> @Template[type:emanation|distance:20]{20-foot emanation}; @Damage[10d6[slashing]|options:area-damage]{10d6 slashing}; @Check[reflex|dc:30|basic]{DC 30 basic Reflex}.</p>
+<h3>Heart Entanglement—Heartbreaker</h3><p><span class="action-glyph">2</span> (<em>death, incapacitation</em>) <strong>Frequency</strong> once per 30 days; <strong>Requirements</strong> one living creature grabbed or restrained by Cross Tail's Free Threads within 15 feet and at half its maximum HP or fewer. The target attempts @Check[fortitude|dc:30|options:damaging-effect]{DC 30 Fortitude}. Critical Success: unaffected and temporarily immune for 1 month. Success: @Damage[7d6[piercing]]{7d6 piercing} and the wire-grab ends. Failure: @Damage[14d6[piercing]]{14d6 piercing}, drained 2, and the wire-grab ends; if reduced to 0 HP, it dies. Critical Failure: it dies. Creatures without functioning hearts are immune.</p>
+<h3>Guided Twin Blades</h3><p><span class="action-glyph">2</span> (<em>attack, manipulate</em>) <strong>Frequency</strong> once per round. <strong>Focused:</strong> both blades automatically hit one creature within 60 feet for @Damage[8d6[slashing]]{8d6 slashing}; the target attempts @Check[reflex|dc:32|basic]{DC 32 basic Reflex}. <strong>Split:</strong> choose two creatures; roll [[/r 1d20+4 # Guided Twin Blade 1 Attack]]{Blade 1 attack (+4)} and [[/r 1d20+4 # Guided Twin Blade 2 Attack]]{Blade 2 attack (+4)}. Each hit deals @Damage[4d6[slashing]]{4d6 slashing}. On a critical failure, attempt @Check[reflex|dc:32]{DC 32 Reflex}; on a failure, Tangled Recoil prevents use of Cross Tail until the end of your next turn.</p>
+<h3>Lay the Perimeter</h3><p>(10 minutes) Arrange nearly invisible threads in a contiguous @Template[type:burst|distance:20]{20-foot burst}. You automatically detect corporeal creatures moving within it. @Check[perception|dc:30|traits:secret]{Search DC 30}.</p>
+<h3>Realm-Cutting Thread</h3><p><span class="action-glyph">2</span> (<em>magical, manipulate</em>) <strong>Frequency</strong> once per day; @Template[type:line|distance:60]{60-foot line}; @Damage[10d6[slashing]|options:area-damage]{10d6 slashing}; @Check[reflex|dc:30|basic]{DC 30 basic Reflex}. A critical failure also takes @Damage[2d6[persistent,bleed]]{2d6 persistent bleed}. This damage ignores 10 Hardness.</p>
+<h3>Wet Threads</h3><p>If Cross Tail is fully immersed in liquid or critically fails @Check[arcana|dc:30]{DC 30 Arcana}, its special activations can't be used until the end of your next turn.</p>`;
 
 function isCrossTail(item) {
   return item?.type === "weapon" && (item.name?.trim().toLowerCase() === "cross tail" || item.getFlag(MODULE_ID, "crossTailEnabled"));
@@ -301,12 +316,15 @@ function crossTailForm(id) {
 function crossTailPanelHtml(config) {
   const form = crossTailForm(config.form);
   const options = CROSS_TAIL_FORMS.map(candidate => `<option value="${candidate.id}" ${candidate.id === form.id ? "selected" : ""}>${candidate.icon} ${candidate.name}</option>`).join("");
+  const actions = form.id === "guided-blades"
+    ? `<button type="button" data-action="guided-focus"><i class="fa-solid fa-bullseye"></i> Focus One Target</button><button type="button" data-action="guided-split"><i class="fa-solid fa-code-fork"></i> Split Two Targets</button>`
+    : `<button type="button" data-action="crosstail-damage"><i class="fa-solid fa-dice-d20"></i> Roll Form Damage</button><button type="button" data-action="crosstail-technique"><i class="fa-solid fa-burst"></i> Use Form Power</button>`;
   return `<section class="tricore-panel crosstail-panel" data-crosstail-panel>
     <div class="tricore-heading"><strong>Cross Tail Matrix</strong><span class="tricore-hint">Reshape the dragon-hair threads</span></div>
     <div class="crosstail-form-icon" aria-hidden="true">${form.icon}</div>
     <select class="tricore-select crosstail-select">${options}</select>
     <div class="tricore-summary crosstail-summary"><b>${form.name}</b><br>${form.passive}</div>
-    <div class="tricore-actions"><button type="button" data-action="crosstail-damage"><i class="fa-solid fa-dice-d20"></i> Roll Form Damage</button><button type="button" data-action="crosstail-technique"><i class="fa-solid fa-burst"></i> Use Form Power</button></div>
+    <div class="tricore-actions">${actions}</div>
   </section>`;
 }
 
@@ -320,9 +338,37 @@ async function rollCrossTailDamage(item, config) {
   return postRoll(form.damage, flavor, item);
 }
 
+async function useThreadSnare(item) {
+  const content = `<div class="tricore-chat-card">
+    <header><img src="${escapeHtml(item.img)}" alt=""><div><h3>Free Threads: Thread Snare</h3><span class="tricore-action-glyph">◆</span></div></header>
+    <div class="tricore-chat-tags"><span>Attack · Grapple · Reach 15 feet</span></div>
+    <section class="tricore-chat-section"><h4>PF2e Grapple</h4><p>@UUID[Compendium.pf2e.actionspf2e.Item.PMbdMWc2QroouFGD]{View the Grapple rules}</p><p>Target a creature, then use [[/act grapple]]{Grapple with Free Threads}. PF2e rolls Athletics against the target's Fortitude DC and applies Cross Tail's grapple trait and available item bonus.</p></section>
+    <section class="tricore-chat-section"><h4>Degree of Success</h4><ul><li><strong>Critical Success:</strong> the target is restrained until the end of your next turn.</li><li><strong>Success:</strong> the target is grabbed until the end of your next turn.</li><li><strong>Failure:</strong> the attempt fails and any existing wire-grab ends.</li><li><strong>Critical Failure:</strong> use the standard Grapple critical-failure result shown in the linked action.</li></ul></section>
+    <section class="tricore-chat-section"><h4>Heartbreaker Link</h4><p>A target grabbed or restrained by this action satisfies Heartbreaker's wire-grab requirement.</p></section>
+  </div>`;
+  return postRoll("", content, item);
+}
+
+async function useGuidedTwinBlades(item, mode) {
+  if (mode === "focused") {
+    const technique = crossTailForm("guided-blades").technique;
+    return postRoll("4d6[slashing]+4d6[slashing]", techniqueFlavor(item, "Guided Twin Blades — Focused", technique), item);
+  }
+
+  const content = `<div class="tricore-chat-card">
+    <header><img src="${escapeHtml(item.img)}" alt=""><div><h3>Guided Twin Blades — Split Targets</h3><span class="tricore-action-glyph">◆◆</span></div></header>
+    <div class="tricore-chat-tags"><span>Attack · Manipulate · Two targets within 60 feet</span></div>
+    <section class="tricore-chat-section"><h4>Attack Rolls</h4><p>Choose two targets. Roll once for each blade with a +4 bonus:</p><ul><li>[[/r 1d20+4 # Guided Twin Blade 1 Attack]]{Blade 1 attack (+4)} — @Damage[4d6[slashing]]{4d6 slashing}</li><li>[[/r 1d20+4 # Guided Twin Blade 2 Attack]]{Blade 2 attack (+4)} — @Damage[4d6[slashing]]{4d6 slashing}</li></ul></section>
+    <div class="tricore-save"><strong>Critical Failure — Tangled Recoil</strong><span>@Check[reflex|dc:32]{DC 32 Reflex}</span></div>
+    <section class="tricore-chat-section"><h4>Tangled Recoil</h4><p>When either split attack critically fails, roll the Reflex check above. On a failure, Cross Tail can't be used until the end of your next turn.</p></section>
+  </div>`;
+  return postRoll("", content, item);
+}
+
 async function useCrossTailTechnique(item, config) {
   const form = crossTailForm(config.form);
   const technique = form.technique;
+  if (form.id === "free-threads") return useThreadSnare(item);
   if (form.id === "heart-entanglement") {
     const now = Number(game.time?.worldTime ?? 0);
     const lastUse = Number.isFinite(config.heartLastUsedWorldTime) ? config.heartLastUsedWorldTime : null;
@@ -345,6 +391,8 @@ async function wireCrossTailPanel(app, item, panel) {
   });
   panel.querySelector('[data-action="crosstail-damage"]')?.addEventListener("click", () => rollCrossTailDamage(item, getConfig()));
   panel.querySelector('[data-action="crosstail-technique"]')?.addEventListener("click", () => useCrossTailTechnique(item, getConfig()));
+  panel.querySelector('[data-action="guided-focus"]')?.addEventListener("click", () => useGuidedTwinBlades(item, "focused"));
+  panel.querySelector('[data-action="guided-split"]')?.addEventListener("click", () => useGuidedTwinBlades(item, "split"));
 }
 
 function renderCrossTail(app, html) {
@@ -375,9 +423,25 @@ function renderWeaponMatrices(app, html) {
   renderCrossTail(app, html);
 }
 
+async function migrateCrossTailDescriptions() {
+  if (!game.user.isGM) return;
+  const worldItems = Array.from(game.items ?? []);
+  const actorItems = Array.from(game.actors ?? []).flatMap(actor => Array.from(actor.items ?? []));
+  const crossTails = [...worldItems, ...actorItems].filter(isCrossTail);
+  for (const item of crossTails) {
+    const currentVersion = Number(item.getFlag(MODULE_ID, "descriptionVersion") ?? 0);
+    if (currentVersion >= CROSS_TAIL_DESCRIPTION_VERSION) continue;
+    await item.update({
+      "system.description.value": CROSS_TAIL_DESCRIPTION,
+      [`flags.${MODULE_ID}.descriptionVersion`]: CROSS_TAIL_DESCRIPTION_VERSION
+    });
+  }
+}
+
 Hooks.once("init", () => console.log(`${MODULE_ID} | Initializing`));
 Hooks.once("ready", () => {
-  game.modules.get(MODULE_ID).api = { PRESETS, CROSS_TAIL_FORMS, rollDamage, useTechnique, rollCrossTailDamage, useCrossTailTechnique };
+  game.modules.get(MODULE_ID).api = { PRESETS, CROSS_TAIL_FORMS, rollDamage, useTechnique, rollCrossTailDamage, useCrossTailTechnique, useGuidedTwinBlades };
+  migrateCrossTailDescriptions();
   console.log(`${MODULE_ID} | Ready with ${PRESETS.length} Tri-Core presets and ${CROSS_TAIL_FORMS.length} Cross Tail forms`);
 });
 
