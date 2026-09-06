@@ -1,0 +1,65 @@
+{
+  "name": "Cross Tail",
+  "type": "weapon",
+  "img": "systems/pf2e/icons/equipment/weapons/whip.webp",
+  "system": {
+    "description": {
+      "gm": "",
+      "value": "<p><strong>Infinite Uses: Cross Tail</strong> is a spool of nearly unbreakable silver thread linked to metal caps worn over the wielder's fingers. Its thread can become a weapon, snare, alarm web, or protective cocoon. Cross Tail's threads were created from the body hair of a dragon-like beast that lived in the Eastern region's mountains, high among the clouds.</p><hr><p><strong>Cross Tail Matrix</strong> <span class=\"action-glyph\">1</span> (<em>concentrate, manipulate</em>) Reshape Cross Tail into Free Threads, Dragon-Hair Armor, Long Spear, Thread Barrier, Orbiting Axes, Heart Entanglement, or Guided Twin Blades. The selected form remains until you reshape it again. The installed Mistwood Weapon Matrices module displays full statistics and roll controls for every form.</p><p><strong>Free Threads:</strong> 10d4 slashing; agile, finesse, reach, trip, and versatile P.</p><p><strong>Dragon-Hair Armor:</strong> Gain a +2 circumstance bonus to AC, but Cross Tail can't Strike. Its once-per-hour reaction reduces physical damage by 15.</p><p><strong>Long Spear:</strong> 5d6 piercing with reach 30 feet. Once per 10 minutes, Internal Unraveling can inflict 2d6 persistent bleed after a Strike and DC 30 Fortitude save.</p><p><strong>Thread Barrier:</strong> Raise the barrier for +2 circumstance AC. It has Hardness 10, 40 HP, and BT 20, and can intercept damage for you or an adjacent ally once per round.</p><p><strong>Orbiting Axes:</strong> 4d8 slashing with reach 15 feet. Once per 10 minutes, Axe-Wheel Tempest deals 10d6 slashing in a 20-foot emanation with a DC 30 basic Reflex save.</p><p><strong>Heart Entanglement—Heartbreaker</strong> <span class=\"action-glyph\">3</span> (<em>death, incapacitation</em>) <strong>Frequency</strong> once per 30 days; <strong>Requirements</strong> a living creature grabbed by Cross Tail within 15 feet and at half its maximum HP or fewer; <strong>Effect</strong> The target attempts a DC 30 Fortitude save. Critical Success: unaffected and temporarily immune for 1 month. Success: 7d6 piercing and the grab ends. Failure: 14d6 piercing, drained 2, and the grab ends; if reduced to 0 HP, it dies. Critical Failure: it dies. Creatures without functioning hearts are immune.</p><p><strong>Guided Twin Blades</strong> <span class=\"action-glyph\">2</span> (<em>attack, manipulate</em>) <strong>Frequency</strong> once per round; <strong>Effect</strong> Make two Strikes against one or two creatures within 60 feet. Both use your current MAP, which increases afterward. Targets are concealed rather than hidden and gain no lesser-cover AC bonus. If both hit the same target, it takes 2d6 persistent bleed.</p><p><strong>Lay the Perimeter</strong> (10 minutes) Arrange nearly invisible threads in a contiguous burst up to 20 feet across. You automatically detect corporeal creatures moving within it. Search DC 30.</p><p><strong>Realm-Cutting Thread</strong> <span class=\"action-glyph\">2</span> (<em>magical, manipulate</em>) <strong>Frequency</strong> once per day; <strong>Effect</strong> Creatures in a 60-foot line take 10d6 slashing damage with a DC 30 basic Reflex save. A critical failure also deals 2d6 persistent bleed. This damage ignores 10 Hardness.</p><p><strong>Wet Threads:</strong> If Cross Tail is fully immersed in liquid or critically fails an Arcana check against DC 30, its special activations can't be used until the end of your next turn.</p>"
+    },
+    "rules": [],
+    "slug": "cross-tail",
+    "_migration": { "version": 0.95, "lastMigration": null },
+    "traits": {
+      "value": ["agile", "finesse", "magical", "reach", "trip", "versatile-p"],
+      "rarity": "unique",
+      "otherTags": []
+    },
+    "publication": {
+      "title": "Mistwood",
+      "authors": "Mistwood Campaign",
+      "license": "ORC",
+      "remaster": true
+    },
+    "level": { "value": 11 },
+    "quantity": 1,
+    "baseItem": "whip",
+    "bulk": { "value": 1 },
+    "hp": { "value": 40, "max": 40 },
+    "hardness": 10,
+    "price": { "value": { "gp": 1000 } },
+    "equipped": { "carryType": "worn", "handsHeld": 0, "invested": null },
+    "containerId": null,
+    "size": "med",
+    "material": { "type": null, "grade": null },
+    "identification": {
+      "status": "identified",
+      "unidentified": {
+        "name": "Spool of Silver Thread",
+        "img": "systems/pf2e/icons/equipment/weapons/whip.webp",
+        "data": { "description": { "value": "<p>A heavy spool of fine silver thread connected to a pair of metal-fingered gloves.</p>" } }
+      }
+    },
+    "usage": { "value": "worn-gloves" },
+    "category": "martial",
+    "group": "flail",
+    "bonus": { "value": 2 },
+    "damage": { "dice": 1, "die": "d4", "damageType": "slashing", "persistent": null },
+    "splashDamage": { "value": 0 },
+    "range": null,
+    "expend": null,
+    "ammo": null,
+    "reload": { "value": null },
+    "grade": null,
+    "runes": { "potency": 2, "striking": 1, "property": [] },
+    "specific": null,
+    "subitems": []
+  },
+  "effects": [],
+  "folder": null,
+  "flags": {
+    "mistwood": { "source": "Akame ga Kill! inspired conversion", "balanceTier": "level-11" },
+    "tricore-broadblade": { "crossTailConfiguration": { "form": "free-threads", "heartLastUsedWorldTime": null } }
+  },
+  "_stats": { "systemId": "pf2e", "systemVersion": "8.5.0", "coreVersion": "14.364", "createdTime": 1788595200000, "modifiedTime": 1788595200000, "lastModifiedBy": null }
+}

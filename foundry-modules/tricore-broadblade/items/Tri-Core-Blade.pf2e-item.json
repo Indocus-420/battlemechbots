@@ -1,0 +1,62 @@
+{
+  "name": "Tri-Core Blade",
+  "type": "weapon",
+  "img": "systems/pf2e/icons/equipment/weapons/longsword.webp",
+  "system": {
+    "description": {
+      "gm": "",
+      "value": "<p>Three luminous cores—ember, rime, and tempest—turn within the fuller of this black-steel sword. The blade can channel only one core at a time.</p><hr><p><strong>Rotate Core</strong> <span class=\"action-glyph\">1</span> (<em>concentrate</em>) Choose ember, rime, or tempest. The selected core remains active until you Rotate Core again. A Strike with the blade deals 1d6 additional damage of the selected core's type: fire for ember, cold for rime, or electricity for tempest. Changing cores does not end persistent damage already dealt.</p><p><strong>Core Technique</strong> <span class=\"action-glyph\">2</span> (<em>magical</em>) <strong>Frequency</strong> once per 10 minutes; <strong>Effect</strong> Release the active core's technique.</p><ul><li><strong>Ember—Cinder Arc:</strong> Sweep flame through a 15-foot cone. Creatures in the cone take 6d6 fire damage (DC 28 basic Reflex save). A creature that critically fails also takes 1d6 persistent fire damage.</li><li><strong>Rime—Still Winter:</strong> Make a melee Strike. On a hit, the target takes an additional 2d6 cold damage and must attempt a DC 28 Fortitude save. On a failure it is slowed 1 until the end of its next turn; on a critical failure it is slowed 1 for 1 minute, attempting a new save at the end of each of its turns to end the effect.</li><li><strong>Tempest—Lightning Passage:</strong> Stride twice. During this movement you can move through enemies' spaces, treating them as difficult terrain. At any point during the movement, make one melee Strike. On a hit, it deals an additional 2d6 electricity damage. This movement doesn't trigger reactions from the target of the Strike.</li></ul><p><strong>Tri-Core Convergence</strong> <span class=\"action-glyph\">2</span> (<em>evocation, magical</em>) <strong>Frequency</strong> once per day; <strong>Effect</strong> The cores align and discharge in a 60-foot line. Creatures in the line take 3d6 fire, 3d6 cold, and 3d6 electricity damage with a DC 28 basic Reflex save. A creature that fails is dazzled until the end of its next turn. Afterward, the blade goes dormant until the end of your next turn and functions as a mundane striking longsword during that time.</p><p><em>Automation note:</em> Foundry applies the +2 potency and striking rune automatically. Add the active core's extra 1d6 damage in the damage dialog; the mode is intentionally kept as a player-facing toggle so all three damage types can never stack.</p>"
+    },
+    "rules": [],
+    "slug": "tri-core-blade",
+    "_migration": { "version": 0.95, "lastMigration": null },
+    "traits": {
+      "value": ["magical", "versatile-p"],
+      "rarity": "rare",
+      "otherTags": []
+    },
+    "publication": {
+      "title": "Mistwood",
+      "authors": "Mistwood Campaign",
+      "license": "ORC",
+      "remaster": true
+    },
+    "level": { "value": 11 },
+    "quantity": 1,
+    "baseItem": "longsword",
+    "bulk": { "value": 1 },
+    "hp": { "value": 40, "max": 40 },
+    "hardness": 10,
+    "price": { "value": { "gp": 1500 } },
+    "equipped": { "carryType": "held", "handsHeld": 1, "invested": null },
+    "containerId": null,
+    "size": "med",
+    "material": { "type": null, "grade": null },
+    "identification": {
+      "status": "identified",
+      "unidentified": {
+        "name": "Three-Cored Sword",
+        "img": "systems/pf2e/icons/equipment/weapons/longsword.webp",
+        "data": { "description": { "value": "<p>A black-steel sword with three dull crystals set into its fuller.</p>" } }
+      }
+    },
+    "usage": { "value": "held-in-one-hand" },
+    "category": "martial",
+    "group": "sword",
+    "bonus": { "value": 2 },
+    "damage": { "dice": 1, "die": "d8", "damageType": "slashing", "persistent": null },
+    "splashDamage": { "value": 0 },
+    "range": null,
+    "expend": null,
+    "ammo": null,
+    "reload": { "value": null },
+    "grade": null,
+    "runes": { "potency": 2, "striking": 1, "property": [] },
+    "specific": null,
+    "subitems": []
+  },
+  "effects": [],
+  "folder": null,
+  "flags": { "mistwood": { "source": "Mistwood original conversion", "balanceTier": "level-11" } },
+  "_stats": { "systemId": "pf2e", "systemVersion": "8.5.0", "coreVersion": "14.367", "createdTime": 1788595200000, "modifiedTime": 1788595200000, "lastModifiedBy": null }
+}
