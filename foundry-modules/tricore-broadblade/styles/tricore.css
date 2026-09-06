@@ -117,3 +117,78 @@
 .crosstail-summary b {
   color: #9cecf5 !important;
 }
+
+/* Flavor above PF2e's native DamageRoll card. The roll itself supplies the
+   system font, damage-type rows, colored Dice So Nice data, totals, and the
+   Damage/Half/Double/Triple/Block controls. */
+.tricore-chat-card {
+  margin-bottom: 0.35rem;
+  border: 1px solid rgb(80 62 45 / 55%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 22%);
+  color: var(--color-text-primary, #1c1c1c);
+  overflow: hidden;
+}
+
+.tricore-chat-card > header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: linear-gradient(90deg, rgb(73 45 25 / 92%), rgb(111 75 42 / 82%));
+  color: #f5ead8;
+}
+
+.tricore-chat-card > header img {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #c9aa73;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+.tricore-chat-card h3,
+.tricore-chat-card h4,
+.tricore-chat-card p {
+  margin: 0;
+}
+
+.tricore-chat-card h3 { color: #fff4df; font-size: 1rem; }
+.tricore-action-glyph { color: #f2d399; font-family: "Pathfinder2eActions", sans-serif; }
+
+.tricore-chat-tags {
+  padding: 0.25rem 0.5rem;
+  background: rgb(65 38 22 / 10%);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tricore-chat-section,
+.tricore-save {
+  padding: 0.35rem 0.5rem;
+  border-top: 1px solid rgb(80 62 45 / 25%);
+}
+
+.tricore-chat-section h4,
+.tricore-save strong {
+  color: #6b2f20;
+  font-family: var(--serif, serif);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.tricore-chat-section ul {
+  margin: 0.2rem 0 0 1.1rem;
+  padding: 0;
+}
+
+.tricore-save {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  background: rgb(133 34 34 / 8%);
+}
+
+.tricore-template { display: inline-block; margin-top: 0.25rem; }

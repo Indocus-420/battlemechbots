@@ -84,10 +84,77 @@ function actionGlyph(count) {
   return count === 1 ? "◆" : count === 2 ? "◆◆" : count === 3 ? "◆◆◆" : "";
 }
 
-async function postRoll(formula, flavor) {
-  if (!formula) return ChatMessage.create({ speaker: ChatMessage.getSpeaker(), content: flavor });
-  const roll = await new Roll(formula).evaluate();
-  return roll.toMessage({ speaker: ChatMessage.getSpeaker(), flavor });
+function escapeHtml(value) {
+  return foundry.utils.escapeHTML(String(value ?? ""));
+}
+
+function nativeDamageFormula(formula) {
+  // PF2e renders each comma-separated damage instance independently. This is
+  // what gives every damage type its own line, die color, subtotal, and damage
+  // application controls in chat.
+  return String(formula ?? "")
+    .split("+")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .join(",");
+}
+
+function checkLink(defense) {
+  const match = String(defense ?? "").match(/DC\s+(\d+)\s+(basic\s+)?(Fortitude|Reflex|Will)/i);
+  if (!match) return "";
+  const [, dc, basic, statistic] = match;
+  const params = [statistic.toLowerCase(), `dc:${dc}`];
+  if (basic) params.push("basic");
+  else params.push("options:damaging-effect");
+  return `<div class="tricore-save"><strong>Saving Throw</strong><span>@Check[${params.join("|")}]{Roll ${statistic} Save}</span></div>`;
+}
+
+function areaTemplateLink(defense) {
+  const match = String(defense ?? "").match(/(\d+)-foot\s+(burst|cone|emanation|line)/i);
+  return match ? `<span class="tricore-template">@Template[type:${match[2].toLowerCase()}|distance:${match[1]}]</span>` : "";
+}
+
+function effectList(effect) {
+  const entries = String(effect ?? "").split(/;\s*/).map(entry => entry.trim()).filter(Boolean);
+  if (!entries.length) return "";
+  return `<section class="tricore-chat-section"><h4>Effects</h4><ul>${entries.map(entry => `<li>${escapeHtml(entry)}</li>`).join("")}</ul></section>`;
+}
+
+function techniqueFlavor(item, presetName, technique) {
+  const defense = escapeHtml(technique.defense);
+  return `<div class="tricore-chat-card">
+    <header><img src="${escapeHtml(item.img)}" alt=""><div><h3>${escapeHtml(presetName)}: ${escapeHtml(technique.name)}</h3><span class="tricore-action-glyph">${actionGlyph(technique.actions)}</span></div></header>
+    <div class="tricore-chat-tags"><span>Frequency: ${escapeHtml(technique.frequency)}</span></div>
+    <section class="tricore-chat-section"><h4>Defense & Area</h4><p>${defense}</p>${areaTemplateLink(technique.defense)}</section>
+    ${checkLink(technique.defense)}
+    ${effectList(technique.effect)}
+    ${technique.formula ? `<section class="tricore-chat-section"><h4>Damage</h4><p>${escapeHtml(nativeDamageFormula(technique.formula))}</p></section>` : ""}
+  </div>`;
+}
+
+async function enrichChatHtml(content, item) {
+  return TextEditor.enrichHTML(content, { async: true, relativeTo: item });
+}
+
+async function postRoll(formula, flavor, item = null) {
+  const speaker = ChatMessage.getSpeaker({ actor: item?.actor ?? null });
+  const enrichedFlavor = await enrichChatHtml(flavor, item);
+  if (!formula) return ChatMessage.create({ speaker, content: enrichedFlavor });
+
+  const DamageRoll = CONFIG.Dice.rolls.find(RollClass => RollClass.name === "DamageRoll");
+  if (!DamageRoll) {
+    ui.notifications.warn("PF2e's native DamageRoll was not available; using a standard roll card.");
+    const fallbackRoll = await new Roll(formula).evaluate();
+    return fallbackRoll.toMessage({ speaker, flavor: enrichedFlavor });
+  }
+
+  const roll = new DamageRoll(nativeDamageFormula(formula));
+  await roll.evaluate();
+  return roll.toMessage({
+    speaker,
+    flavor: enrichedFlavor,
+    flags: { pf2e: { origin: { uuid: item?.uuid ?? null, type: item?.type ?? "weapon" } } }
+  });
 }
 
 async function rollDamage(item, config) {
@@ -99,15 +166,14 @@ async function rollDamage(item, config) {
   }
   const formula = ["3d8[slashing]", extra].filter(Boolean).join("+");
   const flavor = `<h3>${item.name}: ${preset?.name ?? "Elemental Conduction"}</h3><p>${preset?.passive ?? "Primary-core damage applied."}</p><p><b>Damage:</b> ${formula}</p>`;
-  return postRoll(formula, flavor);
+  return postRoll(formula, flavor, item);
 }
 
 async function useTechnique(item, config) {
   const preset = presetForSockets(config.sockets, config.preset);
   if (!preset?.technique) return ui.notifications.warn("This core configuration has no preset technique.");
   const t = preset.technique;
-  const flavor = `<h3>${preset.name}: ${t.name} ${actionGlyph(t.actions)}</h3><p><b>Frequency:</b> ${t.frequency}</p><p><b>${t.defense}</b></p><p>${t.effect}</p>${t.formula ? `<p><b>Damage:</b> ${t.formula}</p>` : ""}`;
-  return postRoll(t.formula, flavor);
+  return postRoll(t.formula, techniqueFlavor(item, preset.name, t), item);
 }
 
 async function wirePanel(app, item, panel) {
@@ -251,7 +317,7 @@ async function saveCrossTailConfig(item, config) {
 async function rollCrossTailDamage(item, config) {
   const form = crossTailForm(config.form);
   const flavor = `<h3>${item.name}: ${form.name}</h3><p>${form.passive}</p>${form.damage ? `<p><b>Damage:</b> ${form.damage}</p>` : ""}`;
-  return postRoll(form.damage, flavor);
+  return postRoll(form.damage, flavor, item);
 }
 
 async function useCrossTailTechnique(item, config) {
@@ -266,8 +332,7 @@ async function useCrossTailTechnique(item, config) {
     }
     await saveCrossTailConfig(item, { ...config, heartLastUsedWorldTime: now });
   }
-  const flavor = `<h3>${form.name}: ${technique.name} ${actionGlyph(technique.actions)}</h3><p><b>Frequency:</b> ${technique.frequency}</p><p><b>${technique.defense}</b></p><p>${technique.effect}</p>${technique.formula ? `<p><b>Damage:</b> ${technique.formula}</p>` : ""}`;
-  return postRoll(technique.formula, flavor);
+  return postRoll(technique.formula, techniqueFlavor(item, form.name, technique), item);
 }
 
 async function wireCrossTailPanel(app, item, panel) {
@@ -299,7 +364,10 @@ function renderCrossTail(app, html) {
   else if (nav?.parentElement) nav.insertAdjacentElement("beforebegin", panel);
   else root.prepend(panel);
   wireCrossTailPanel(app, item, panel);
-  app.setPosition?.({ height: "auto" });
+  // Keep Cross Tail at the same compact footprint as the Tri-Core sheet. This
+  // runs after every form change so longer descriptions cannot expand it back
+  // to the full viewport height.
+  app.setPosition?.({ width: 700, height: 757 });
 }
 
 function renderWeaponMatrices(app, html) {

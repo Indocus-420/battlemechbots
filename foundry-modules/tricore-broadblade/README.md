@@ -24,3 +24,9 @@ Paste this manifest URL into Foundry's **Install Module** dialog:
 5. **Use Technique** rolls the preset technique and posts its DC, area, frequency, and secondary effects to chat.
 
 The selected configuration is stored on the item itself and survives reloads. An item's GM may alternatively enable the panel by setting the `tricore-broadblade.enabled` flag.
+
+## Version 1.3.0
+
+- Uses PF2e native damage rolls, including damage-type breakdowns, colored Dice So Nice dice, totals, and damage application buttons.
+- Technique cards include clickable PF2e saving throws, area templates, and organized effect lists.
+- Locks the Cross Tail sheet to the same compact 700 × 757 size as the Tri-Core Broadblade after every form change.
