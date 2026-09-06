@@ -163,12 +163,156 @@ function renderBroadblade(app, html) {
   app.setPosition?.({ height: "auto" });
 }
 
+const CROSS_TAIL_FLAG = "crossTailConfiguration";
+const CROSS_TAIL_MONTH = 30 * 24 * 60 * 60;
+const CROSS_TAIL_FORMS = [
+  {
+    id: "free-threads",
+    name: "Free Threads",
+    icon: "🧵",
+    passive: "2d4 slashing; agile, finesse, reach, trip, and versatile P. Use the threads for ordinary Strikes and combat maneuvers.",
+    damage: "2d4[slashing]",
+    technique: T("Thread Snare", 1, "at will", "", "Athletics check against the target's Fortitude DC; target within 15 feet.", "Use Cross Tail to Grapple or Trip at reach. The check has the attack trait and uses the weapon's +2 item bonus.", "effect")
+  },
+  {
+    id: "dragon-hair-armor",
+    name: "Dragon-Hair Armor",
+    icon: "🛡️",
+    passive: "The threads wrap your body. Gain resistance 5 to physical damage and a +1 circumstance bonus to AC, but Cross Tail can't make Strikes in this form.",
+    damage: "",
+    technique: T("Cocoon the Impact", 0, "once per hour", "", "Reaction; trigger: you would take physical damage.", "Reduce the triggering bludgeoning, piercing, or slashing damage by 15. If this reduces the damage to 0, Step after the effect resolves.", "effect")
+  },
+  {
+    id: "long-spear",
+    name: "Long Spear",
+    icon: "🔱",
+    passive: "2d6 piercing; reach 15 feet. Cross Tail loses agile and trip while shaped into the spear.",
+    damage: "2d6[piercing]",
+    technique: T("Internal Unraveling", 2, "once per 10 minutes", "2d6[bleed]", "Make a Long Spear Strike; the target then attempts a DC 28 Fortitude save.", "On a failed save, the target takes 2d6 persistent bleed damage; on a critical failure, it is also enfeebled 1 until the bleeding ends. A success prevents the persistent damage.")
+  },
+  {
+    id: "thread-barrier",
+    name: "Thread Barrier",
+    icon: "🕸️",
+    passive: "You weave a mobile screen of thread. Raise the barrier as 1 action to gain +2 circumstance AC until your next turn. The barrier has Hardness 10, 40 HP, and BT 20.",
+    damage: "",
+    technique: T("Barrier Intercept", 0, "once per round", "", "Reaction; trigger: you or an adjacent ally would take physical damage while the barrier is raised.", "Reduce the triggering damage by the barrier's Hardness. Any remaining damage is dealt to both the protected creature and Cross Tail's barrier HP.", "effect")
+  },
+  {
+    id: "orbiting-axes",
+    name: "Orbiting Axes",
+    icon: "🪓",
+    passive: "Five or six axe heads orbit on controlled wires. Your melee Strikes deal 2d8 slashing, have reach 15 feet, and lose agile and finesse.",
+    damage: "2d8[slashing]",
+    technique: T("Axe-Wheel Tempest", 2, "once per 10 minutes", "8d6[slashing]", "DC 28 basic Reflex; enemies in a 20-foot emanation.", "On a critical failure, a creature is also knocked prone. You can exclude a number of creatures equal to your Dexterity modifier (minimum 0).")
+  },
+  {
+    id: "heart-entanglement",
+    name: "Heart Entanglement",
+    icon: "🫀",
+    passive: "The finest threads seek a living creature's pulse. This form is used only for the Heartbreaker execution and can't make ordinary Strikes.",
+    damage: "",
+    technique: T("Heartbreaker", 3, "once per month", "14d6[piercing]", "DC 28 Fortitude; incapacitation and death; one living creature grabbed by Cross Tail, within 15 feet, and at half its maximum HP or fewer.", "Critical Success: unaffected and temporarily immune for 1 month. Success: 7d6 piercing and the grab ends. Failure: 14d6 piercing, drained 2, and the grab ends; if reduced to 0 HP, the target dies. Critical Failure: the threads crush the target's heart and it dies. A creature without a functioning heart is immune.")
+  },
+  {
+    id: "guided-blades",
+    name: "Guided Twin Blades",
+    icon: "🗡️",
+    passive: "Two blades ride nearly invisible wires. Each guided blade deals 2d4 slashing and can curve around cover.",
+    damage: "2d4[slashing]",
+    technique: T("Twin-Blade Pursuit", 2, "once per round", "", "Make two Cross Tail Strikes against one or two creatures within 60 feet.", "Both Strikes use your current multiple attack penalty; increase it only after both attacks. Targets are concealed rather than hidden, and lesser cover grants no circumstance bonus to AC. If both Strikes hit the same target, it also takes 2d6 persistent bleed damage.", "effect")
+  }
+];
+
+function isCrossTail(item) {
+  return item?.type === "weapon" && (item.name?.trim().toLowerCase() === "cross tail" || item.getFlag(MODULE_ID, "crossTailEnabled"));
+}
+
+function crossTailForm(id) {
+  return CROSS_TAIL_FORMS.find(form => form.id === id) ?? CROSS_TAIL_FORMS[0];
+}
+
+function crossTailPanelHtml(config) {
+  const form = crossTailForm(config.form);
+  const options = CROSS_TAIL_FORMS.map(candidate => `<option value="${candidate.id}" ${candidate.id === form.id ? "selected" : ""}>${candidate.icon} ${candidate.name}</option>`).join("");
+  return `<section class="tricore-panel crosstail-panel" data-crosstail-panel>
+    <div class="tricore-heading"><strong>Cross Tail Matrix</strong><span class="tricore-hint">Reshape the dragon-hair threads</span></div>
+    <div class="crosstail-form-icon" aria-hidden="true">${form.icon}</div>
+    <select class="tricore-select crosstail-select">${options}</select>
+    <div class="tricore-summary crosstail-summary"><b>${form.name}</b><br>${form.passive}</div>
+    <div class="tricore-actions"><button type="button" data-action="crosstail-damage"><i class="fa-solid fa-dice-d20"></i> Roll Form Damage</button><button type="button" data-action="crosstail-technique"><i class="fa-solid fa-burst"></i> Use Form Power</button></div>
+  </section>`;
+}
+
+async function saveCrossTailConfig(item, config) {
+  await item.setFlag(MODULE_ID, CROSS_TAIL_FLAG, config);
+}
+
+async function rollCrossTailDamage(item, config) {
+  const form = crossTailForm(config.form);
+  const flavor = `<h3>${item.name}: ${form.name}</h3><p>${form.passive}</p>${form.damage ? `<p><b>Damage:</b> ${form.damage}</p>` : ""}`;
+  return postRoll(form.damage, flavor);
+}
+
+async function useCrossTailTechnique(item, config) {
+  const form = crossTailForm(config.form);
+  const technique = form.technique;
+  if (form.id === "heart-entanglement") {
+    const now = Number(game.time?.worldTime ?? 0);
+    const lastUse = Number.isFinite(config.heartLastUsedWorldTime) ? config.heartLastUsedWorldTime : null;
+    if (lastUse !== null && now - lastUse < CROSS_TAIL_MONTH) {
+      const remainingDays = Math.ceil((CROSS_TAIL_MONTH - (now - lastUse)) / 86400);
+      return ui.notifications.warn(`Heartbreaker is unavailable for ${remainingDays} more in-game day${remainingDays === 1 ? "" : "s"}.`);
+    }
+    await saveCrossTailConfig(item, { ...config, heartLastUsedWorldTime: now });
+  }
+  const flavor = `<h3>${form.name}: ${technique.name} ${actionGlyph(technique.actions)}</h3><p><b>Frequency:</b> ${technique.frequency}</p><p><b>${technique.defense}</b></p><p>${technique.effect}</p>${technique.formula ? `<p><b>Damage:</b> ${technique.formula}</p>` : ""}`;
+  return postRoll(technique.formula, flavor);
+}
+
+async function wireCrossTailPanel(app, item, panel) {
+  const getConfig = () => item.getFlag(MODULE_ID, CROSS_TAIL_FLAG) ?? { form: "free-threads", heartLastUsedWorldTime: null };
+  panel.querySelector(".crosstail-select")?.addEventListener("change", async event => {
+    const config = foundry.utils.deepClone(getConfig());
+    config.form = event.currentTarget.value;
+    await saveCrossTailConfig(item, config);
+    app.render({ force: true });
+  });
+  panel.querySelector('[data-action="crosstail-damage"]')?.addEventListener("click", () => rollCrossTailDamage(item, getConfig()));
+  panel.querySelector('[data-action="crosstail-technique"]')?.addEventListener("click", () => useCrossTailTechnique(item, getConfig()));
+}
+
+function renderCrossTail(app, html) {
+  const item = app.document ?? app.item ?? app.object;
+  if (!isCrossTail(item)) return;
+  const root = rootElement(html);
+  if (!root) return;
+  const windowRoot = root.closest(".application") ?? app.element?.[0] ?? app.element ?? root;
+  windowRoot.querySelectorAll?.("[data-crosstail-panel]").forEach(panel => panel.remove());
+  const config = item.getFlag(MODULE_ID, CROSS_TAIL_FLAG) ?? { form: "free-threads", heartLastUsedWorldTime: null };
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = crossTailPanelHtml(config);
+  const panel = wrapper.firstElementChild;
+  const header = root.querySelector(".sheet-header, header");
+  const nav = root.querySelector("nav.sheet-navigation, nav");
+  if (header?.parentElement) header.insertAdjacentElement("afterend", panel);
+  else if (nav?.parentElement) nav.insertAdjacentElement("beforebegin", panel);
+  else root.prepend(panel);
+  wireCrossTailPanel(app, item, panel);
+  app.setPosition?.({ height: "auto" });
+}
+
+function renderWeaponMatrices(app, html) {
+  renderBroadblade(app, html);
+  renderCrossTail(app, html);
+}
+
 Hooks.once("init", () => console.log(`${MODULE_ID} | Initializing`));
 Hooks.once("ready", () => {
-  game.modules.get(MODULE_ID).api = { PRESETS, rollDamage, useTechnique };
-  console.log(`${MODULE_ID} | Ready with ${PRESETS.length} presets`);
+  game.modules.get(MODULE_ID).api = { PRESETS, CROSS_TAIL_FORMS, rollDamage, useTechnique, rollCrossTailDamage, useCrossTailTechnique };
+  console.log(`${MODULE_ID} | Ready with ${PRESETS.length} Tri-Core presets and ${CROSS_TAIL_FORMS.length} Cross Tail forms`);
 });
 
 for (const hook of ["renderItemSheet", "renderItemSheetPF2e", "renderWeaponSheetPF2e"]) {
-  Hooks.on(hook, renderBroadblade);
+  Hooks.on(hook, renderWeaponMatrices);
 }

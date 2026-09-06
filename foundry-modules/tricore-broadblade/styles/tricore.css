@@ -94,3 +94,26 @@
   border-color: #f0c75e !important;
   background: #42382f !important;
 }
+
+.crosstail-form-icon {
+  margin: 0.15rem auto 0.3rem;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #a9d8df;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #efffff55, #2a6974 45%, #101719 100%);
+  box-shadow: 0 0 14px #72dbe8aa, inset 0 0 12px rgb(255 255 255 / 18%);
+  color: #fff;
+  font-size: 1.8rem;
+  text-shadow: 0 1px 3px #000;
+}
+
+.crosstail-summary {
+  border-left-color: #72dbe8;
+}
+
+.crosstail-summary b {
+  color: #9cecf5 !important;
+}

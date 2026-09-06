@@ -1,6 +1,10 @@
-# Tri-Core Broadblade
+# Tri-Core Broadblade & Cross Tail Matrix
 
 Foundry VTT v14 / PF2e module for the Mistwood Tri-Core Broadblade.
+
+Version 1.1 adds a seven-form Cross Tail Matrix with armor, spear, barrier,
+orbiting axes, guided blades, free threads, and the monthly Heartbreaker
+execution. Open a PF2e weapon named exactly `Cross Tail` to use it.
 
 ## Installation
 
