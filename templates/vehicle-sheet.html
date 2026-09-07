@@ -1,0 +1,74 @@
+<div class="bmfs-vehicle-content">
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}">
+    <div class="header-fields">
+      <h1><input name="name" type="text" value="{{actor.name}}" placeholder="Vehicle Name"></h1>
+      <div class="grid grid-4">
+        <label>Chassis <input name="system.vehicle.chassis" type="text" value="{{system.vehicle.chassis}}"></label>
+        <label>Variant <input name="system.vehicle.variant" type="text" value="{{system.vehicle.variant}}"></label>
+        <label>Tons <input name="system.vehicle.tonnage" type="number" value="{{system.vehicle.tonnage}}"></label>
+        <label>Role <input name="system.vehicle.role" type="text" value="{{system.vehicle.role}}"></label>
+      </div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Crew and Movement</h2>
+    <div class="grid grid-4">
+      <label>Crew <input name="system.crew.name" type="text" value="{{system.crew.name}}"></label>
+      <label>Gunnery <input name="system.crew.gunnery" type="number" value="{{system.crew.gunnery}}"></label>
+      <label>Driving <input name="system.crew.driving" type="number" value="{{system.crew.driving}}"></label>
+      <label>Crew Hits <input name="system.crew.hits" type="number" min="0" max="6" value="{{system.crew.hits}}"></label>
+      <label>Motive Type
+        <select name="system.vehicle.motiveType">
+          <option value="tracked" {{#if (eq system.vehicle.motiveType "tracked")}}selected{{/if}}>Tracked</option>
+          <option value="wheeled" {{#if (eq system.vehicle.motiveType "wheeled")}}selected{{/if}}>Wheeled</option>
+          <option value="hover" {{#if (eq system.vehicle.motiveType "hover")}}selected{{/if}}>Hover</option>
+          <option value="vtol" {{#if (eq system.vehicle.motiveType "vtol")}}selected{{/if}}>VTOL</option>
+        </select>
+      </label>
+      <label>Cruise MP <input name="system.movement.cruise" type="number" value="{{system.movement.cruise}}"></label>
+      <label>Flank MP <input name="system.movement.flank" type="number" value="{{system.movement.flank}}"></label>
+    </div>
+    <div class="bmfs-status-row">
+      <label class="bmfs-checkbox"><input name="system.status.immobilized" type="checkbox" {{#if system.status.immobilized}}checked{{/if}}> Immobilized</label>
+      <label class="bmfs-checkbox"><input name="system.status.destroyed" type="checkbox" {{#if system.status.destroyed}}checked{{/if}}> Destroyed</label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Armor and Structure</h2>
+    <div class="grid grid-4">
+      <label>Front <input name="system.armor.front" type="number" min="0" value="{{system.armor.front}}"></label>
+      <label>Left <input name="system.armor.left" type="number" min="0" value="{{system.armor.left}}"></label>
+      <label>Right <input name="system.armor.right" type="number" min="0" value="{{system.armor.right}}"></label>
+      <label>Rear <input name="system.armor.rear" type="number" min="0" value="{{system.armor.rear}}"></label>
+      <label>Turret <input name="system.armor.turret" type="number" min="0" value="{{system.armor.turret}}"></label>
+      <label>Structure <input name="system.structure" type="number" min="0" value="{{system.structure}}"></label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Weapons</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Location</th><th>Damage</th><th>Heat</th><th>Range</th><th>Actions</th></tr></thead>
+      <tbody>
+        {{#each weapons as |item|}}
+        <tr data-item-id="{{item.id}}">
+          <td>{{item.name}}</td><td>{{item.system.location}}</td><td>{{item.system.damage}}</td><td>{{item.system.heat}}</td>
+          <td>{{item.system.range.minimum}} / {{item.system.range.short}} / {{item.system.range.medium}} / {{item.system.range.long}}</td>
+          <td class="item-actions"><button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button><button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>
+        {{else}}<tr><td colspan="6">No weapons installed.</td></tr>{{/each}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Notes</h2>
+    <textarea name="system.notes">{{system.notes}}</textarea>
+  </section>
+
+  <div class="button-row bmfs-save-row"><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button></div>
+  <footer class="bmfs-version">Alpha {{bmfsVersion}} - Foundry VTT 14.364</footer>
+</div>
