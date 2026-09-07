@@ -1,0 +1,9 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+test("the system manifest enables the authenticated Foundry system socket", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../system.json", import.meta.url), "utf8"));
+  assert.equal(manifest.socket, true);
+  assert.equal(manifest.version, "0.11.1-alpha.0");
+});

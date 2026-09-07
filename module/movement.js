@@ -1,3 +1,5 @@
+import { heatMovementPenalty } from "./heat.js";
+
 export const MOVEMENT_MODES = Object.freeze({
   stand: Object.freeze({ label: "Standing Still", attackerModifier: 0, heat: 0 }),
   walk: Object.freeze({ label: "Walking", attackerModifier: 1, heat: 1 }),
@@ -55,6 +57,28 @@ export function combineMovementSections(...sections) {
   return { spaces, waypoints };
 }
 
+export function summarizeElevationPath(path = []) {
+  let levelChanges = 0;
+  let maximumStep = 0;
+
+  for (let index = 1; index < path.length; index += 1) {
+    const prior = Number(path[index - 1]?.elevation ?? 0);
+    const current = Number(path[index]?.elevation ?? prior);
+    if (!Number.isFinite(prior) || !Number.isFinite(current)) {
+      throw new TypeError("Movement elevation must be a finite number.");
+    }
+
+    const change = Math.abs(current - prior);
+    if (!Number.isInteger(change)) {
+      throw new RangeError("BattleTech movement elevation must use whole levels.");
+    }
+    levelChanges += change;
+    maximumStep = Math.max(maximumStep, change);
+  }
+
+  return { levelChanges, maximumStep };
+}
+
 export function targetMovementModifier(hexesMoved, jumped = false) {
   const hexes = nonNegativeInteger(hexesMoved, "Hexes moved");
   let modifier = 0;
@@ -67,10 +91,16 @@ export function targetMovementModifier(hexesMoved, jumped = false) {
   return modifier + (jumped ? 1 : 0);
 }
 
-export function movementAllowance(mode, ratings) {
+export function movementAllowance(mode, ratings, heat = 0) {
   if (!(mode in MOVEMENT_MODES)) throw new RangeError(`Unknown movement mode: ${mode}`);
   if (mode === "stand") return 0;
-  return nonNegativeInteger(ratings[mode], `${MOVEMENT_MODES[mode].label} MP`);
+  if (mode === "jump") {
+    return nonNegativeInteger(ratings.jump, `${MOVEMENT_MODES[mode].label} MP`);
+  }
+  const walking = nonNegativeInteger(ratings.walk, "Walking MP");
+  const effectiveWalking = Math.max(0, walking - heatMovementPenalty(heat));
+  if (mode === "walk") return effectiveWalking;
+  return Math.ceil(effectiveWalking * 1.5);
 }
 
 export function calculateTerrainProfile(terrain = {}) {
@@ -133,13 +163,14 @@ export function calculateMovementPlan({
   hexesMoved,
   mpSpent,
   ratings,
+  heat = 0,
   terrain = {}
 }) {
   if (!(mode in MOVEMENT_MODES)) throw new RangeError(`Unknown movement mode: ${mode}`);
 
   const hexes = nonNegativeInteger(hexesMoved, "Hexes moved");
   const spent = nonNegativeInteger(mpSpent, "MP spent");
-  const allowance = movementAllowance(mode, ratings);
+  const allowance = movementAllowance(mode, ratings, heat);
   const terrainProfile = calculateTerrainProfile(terrain);
   const terrainApplies = mode === "walk" || mode === "run";
   const terrainCost = terrainApplies ? terrainProfile.terrainCost : 0;
