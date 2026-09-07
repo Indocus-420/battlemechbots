@@ -1,0 +1,42 @@
+[
+  {
+    "name": "BattleTech",
+    "slug": "battletech",
+    "sourcePage": 3,
+    "removedCoordinateLabels": 255,
+    "remainingCoordinateLabels": 0,
+    "image": "assets/maps/wwe2018/battletech.webp",
+    "width": 4014,
+    "height": 4878
+  },
+  {
+    "name": "Large Lakes",
+    "slug": "large-lakes",
+    "sourcePage": 4,
+    "removedCoordinateLabels": 255,
+    "remainingCoordinateLabels": 0,
+    "image": "assets/maps/wwe2018/large-lakes.webp",
+    "width": 4014,
+    "height": 4878
+  },
+  {
+    "name": "Scattered Woods",
+    "slug": "scattered-woods",
+    "sourcePage": 5,
+    "removedCoordinateLabels": 255,
+    "remainingCoordinateLabels": 0,
+    "image": "assets/maps/wwe2018/scattered-woods.webp",
+    "width": 4014,
+    "height": 4878
+  },
+  {
+    "name": "Dig Site",
+    "slug": "dig-site",
+    "sourcePage": 6,
+    "removedCoordinateLabels": 255,
+    "remainingCoordinateLabels": 0,
+    "image": "assets/maps/wwe2018/dig-site.webp",
+    "width": 4014,
+    "height": 4878
+  }
+]

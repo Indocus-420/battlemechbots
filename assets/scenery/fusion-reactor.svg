@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320">
+  <defs><filter id="s"><feDropShadow dx="8" dy="11" stdDeviation="7" flood-opacity=".6"/></filter></defs>
+  <g filter="url(#s)">
+    <circle cx="160" cy="160" r="133" fill="#343a3d" stroke="#181c1e" stroke-width="13"/>
+    <circle cx="160" cy="160" r="103" fill="#777f7f" stroke="#c4cccc" stroke-width="10"/>
+    <circle cx="160" cy="160" r="65" fill="#29373b" stroke="#e3b548" stroke-width="13"/>
+    <circle cx="160" cy="160" r="31" fill="#66d8ee" stroke="#d9fbff" stroke-width="9"/>
+    <path d="M160 35v58M160 227v58M35 160h58M227 160h58M72 72l41 41M207 207l41 41M248 72l-41 41M113 207l-41 41" stroke="#252a2c" stroke-width="20"/>
+  </g>
+</svg>

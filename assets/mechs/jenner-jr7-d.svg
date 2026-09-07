@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Jenner JR7-D</title><desc id="desc">Original light BattleMech token art.</desc>
+  <defs>
+    <radialGradient id="bg"><stop stop-color="hsl(184 35% 24%)"/><stop offset="1" stop-color="#071017"/></radialGradient>
+    <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="hsl(184 72% 60%)"/><stop offset=".5" stop-color="hsl(212 58% 38%)"/><stop offset="1" stop-color="#17242d"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="512" height="512" rx="52" fill="url(#bg)"/>
+  <path d="M256 18 462 137v238L256 494 50 375V137Z" fill="none" stroke="hsl(184 80% 62%)" stroke-width="12" filter="url(#glow)"/>
+  <g transform="translate(256 262) scale(0.78) translate(-256 -262)" fill="url(#armor)" stroke="#d7e3ea" stroke-width="6" stroke-linejoin="round">
+    <path d="M174 310 145 382 192 350M338 310l29 72-47-32" fill="#e66b2e" opacity=".82"/>
+    <path d="M226 104 208 142 220 174 292 174 304 142 286 104Z"/>
+    <rect x="232" y="126" width="48" height="54" rx="12" fill="#101a22"/>
+    <path d="M148 178 188 284 214 330 298 330 324 284 364 178Z"/>
+    <path d="M188 196 72 226 100 326 142 342 208 262Z"/>
+    <path d="M324 196 440 226 412 326 370 342 304 262Z"/>
+    <path d="M90 276 46 290 40 312 112 314Z" fill="#243746"/>
+    <path d="M422 276 466 290 472 312 400 314Z" fill="#243746"/>
+    <path d="M220 320 174 450 218 470 256 360 294 470 338 450 292 320Z"/>
+    <path d="M164 446 142 476 226 486 222 462ZM348 446l22 30-84 10 4-24Z" fill="#182733"/>
+  </g>
+  <path d="M66 402h380v62H66z" fill="#050a0d" opacity=".88"/>
+  <text x="256" y="431" fill="#f4f7f8" font-family="Arial,sans-serif" font-size="25" font-weight="700" text-anchor="middle">JENNER</text>
+  <text x="256" y="456" fill="hsl(184 80% 70%)" font-family="Arial,sans-serif" font-size="18" text-anchor="middle">JR7-D - 35T LIGHT</text>
+</svg>
