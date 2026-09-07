@@ -1,6 +1,9 @@
 <div class="bmfs-mech-content">
 <header class="sheet-header">
-    <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}">
+    <div class="bmfs-profile-tools">
+      <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}">
+      {{#if tokenizerAvailable}}<button type="button" data-action="editTokenImage"><i class="fa-solid fa-crop-simple"></i> Edit Token</button>{{/if}}
+    </div>
     <div class="header-fields">
       <h1><input name="name" type="text" value="{{actor.name}}" placeholder="BattleMech Name"></h1>
       <div class="grid grid-4">
@@ -46,9 +49,15 @@
       <label>Heat Sinks <input name="system.heat.sinks" type="number" value="{{system.heat.sinks}}"></label>
       <label>Overflow <input name="system.heat.overflow" type="number" value="{{system.heat.overflow}}"></label>
     </div>
+    <p class="bmfs-heat-effects">
+      Current heat effects: -{{heatEffects.movementPenalty}} Walking MP,
+      +{{heatEffects.weaponModifier}} weapon attacks.
+      {{#if heatEffects.shutdownTarget}}Shutdown avoid {{heatEffects.shutdownTarget}}+.{{/if}}
+      {{#if heatEffects.ammoTarget}} Ammunition avoid {{heatEffects.ammoTarget}}+.{{/if}}
+    </p>
     <div class="bmfs-terrain-planner">
       <h3>Terrain Path</h3>
-      <p class="hint">Choose Walking, Running, or Jumping on this sheet before moving the token. Moving through tagged Regions records terrain and elevation automatically. These fields remain available for corrections and manual facing costs. Clear, paved, and road hexes add no terrain cost. Jumping ignores terrain, level, and facing costs.</p>
+      <p class="hint">Choose Walking, Running, or Jumping on this sheet before moving the token. Tagged Regions record terrain at the token's native elevation, and whole-number elevation changes record level MP automatically. Native Walls stop movement and block weapon line of sight according to their Foundry settings. These fields remain available for corrections and manual facing costs. Clear, paved, and road hexes add no terrain cost. Jumping ignores terrain, level, and facing costs.</p>
       <div class="grid grid-4">
         <label>Rough Hexes <input name="system.movement.terrain.roughHexes" type="number" min="0" value="{{system.movement.terrain.roughHexes}}"></label>
         <label>Light Woods Hexes <input name="system.movement.terrain.lightWoodsHexes" type="number" min="0" value="{{system.movement.terrain.lightWoodsHexes}}"></label>
@@ -73,7 +82,52 @@
       <button type="button" data-action="applyMovement"><i class="fa-solid fa-person-walking"></i> Apply Movement</button>
       <button type="button" data-action="resetMovement"><i class="fa-solid fa-rotate-left"></i> Reset Movement</button>
       <button type="button" data-action="testRoll"><i class="fa-solid fa-dice"></i> Test 2D6 Roll</button>
-      <button type="button" data-action="resetHeat"><i class="fa-solid fa-temperature-arrow-down"></i> Reset Heat</button>
+      <button type="button" data-action="processHeatPhase"><i class="fa-solid fa-temperature-half"></i> Process Heat Phase</button>
+      <button type="button" data-action="resetHeat"><i class="fa-solid fa-temperature-arrow-down"></i> Test Reset Heat</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Critical Status</h2>
+    <p class="hint">Assign each installed Item a location, starting slot, and slot count on its Item sheet. Resolution follows the rulebook's one-die head/leg and two-die torso/arm tables, rerolls inapplicable slots, and applies component effects automatically.</p>
+    {{#each criticalAssignmentWarnings as |warning|}}<p class="bmfs-critical-warning">Invalid slot assignment: {{warning}}</p>{{/each}}
+    <div class="grid grid-4">
+      <label>Engine Hits <input name="system.criticals.engineHits" type="number" min="0" max="3" value="{{system.criticals.engineHits}}"></label>
+      <label>Gyro Hits <input name="system.criticals.gyroHits" type="number" min="0" max="2" value="{{system.criticals.gyroHits}}"></label>
+      <label>Sensor Hits <input name="system.criticals.sensorHits" type="number" min="0" max="2" value="{{system.criticals.sensorHits}}"></label>
+      <label>Life Support Hits <input name="system.criticals.lifeSupportHits" type="number" min="0" max="2" value="{{system.criticals.lifeSupportHits}}"></label>
+    </div>
+    <label class="bmfs-checkbox"><input name="system.criticals.cockpitDestroyed" type="checkbox" {{#if system.criticals.cockpitDestroyed}}checked{{/if}}> Cockpit Destroyed</label>
+    <div class="button-row">
+      <button type="button" data-action="resolvePendingCriticals"><i class="fa-solid fa-burst"></i> Resolve Pending Critical Hits</button>
+    </div>
+    <table>
+      <thead><tr><th>Location</th><th>Pending Critical Hits</th></tr></thead>
+      <tbody>
+        {{#each system.criticals.pending as |hits location|}}
+        <tr>
+          <td>{{location}}</td>
+          <td><input name="system.criticals.pending.{{location}}" type="number" min="0" value="{{hits}}"></td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    <div class="bmfs-critical-tables">
+      {{#each criticalTables as |table|}}
+      <section class="bmfs-critical-location">
+        <h3>{{table.label}}</h3>
+        <table>
+          <thead><tr><th>Slot</th><th>Component</th><th>Status</th></tr></thead>
+          <tbody>
+            {{#each table.rows as |row|}}
+            <tr class="{{#if row.hit}}bmfs-critical-hit{{/if}} {{#if row.conflict}}bmfs-critical-conflict{{/if}}">
+              <td>{{row.slot}}</td><td>{{row.label}}</td><td>{{row.status}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </section>
+      {{/each}}
     </div>
   </section>
 
@@ -94,27 +148,42 @@
     </table>
   </section>
 
+  <section class="panel bmfs-physical-panel">
+    <h2>Physical Attacks</h2>
+    <p class="hint">During the Physical Attack Phase, target one adjacent BattleMech. A confirmation window previews the complete target number, damage, limb restrictions, and hit-location table before rolling.</p>
+    <div class="button-row bmfs-physical-actions">
+      <button type="button" data-action="rollPhysicalAttack" data-physical-type="punch"><i class="fa-solid fa-hand-fist"></i> Punch - Both Available Arms</button>
+      <button type="button" data-action="rollPhysicalAttack" data-physical-type="punch" data-physical-limb="leftArm"><i class="fa-solid fa-hand-fist"></i> Punch - Left Arm</button>
+      <button type="button" data-action="rollPhysicalAttack" data-physical-type="punch" data-physical-limb="rightArm"><i class="fa-solid fa-hand-fist"></i> Punch - Right Arm</button>
+      <button type="button" data-action="rollPhysicalAttack" data-physical-type="kick" data-physical-limb="leftLeg"><i class="fa-solid fa-shoe-prints"></i> Kick - Left Leg</button>
+      <button type="button" data-action="rollPhysicalAttack" data-physical-type="kick" data-physical-limb="rightLeg"><i class="fa-solid fa-shoe-prints"></i> Kick - Right Leg</button>
+    </div>
+    <p class="hint">Kicks automatically resolve the target's Piloting Skill Roll on a hit or the attacker's roll after a miss, including falls, facing, grouped damage, and pilot injury checks.</p>
+  </section>
+
   <section class="panel">
     <h2>Weapons</h2>
     <p class="hint">Drag weapon Items onto this actor. Each drop creates a separate embedded Item.</p>
     <table>
-      <thead><tr><th>Name</th><th>Type</th><th>Location</th><th>Damage</th><th>Heat</th><th>Range</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Type</th><th>Location/Slots</th><th>Damage</th><th>Heat</th><th>Status</th><th>Range (Min/S/M/L)</th><th>Actions</th></tr></thead>
       <tbody>
         {{#each weapons as |item|}}
         <tr data-item-id="{{item.id}}">
           <td>{{item.name}}</td>
           <td>{{item.system.weaponType}}</td>
-          <td>{{item.system.location}}</td>
+          <td>{{item.system.location}} start {{item.system.slotStart}}, count {{item.system.slots}}</td>
           <td>{{item.system.damage}}</td>
           <td>{{item.system.heat}}</td>
-          <td>{{item.system.range.short}} / {{item.system.range.medium}} / {{item.system.range.long}}</td>
+          <td>{{#if item.system.destroyed}}Destroyed{{else}}Operational{{/if}}</td>
+          <td>{{item.system.range.minimum}} / {{item.system.range.short}} / {{item.system.range.medium}} / {{item.system.range.long}}</td>
           <td class="item-actions">
+            <button type="button" data-action="rollWeaponAttack" title="Attack with {{item.name}}"><i class="fa-solid fa-crosshairs"></i></button>
             <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
             <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
         {{else}}
-        <tr><td colspan="7">No weapons installed.</td></tr>
+        <tr><td colspan="8">No weapons installed.</td></tr>
         {{/each}}
       </tbody>
     </table>
@@ -124,21 +193,22 @@
     <h2>Equipment</h2>
     <p class="hint">Jump jets and other equipment appear here after being dropped onto the BattleMech.</p>
     <table>
-      <thead><tr><th>Name</th><th>Location</th><th>Slots</th><th>Notes</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Location</th><th>Slots</th><th>Effect</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
         {{#each equipment as |item|}}
         <tr data-item-id="{{item.id}}">
           <td>{{item.name}}</td>
           <td>{{item.system.location}}</td>
-          <td>{{item.system.slots}}</td>
-          <td>{{item.system.notes}}</td>
+          <td>{{item.system.slotStart}} + {{item.system.slots}}</td>
+          <td>{{item.system.criticalEffect}}</td>
+          <td>{{#if item.system.destroyed}}Destroyed{{else}}Operational{{/if}}</td>
           <td class="item-actions">
             <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
             <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
         {{else}}
-        <tr><td colspan="5">No equipment installed.</td></tr>
+        <tr><td colspan="6">No equipment installed.</td></tr>
         {{/each}}
       </tbody>
     </table>
@@ -148,21 +218,22 @@
     <h2>Ammunition</h2>
     <p class="hint">Ammunition bins are embedded Items and are tracked separately from weapons.</p>
     <table>
-      <thead><tr><th>Name</th><th>Ammo Type</th><th>Location</th><th>Shots</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Ammo Type</th><th>Location/Slot</th><th>Shots</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
         {{#each ammo as |item|}}
         <tr data-item-id="{{item.id}}">
           <td>{{item.name}}</td>
           <td>{{item.system.ammoType}}</td>
-          <td>{{item.system.location}}</td>
+          <td>{{item.system.location}} {{item.system.slotStart}}</td>
           <td>{{item.system.shots}} / {{item.system.maxShots}}</td>
+          <td>{{#if item.system.destroyed}}Destroyed{{else}}Operational{{/if}}</td>
           <td class="item-actions">
             <button type="button" data-action="editItem" title="Edit {{item.name}}"><i class="fa-solid fa-pen-to-square"></i></button>
             <button type="button" data-action="deleteItem" title="Remove {{item.name}}"><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
         {{else}}
-        <tr><td colspan="5">No ammunition installed.</td></tr>
+        <tr><td colspan="6">No ammunition installed.</td></tr>
         {{/each}}
       </tbody>
     </table>
